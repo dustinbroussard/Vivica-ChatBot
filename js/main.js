@@ -774,6 +774,7 @@ async function saveSettings() {
     if (themeSelect) {
         localStorage.setItem('colorTheme', themeSelect.value);
         applyTheme();
+    }
     try {
         // Settings are stored in the 'memory' store with a fixed key
         await Storage.SettingsStorage.saveSettings(settings);
