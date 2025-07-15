@@ -541,39 +541,57 @@ async function getAIResponse(userQuery) {
 
         while (true) {
             const { value, done } = await reader.read();
-            if (done) break;
+            if (done) {
+                debugLog('Stream completed');
+                break;
+            }
 
+            debugLog(`Received chunk size: ${value?.length} bytes`);
             buffer += decoder.decode(value, { stream: true });
 
-            // Process each line as we receive it
-            const lines = buffer.split('\n');
-            buffer = lines.pop(); // Keep last incomplete line for next iteration
-
-            for (const line of lines) {
-                if (line.trim() === '') continue;
+            // Process each complete line we receive
+            let lineEnd;
+            while ((lineEnd = buffer.indexOf('\n')) >= 0) {
+                const line = buffer.slice(0, lineEnd).trim();
+                buffer = buffer.slice(lineEnd + 1);
 
                 try {
-                    if (line.startsWith('data:')) {
-                        const jsonStr = line.substring(5).trim();
-                        if (jsonStr === '[DONE]') {
-                            debugLog('OpenRouter stream done.');
-                            break;
-                        }
+                    // Debug the raw line we're processing
+                    debugLog(`Processing line: ${line.slice(0, 100)}...`); // Limit to 100 chars for logging
+                        
+                    if (!line.startsWith('data:')) {
+                        debugLog('Skipping non-data line', 'warn');
+                        continue;
+                    }
+
+                    const jsonStr = line.substring(5).trim();
+                    if (jsonStr === '[DONE]') {
+                        debugLog('Stream completed with [DONE] signal');
+                        break;
+                    }
+
+                    if (!jsonStr) {
+                        debugLog('Empty data object received');
+                        continue;
+                    }
 
                         try {
+                            debugLog(`Parsing JSON: ${jsonStr}`);
                             const data = JSON.parse(jsonStr);
 
                             // If server returned an error, handle it here:
                             if (data.error) {
-                                debugLog(`OpenRouter error: ${data.error.message}`, 'error');
-                                // Show the error in the AI message bubble
-                                currentContent += `<div style="color:var(--danger);"><strong>Error:</strong> ${data.error.message}</div>`;
+                                debugLog(`OpenRouter error: ${error}`, 'error');
+                                const errorContent = `<div style="color:var(--danger);"><strong>Error:</strong> ${data.error.message}</div>`;
+                                currentContent += errorContent;
                                 if (aiMessageElement) {
                                     aiMessageElement.innerHTML = marked.parse(currentContent);
                                 }
-                                // Break out of the loop since this is terminal
-                                break;
+                                throw new Error(data.error.message);
                             }
+
+                            // Log the full data for debugging
+                            debugLog(`Received data: ${JSON.stringify(data, null, 2)}`);
 
                             // Otherwise handle delta as normal:
                             const delta = data.choices && data.choices[0]?.delta?.content || '';
