@@ -116,6 +116,9 @@ function showToast(message, type = 'info', duration = 3000) {
     }, duration);
 }
 
+// Expose globally for other modules or pages
+window.showToast = showToast;
+
 /**
  * Logs messages to a debug div.
  * @param {string} message - The message to log.
@@ -226,7 +229,7 @@ function renderMessage(message, isNew = false) {
 
     // Scroll to bottom if it's a new message
     if (isNew) {
-        chatBody.scrollTop = chatBody.scrollHeight;
+        messageElement.scrollIntoView({ behavior: 'smooth' });
     }
     
     // Apply Prism.js highlighting to any code blocks
@@ -786,6 +789,7 @@ async function fetchAvailableModels() {
         return data.data || []; // Return the array of models
     } catch (error) {
         console.error('Error fetching models:', error);
+        if (window.showToast) window.showToast('Failed to fetch models', 'error');
         return [];
     }
 }
@@ -1320,7 +1324,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Set up scroll events
     chatBody.addEventListener('scroll', toggleScrollButton);
     scrollToBottomBtn.addEventListener('click', () => {
-      chatBody.scrollTop = chatBody.scrollHeight;
+      const last = chatBody.lastElementChild;
+      last?.scrollIntoView({ behavior: 'smooth' });
     });
 
     const convSearch = document.getElementById('conversation-search');
@@ -1345,6 +1350,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 d.textContent = m.content;
                 resultsDiv.appendChild(d);
             });
+        });
+    }
+
+    if (themeSelect) {
+        themeSelect.addEventListener('change', () => {
+            localStorage.setItem('colorTheme', themeSelect.value);
+            if (window.applyColorTheme) window.applyColorTheme();
         });
     }
 

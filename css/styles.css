@@ -1508,8 +1508,10 @@ kbd {
   }
   
   .modal-content {
-    width: 98%;
-    margin: 20px;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border-radius: 0;
   }
   
   .header-actions .header-btn:first-child {
@@ -1529,7 +1531,11 @@ kbd {
   .main-container {
     margin-left: 280px;
   }
-  
+
+  .menu-toggle {
+    display: none;
+  }
+
   #mobile-menu-toggle {
     display: none;
   }

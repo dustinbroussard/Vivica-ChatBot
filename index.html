@@ -456,14 +456,10 @@
 
         // Global error handling
         window.addEventListener('error', (event) => {
-            console.error('Global error:', event.error);
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'global-error';
-            errorDiv.innerHTML = `
-                <h3>Application Error</h3>
-                <p>${event.error.message}</p>
-            `;
-            document.body.prepend(errorDiv);
+            console.error('Global error:', event.error || event.message);
+            if (window.showToast) {
+                window.showToast('Error: ' + (event.error?.message || event.message), 'error', 5000);
+            }
         });
         
     </script>
