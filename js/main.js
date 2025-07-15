@@ -517,9 +517,22 @@ async function getAIResponse(userQuery) {
         renderMessage(initialAiMessage, true); // Render empty bubble
 
         // Get the DOM element for the AI message to update its content directly
-        const aiMessageElement = chatBody.querySelector(`[data-message-id="${aiMessageId}"] .message-bubble`);
+        let aiMessageElement = chatBody.querySelector(`[data-message-id="${aiMessageId}"] .message-bubble`);
+        // Fallback attempt to find the bubble if first query fails
         if (!aiMessageElement) {
-            throw new Error('Failed to find AI message bubble element');
+            aiMessageElement = chatBody.querySelector(`[data-message-id="${aiMessageId}"] .message-content .message-bubble`);
+            if (!aiMessageElement) {
+                debugLog('Could not find AI message element, creating fallback', 'warn');
+                // If still not found, create and append a placeholder bubble
+                const msgDiv = chatBody.querySelector(`[data-message-id="${aiMessageId}"]`);
+                if (msgDiv) {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'message-bubble';
+                    const contentWrapper = msgDiv.querySelector('.message-content') || msgDiv;
+                    contentWrapper.insertBefore(bubble, contentWrapper.firstChild);
+                    aiMessageElement = bubble;
+                }
+            }
         }
 
         let currentContent = '';
@@ -578,7 +591,7 @@ async function getAIResponse(userQuery) {
             content: currentContent,
             timestamp: initialAiMessage.timestamp // Keep original timestamp
         };
-        await Storage.MessageStorage.update(finalAiMessage); // Use update directly from db-utils
+        await Storage.MessageStorage.updateMessage(finalAiMessage);
         debugLog('AI response fully streamed and saved.');
 
     } catch (error) {
