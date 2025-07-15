@@ -5,13 +5,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const mobileToggleBtn = document.getElementById('mobile-theme-toggle-btn');
   const logo = document.getElementById('logo-img');
 
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
   const applyColorTheme = () => {
     const color = localStorage.getItem('colorTheme') || 'default';
     const suffix = isDark() ? 'dark' : 'light';
     body.setAttribute('data-theme', `${color}-${suffix}`);
   };
 
-  const isDark = () => localStorage.getItem('theme') !== 'light';
+  const isDark = () => {
+    const stored = localStorage.getItem('theme');
+    return stored ? stored !== 'light' : systemPrefersDark;
+  };
 
   const updateToggleIcons = () => {
     if (toggleBtn) toggleBtn.innerHTML = `<i class="fas fa-${isDark() ? 'sun' : 'moon'}"></i>`;

@@ -98,6 +98,7 @@ async function startAudioVisualization() {
         }, 50);
     } catch (err) {
         console.error('Audio visualization error:', err);
+        if (window.showToast) window.showToast('Audio error: ' + err.message, 'error');
     }
 }
 
@@ -171,6 +172,7 @@ function initSpeechRecognition() {
                 debugLog('Attempting to restart recognition after error...');
                 setTimeout(() => startListening(), 1000);
             }
+            if (window.showToast) window.showToast('Voice error: ' + event.error, 'error');
         };
 
         recognition.onend = () => {
@@ -184,7 +186,7 @@ function initSpeechRecognition() {
 
     } else {
         console.warn('Web Speech API (webkitSpeechRecognition) not supported in this browser.');
-        alert('Voice input is not supported in your browser. Please use Chrome for this feature.');
+        if (window.showToast) window.showToast('Voice input not supported in this browser.', 'error');
     }
 }
 
@@ -201,6 +203,7 @@ export function startListening() {
             console.error('Failed to start recognition:', e);
             vivicaVoiceModeConfig.onSpeechError(e);
             vivicaVoiceModeConfig.onListenStateChange('idle');
+            if (window.showToast) window.showToast('Voice error: ' + e.message, 'error');
         }
     } else if (!recognition) {
         initSpeechRecognition(); // Initialize if not already
@@ -329,6 +332,7 @@ export function speak(text) {
             isSpeaking = false;
             vivicaVoiceModeConfig.onSpeakingError(event.error);
             vivicaVoiceModeConfig.onListenStateChange('idle');
+            if (window.showToast) window.showToast('Speech error: ' + event.error, 'error');
             reject(event.error);
         };
 
