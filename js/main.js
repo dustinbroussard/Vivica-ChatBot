@@ -586,20 +586,20 @@ async function getAIResponse(userQuery) {
 
                             // If server returned an error, handle it here:
                             if (data.error) {
-                                debugLog(`OpenRouter error: ${error}`, 'error');
-                                const errorContent = `<div style="color:var(--danger);"><strong>Error:</strong> ${data.error.message}</div>`;
-                                currentContent += errorContent;
+                                debugLog(`OpenRouter error: ${data.error.message}`, 'error');
+                                currentContent += `<div style="color:var(--danger);"><strong>Error:</strong> ${data.error.message}</div>`;
                                 if (aiMessageElement) {
                                     aiMessageElement.innerHTML = marked.parse(currentContent);
+                                    chatBody.scrollTop = chatBody.scrollHeight;
                                 }
-                                throw new Error(data.error.message);
+                                break; // Exit stream loop on error
                             }
 
                             // Log the full data for debugging
                             debugLog(`Received data: ${JSON.stringify(data, null, 2)}`);
 
-                            // Otherwise handle delta as normal:
-                            const delta = data.choices && data.choices[0]?.delta?.content || '';
+                            // Handle normal response delta
+                            const delta = data.choices?.[0]?.delta?.content || '';
                             if (delta) {
                                 currentContent += delta;
                                 
@@ -621,8 +621,7 @@ async function getAIResponse(userQuery) {
                         }
                     }
                 } catch (parseError) {
-                    debugLog(`Error parsing JSON from stream: ${parseError.message}`, 'error');
-                    debugLog(`Raw line that failed: ${line}`, 'debug');
+                    debugLog(`Error parsing JSON from stream: ${parseError.message}. Line: ${jsonStr}`, 'error');
                     // Continue to next line - don't break the stream
                 }
             }
