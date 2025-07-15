@@ -77,6 +77,7 @@ const model1FreeFilter = document.getElementById('model1-free-filter');
 let currentConversationId = null;
 let currentProfileId = null; // ID of the currently active AI profile
 let availableModels = []; // To store fetched AI models
+let voiceModeActive = false;
 let voiceModeActive = false
 
 // --- Utility Functions ---
@@ -581,52 +582,46 @@ async function getAIResponse(userQuery) {
                     debugLog(`Error processing stream line: ${error}`, 'error');
                     continue; // Skip to next line if this one fails
                 }
-                        try {
-                            debugLog(`Parsing JSON: ${jsonStr}`);
-                            const data = JSON.parse(jsonStr);
+                try {
+                    debugLog(`Parsing JSON: ${jsonStr}`);
+                    const data = JSON.parse(jsonStr);
 
-                            // If server returned an error, handle it here:
-                            if (data.error) {
-                                debugLog(`OpenRouter error: ${data.error.message}`, 'error');
-                                currentContent += `<div style="color:var(--danger);"><strong>Error:</strong> ${data.error.message}</div>`;
-                                if (aiMessageElement) {
-                                    aiMessageElement.innerHTML = marked.parse(currentContent);
-                                    chatBody.scrollTop = chatBody.scrollHeight;
-                                }
-                                break; // Exit stream loop on error
+                    // If server returned an error, handle it here:
+                    if (data.error) {
+                        debugLog(`OpenRouter error: ${data.error.message}`, 'error');
+                        currentContent += `<div style="color:var(--danger);"><strong>Error:</strong> ${data.error.message}</div>`;
+                        if (aiMessageElement) {
+                            aiMessageElement.innerHTML = marked.parse(currentContent);
+                            chatBody.scrollTop = chatBody.scrollHeight;
+                        }
+                        break; // Exit stream loop on error
+                    }
+
+                    // Log the full data for debugging
+                    debugLog(`Received data: ${JSON.stringify(data, null, 2)}`);
+
+                    // Handle normal response delta
+                    const delta = data.choices?.[0]?.delta?.content || '';
+                    if (delta) {
+                        currentContent += delta;
+
+                        // Throttle DOM updates for performance
+                        const now = performance.now();
+                        if (now - lastRenderTime > RENDER_THROTTLE || done) {
+                            if (aiMessageElement) {
+                                aiMessageElement.innerHTML = marked.parse(currentContent);
+                                chatBody.scrollTop = chatBody.scrollHeight;
+                                lastRenderTime = now;
+                            } else {
+                                debugLog('Could not find AI message element, skipping update.', 'warn');
                             }
                         }
-                        } catch (parseError) {
-                            debugLog(`Error parsing JSON from stream: ${parseError.message}. Line: ${jsonStr}`, 'error');
-                            // Continue to next line - don't break the stream
-                            continue;
-                        }
-
-                            // Log the full data for debugging
-                            debugLog(`Received data: ${JSON.stringify(data, null, 2)}`);
-
-                            // Handle normal response delta
-                            const delta = data.choices?.[0]?.delta?.content || '';
-                            if (delta) {
-                                currentContent += delta;
-                                
-                                // Throttle DOM updates for performance
-                                const now = performance.now();
-                                if (now - lastRenderTime > RENDER_THROTTLE || done) {
-                                    if (aiMessageElement) {
-                                        aiMessageElement.innerHTML = marked.parse(currentContent);
-                                        chatBody.scrollTop = chatBody.scrollHeight;
-                                        lastRenderTime = now;
-                                    } else {
-                                        debugLog('Could not find AI message element, skipping update.', 'warn');
-                                    }
-                                }
-                            }
-                        } catch (parseError) {
-                            debugLog(`Error parsing JSON from stream: ${parseError.message}. Line: ${jsonStr}`, 'error');
-                            // Continue to next line - don't break the stream
-                            continue;
-                        }
+                    }
+                } catch (parseError) {
+                    debugLog(`Error parsing JSON from stream: ${parseError.message}. Line: ${jsonStr}`, 'error');
+                    // Continue to next line - don't break the stream
+                    continue;
+                }
             }
         }
 
@@ -640,6 +635,9 @@ async function getAIResponse(userQuery) {
         };
         await Storage.MessageStorage.updateMessage(finalAiMessage);
         debugLog('AI response fully streamed and saved.');
+        if (voiceModeActive) {
+            speak(currentContent).catch(err => debugLog('TTS error: ' + err, 'error'));
+        }
 
     } catch (error) {
         debugLog(`Error getting AI response: ${error.message}`, 'error');
@@ -758,6 +756,9 @@ async function openSettingsModal() {
         document.getElementById('api-key-2').value = settings.apiKey2 || '';
         document.getElementById('api-key-3').value = settings.apiKey3 || '';
     }
+    if (themeSelect) {
+        themeSelect.value = localStorage.getItem('colorTheme') || 'default';
+    }
 }
 
 /**
@@ -770,6 +771,10 @@ async function saveSettings() {
         apiKey2: document.getElementById('api-key-2').value,
         apiKey3: document.getElementById('api-key-3').value
     };
+    if (themeSelect) {
+        localStorage.setItem('colorTheme', themeSelect.value);
+        applyTheme();
+    }
     try {
         // Settings are stored in the 'memory' store with a fixed key
         await Storage.SettingsStorage.saveSettings(settings);
@@ -1264,6 +1269,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         emptyState.style.display = 'flex'; // Ensure empty state is visible
     }
+
+    // Voice mode setup
+    initVoiceMode({
+        onSpeechResult: (text, final) => {
+            userInput.value = text;
+            if (final) {
+                sendMessage();
+            }
+        },
+        onListenStateChange: (state) => {
+            voiceModeToggleBtn.classList.toggle('listening', state === 'listening');
+            voiceModeToggleBtn.classList.toggle('speaking', state === 'speaking');
+        }
+    });
+    voiceModeToggleBtn.addEventListener('click', () => {
+        voiceModeActive = !voiceModeActive;
+        voiceModeToggleBtn.classList.toggle('active', voiceModeActive);
+        if (voiceModeActive) {
+            startListening();
+        } else {
+            stopListening();
+        }
+    });
 
     // Event listeners for main UI
     sendBtn.addEventListener('click', sendMessage);
