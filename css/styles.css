@@ -185,7 +185,7 @@
     --gradient-accent: linear-gradient(135deg, #c1001f 0%, #9e001c 100%);
 }
 
-* GREEN DARK THEME */
+/* GREEN DARK THEME */
 [data-theme="green-dark"] {
     --bg-primary: #001f0f;
     --bg-secondary: #003316;
