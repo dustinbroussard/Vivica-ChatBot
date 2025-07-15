@@ -1165,6 +1165,13 @@ function copyExportContent() {
 
 // --- Event Listeners ---
 
+// Scroll to bottom button logic
+const scrollToBottomBtn = document.getElementById('scroll-to-bottom-btn');
+function toggleScrollButton() {
+  const isAtBottom = chatBody.scrollHeight - chatBody.clientHeight <= chatBody.scrollTop + 50;
+  scrollToBottomBtn.classList.toggle('visible', !isAtBottom);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     debugLog('DOM Content Loaded. Initializing Vivica...');
 
@@ -1178,13 +1185,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Scroll to bottom button logic
-    const scrollToBottomBtn = document.getElementById('scroll-to-bottom-btn');
-    function toggleScrollButton() {
-      const isAtBottom = chatBody.scrollHeight - chatBody.clientHeight <= chatBody.scrollTop + 50;
-      scrollToBottomBtn.classList.toggle('visible', !isAtBottom);
-    }
-
+    // Set up scroll events
     chatBody.addEventListener('scroll', toggleScrollButton);
     scrollToBottomBtn.addEventListener('click', () => {
       chatBody.scrollTop = chatBody.scrollHeight;
