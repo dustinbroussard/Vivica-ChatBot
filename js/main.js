@@ -170,6 +170,7 @@ function toggleSidebar() {
  * @param {boolean} isNew - True if this is a new message being added, for scrolling.
  */
 function renderMessage(message, isNew = false) {
+  toggleScrollButton();
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', message.sender);
     messageElement.dataset.messageId = message.id;
@@ -1176,6 +1177,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             debugLog('Service Worker registration failed: ' + error, 'error');
         }
     }
+
+    // Scroll to bottom button logic
+    const scrollToBottomBtn = document.getElementById('scroll-to-bottom-btn');
+    function toggleScrollButton() {
+      const isAtBottom = chatBody.scrollHeight - chatBody.clientHeight <= chatBody.scrollTop + 50;
+      scrollToBottomBtn.classList.toggle('visible', !isAtBottom);
+    }
+
+    chatBody.addEventListener('scroll', toggleScrollButton);
+    scrollToBottomBtn.addEventListener('click', () => {
+      chatBody.scrollTop = chatBody.scrollHeight;
+    });
 
     // Initial render of conversations list
     await renderConversationsList();
