@@ -45,7 +45,6 @@
     </style>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
@@ -375,8 +374,7 @@
     <!-- Scripts -->
     <script type="module" src="js/db-utils.js"></script>
     <script type="module" src="js/storage-wrapper.js"></script>
-    <script type="module" src="js-android-bridge.js"></script>
-    <script src="service-worker.js"></script>
+    <script type="module" src="js/android-bridge.js"></script>
 
     <script>
         // Helper functions for the UI
@@ -432,11 +430,11 @@
             `;
             document.body.prepend(errorDiv);
         });
+        
     </script>
-    <script src="js/theme-toggle.js"></script>
-    <script type="module" src="js/main.js"></script>
-    <canvas id="orbCanvas"></canvas>
-    <div class="vivica-name">V I V I C A</div>
+	<script type="module" src="js/android-bridge.js"></script>
+	<script src="js/theme-toggle.js"></script>
+	<script type="module" src="js/main.js"></script>
     <canvas id="orbCanvas"></canvas>
     <div class="vivica-name">V I V I C A</div>
 </body>
