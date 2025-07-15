@@ -647,6 +647,26 @@ function clearUserInput() {
 // --- Modal Handlers ---
 
 /**
+ * Fetches available AI models from OpenRouter.
+ * @returns {Promise<Array>} A promise that resolves to the list of models or rejects on error.
+ */
+async function fetchAvailableModels() {
+    try {
+        const response = await fetch('https://openrouter.ai/api/v1/models');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch models: ${response.status}`);
+        }
+        const data = await response.json();
+        return data.data || []; // Return the array of models
+    } catch (error) {
+        console.error('Error fetching models:', error);
+        return [];
+    }
+}
+
+// --- Modal Handlers ---
+
+/**
  * Opens the settings modal.
  */
 async function openSettingsModal() {
