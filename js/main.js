@@ -11,7 +11,6 @@ import Storage from './storage-wrapper.js';
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
 import { openDB } from './db-utils.js';
 import { initVoiceMode, startListening, stopListening, toggleListening, speak, getIsListening, getIsSpeaking, updateVoiceModeConfig } from './voice-mode.js';
-import { initVoiceMode, startListening, stopListening, toggleListening, speak, getIsListening, getIsSpeaking, updateVoiceModeConfig } from './voice-mode.js';
 
 // --- Global Variables and Constants ---
 const chatBody = document.getElementById('chat-body');
@@ -73,7 +72,6 @@ const deleteProfileBtn = document.getElementById('delete-profile-btn');
 const profilesListDiv = document.getElementById('profiles-list');
 const model1Select = document.getElementById('model1-select');
 const model1FreeFilter = document.getElementById('model1-free-filter');
-
 
 let currentConversationId = null;
 let currentProfileId = null; // ID of the currently active AI profile
@@ -282,7 +280,7 @@ async function renderConversationsList() {
             convItem.classList.add('active');
         }
         convItem.dataset.conversationId = conv.id;
-        convItem.textContent = conv.title || ; // Default title
+        convItem.textContent = conv.title || 'New Chat'; // Default title
 
         convItem.addEventListener('click', () => loadConversation(conv.id));
 
@@ -331,7 +329,7 @@ async function renderConversationsList() {
  * @param {number} conversationId - The ID of the conversation to load.
  */
 async function loadConversation(conversationId) {
-    debugLog();
+    debugLog(`Loading conversation ID: ${conversationId}`);
     currentConversationId = conversationId;
     chatBody.innerHTML = ''; // Clear current messages
     emptyState.style.display = 'none'; // Hide empty state
@@ -405,7 +403,7 @@ async function sendMessage() {
         // Call the real AI response function
         await getAIResponse(content);
     } catch (error) {
-        debugLog(, 'error');
+        debugLog(`Error sending message: ${error.message}`, 'error');
         showToast('Failed to send message.', 'error');
     }
 }
@@ -497,7 +495,7 @@ async function getAIResponse(userQuery) {
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error();
+            throw new Error(`OpenRouter API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
         }
 
         const reader = response.body.getReader();
@@ -565,15 +563,15 @@ async function getAIResponse(userQuery) {
         debugLog('AI response fully streamed and saved.');
 
     } catch (error) {
-        debugLog(, 'error');
-        showToast(, 'error', 7000);
+        debugLog(`Error getting AI response: ${error.message}`, 'error');
+        showToast(`Error: ${error.message}`, 'error', 7000);
         // If an error occurred and an AI message was started, update it to show the error
         if (aiMessageId && currentConversationId) {
              const errorMsg = {
                  id: aiMessageId,
                  conversationId: currentConversationId,
                  sender: 'ai',
-                 content: ,
+                 content: `Error: ${error.message}`,
                  timestamp: Date.now()
              };
              await Storage.MessageStorage.update(errorMsg);
@@ -598,7 +596,7 @@ async function handleFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    debugLog();
+    debugLog(`Uploading file: ${file.name}`);
 
     // Basic file type check (you might want more robust validation)
     const allowedTypes = [
@@ -622,14 +620,14 @@ async function handleFileUpload(event) {
     const reader = new FileReader();
     reader.onload = async (e) => {
         const fileContent = e.target.result;
-        userInput.value = ; // Truncate for display
+        userInput.value = fileContent.substring(0, 500) + (fileContent.length > 500 ? '...' : ''); // Truncate for display
         userInput.focus();
         // Potentially send the file content to AI here
-        showToast(, 'info');
+        showToast(`File "${file.name}" loaded. You can now send it to the AI.`, 'info');
         fileUploadInput.value = ''; // Clear the input for next upload
     };
     reader.onerror = (e) => {
-        debugLog(, 'error');
+        debugLog(`Error reading file: ${e.target.error}`, 'error');
         showToast('Error reading file.', 'error');
     };
     reader.readAsText(file);
@@ -697,7 +695,7 @@ async function saveSettings() {
         showToast('Settings saved!', 'success');
         closeModal(settingsModal);
     } catch (error) {
-        debugLog(, 'error');
+        debugLog(`Error saving settings: ${error.message}`, 'error');
         showToast('Failed to save settings.', 'error');
     }
 }
@@ -720,7 +718,7 @@ function confirmClearAllConversations() {
                 closeModal(settingsModal);
             })
             .catch(error => {
-                debugLog(, 'error');
+                debugLog(`Error clearing conversations: ${error.message}`, 'error');
                 showToast('Failed to clear all conversations.', 'error');
             });
     }
@@ -733,32 +731,28 @@ async function openProfilesModal() {
     debugLog('Opening profiles modal...');
     openModal(profilesModal);
     await renderProfilesList();
-    await fetchAvailableModels();
+    await fetchOpenRouterModels();
     // Reset profile form when opening modal
     resetProfileForm();
 }
 
 /**
- * Fetches available AI models (simulated).
+ * Fetches available AI models from OpenRouter.
  */
-async function fetchAvailableModels() {
-    debugLog('Fetching available AI models...');
-    // Simulate API call to get models
-    availableModels = [
-        { id: 'google/gemini-pro', name: 'Google Gemini Pro', free: true }, // Changed to a free model for default
-        { id: 'mistralai/mistral-7b-instruct', name: 'Mistral 7B Instruct', free: true },
-        { id: 'mistralai/mixtral-8x7b-instruct', name: 'Mixtral 8x7B Instruct', free: true },
-        { id: 'openai/gpt-3.5-turbo', name: 'OpenAI GPT-3.5 Turbo', free: false },
-        { id: 'openai/gpt-4o', name: 'OpenAI GPT-4o', free: false },
-        { id: 'anthropic/claude-3-opus', name: 'Anthropic Claude 3 Opus', free: false },
-        { id: 'anthropic/claude-3-sonnet', name: 'Anthropic Claude 3 Sonnet', free: false },
-        { id: 'meta-llama/llama-3-8b-instruct', name: 'Llama 3 8B Instruct', free: true },
-        { id: 'nousresearch/nous-hermes-2-mixtral-8x7b-dpo', name: 'Nous Hermes 2 Mixtral', free: true }
-    ];
-
-    populateModelDropdown(availableModels);
-    populateModelSelect(availableModels);
-    model1Select.value = profileModelInput.value; // Set selected value if editing
+async function fetchOpenRouterModels() {
+    debugLog('Fetching available AI models from OpenRouter...');
+    try {
+        const models = await fetchAvailableModels();
+        availableModels = models;
+        populateModelDropdown(availableModels);
+        populateModelSelect(availableModels);
+        if (profileModelInput.value) {
+            model1Select.value = profileModelInput.value;
+        }
+    } catch (error) {
+        debugLog(`Error fetching models: ${error.message}`, 'error');
+        showToast('Failed to load AI models.', 'error');
+    }
 }
 
 /**
@@ -770,13 +764,14 @@ function populateModelDropdown(models) {
     models.forEach(model => {
         const item = document.createElement('div');
         item.classList.add('model-dropdown-item');
-        item.textContent = model.name + (model.free ? ' (Free)' : '');
+        const isFree = model.pricing?.prompt === 0;
+        item.textContent = model.id + (isFree ? ' (Free)' : '');
         item.dataset.modelId = model.id;
         item.addEventListener('click', () => {
             profileModelInput.value = model.id;
-            profileModelSelectedSpan.textContent = model.name;
+            profileModelSelectedSpan.textContent = model.id;
             profileModelSelectedSpan.style.display = 'inline';
-            profileModelSearchInput.value = model.name; // Update search input
+            profileModelSearchInput.value = model.id; // Update search input
             profileModelDropdown.style.display = 'none';
         });
         profileModelDropdown.appendChild(item);
@@ -791,12 +786,20 @@ function populateModelSelect(models) {
     model1Select.innerHTML = '<option value="">-- Select a Model --</option>';
     let filteredModels = models;
     if (model1FreeFilter.checked) {
-        filteredModels = models.filter(model => model.free);
+        filteredModels = models.filter(model => model.pricing?.prompt === 0);
     }
+    
+    if (filteredModels.length === 0) {
+        const opt = document.createElement('option');
+        opt.textContent = "No models available.";
+        model1Select.appendChild(opt);
+        return;
+    }
+    
     filteredModels.forEach(model => {
         const option = document.createElement('option');
         option.value = model.id;
-        option.textContent = model.name + (model.free ? ' (Free)' : '');
+        option.textContent = model.id + (model.pricing?.prompt === 0 ? ' (Free)' : '');
         model1Select.appendChild(option);
     });
 }
@@ -816,7 +819,16 @@ async function renderProfilesList() {
     profiles.forEach(profile => {
         const profileCard = document.createElement('div');
         profileCard.classList.add('custom-model-item');
-        profileCard.textContent = profile.name; // Create a simple display
+        profileCard.innerHTML = `
+            <div class="profile-info">
+                <strong>${profile.name}</strong>
+                <span class="model-name">${profile.modelName || profile.model}</span>
+            </div>
+            <div class="profile-actions">
+                <button class="edit-profile-btn" data-profile-id="${profile.id}"><i class="fas fa-edit"></i></button>
+                <button class="delete-profile-btn" data-profile-id="${profile.id}"><i class="fas fa-trash"></i></button>
+            </div>
+        `;
         profilesListDiv.appendChild(profileCard);
     });
 
@@ -858,7 +870,7 @@ function resetProfileForm() {
  * @param {number} profileId - The ID of the profile to edit.
  */
 async function editProfile(profileId) {
-    debugLog();
+    debugLog(`Editing profile ID: ${profileId}`);
     const profile = await Storage.ProfileStorage.getProfile(profileId);
     if (profile) {
         profileIdInput.value = profile.id;
@@ -925,7 +937,7 @@ async function saveProfile(event) {
             // }
         }
     } catch (error) {
-        debugLog(, 'error');
+        debugLog(`Error saving profile: ${error.message}`, 'error');
         showToast('Failed to save profile.', 'error');
     }
 }
@@ -947,7 +959,7 @@ function confirmAndDeleteProfile(profileId) {
                 }
             })
             .catch(error => {
-                debugLog(, 'error');
+                debugLog(`Error deleting profile: ${error.message}`, 'error');
                 showToast('Failed to delete profile.', 'error');
             });
     }
@@ -990,7 +1002,7 @@ async function saveMemory() {
         closeModal(memoryModal);
         // Optionally, re-render a memory list if you had one
     } catch (error) {
-        debugLog(, 'error');
+        debugLog(`Error saving memory: ${error.message}`, 'error');
         showToast('Failed to save memory.', 'error');
     }
 }
@@ -1001,7 +1013,7 @@ async function saveMemory() {
  * @param {string} currentTitle - The current title of the conversation.
  */
 function openRenameConversationModal(convId, currentTitle) {
-    debugLog();
+    debugLog(`Opening rename modal for conversation ID: ${convId}`);
     renameModal.dataset.conversationId = convId;
     conversationNameInput.value = currentTitle;
     openModal(renameModal);
@@ -1033,7 +1045,7 @@ async function saveConversationName() {
             closeModal(renameModal);
         }
     } catch (error) {
-        debugLog(, 'error');
+        debugLog(`Error renaming conversation: ${error.message}`, 'error');
         showToast('Failed to rename conversation.', 'error');
     }
 }
@@ -1057,7 +1069,7 @@ function confirmAndDeleteConversation(convId) {
                 renderConversationsList();
             })
             .catch(error => {
-                debugLog(, 'error');
+                debugLog(`Error deleting conversation: ${error.message}`, 'error');
                 showToast('Failed to delete conversation.', 'error');
             });
     }
@@ -1068,23 +1080,23 @@ function confirmAndDeleteConversation(convId) {
  * @param {number} convId - The ID of the conversation to export.
  */
 async function openExportConversationModal(convId) {
-    debugLog();
+    debugLog(`Opening export modal for conversation ID: ${convId}`);
     try {
         const conversation = await Storage.ConversationStorage.getConversation(convId);
         const messages = await Storage.MessageStorage.getMessagesByConversationId(convId);
 
-        let exportText = Chat ;
+        let exportText = `Chat Export: ${conversation.title || 'Untitled'}\n\n`;
         messages.forEach(msg => {
             const sender = msg.sender === 'user' ? 'You' : 'AI';
             const timestamp = new Date(msg.timestamp).toLocaleString();
-            exportText += ;
+            exportText += `[${timestamp}] ${sender}:\n${msg.content}\n\n`;
         });
 
         exportContentTextarea.value = exportText;
         openModal(exportModal);
         exportContentTextarea.scrollTop = 0; // Scroll to top
     } catch (error) {
-        debugLog(, 'error');
+        debugLog(`Error preparing export: ${error.message}`, 'error');
         showToast('Failed to prepare export.', 'error');
     }
 }
@@ -1184,7 +1196,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         profileModelSearchInput.value = selectedOption.textContent;
     });
 
-
     memoryBtn.addEventListener('click', openMemoryModal);
     closeMemoryModalBtn.addEventListener('click', () => closeModal(memoryModal));
     cancelMemoryBtn.addEventListener('click', () => closeModal(memoryModal));
@@ -1202,7 +1213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     clearInputBtn.addEventListener('click', clearUserInput);
 
     // Initial fetch of models for profile creation
-    await fetchAvailableModels();
+    await fetchOpenRouterModels();
 
     debugLog('Vivica initialization complete.');
 });
