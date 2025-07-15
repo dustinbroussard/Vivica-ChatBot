@@ -78,7 +78,6 @@ let currentConversationId = null;
 let currentProfileId = null; // ID of the currently active AI profile
 let availableModels = []; // To store fetched AI models
 let voiceModeActive = false;
-let voiceModeActive = false
 
 // --- Utility Functions ---
 
