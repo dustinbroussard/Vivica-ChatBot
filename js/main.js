@@ -9,7 +9,6 @@
 
 import Storage from './storage-wrapper.js';
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
-import { openDB } from './db-utils.js';
 import { initVoiceMode, startListening, stopListening, toggleListening, speak, getIsListening, getIsSpeaking, updateVoiceModeConfig } from './voice-mode.js';
 
 // --- Global Variables and Constants ---
@@ -898,19 +897,16 @@ async function saveProfile(event) {
     event.preventDefault();
     debugLog('Saving profile...');
     const profile = {
-        id: profileIdInput.value ? parseInt(profileIdInput.value) : undefined,
         name: profileNameInput.value.trim(),
-        model: profileModelInput.value.trim(), // Use the hidden input for model ID
-        modelName: profileModelSelectedSpan.textContent.trim() || profileModelSearchInput.value.trim(), // Store friendly name
+        model: profileModelInput.value.trim(),
+        modelName: profileModelSelectedSpan.textContent.trim() || profileModelSearchInput.value.trim(),
         systemPrompt: profileSystemPromptInput.value.trim(),
         temperature: parseFloat(profileTempInput.value),
         maxTokens: parseInt(profileMaxTokensInput.value),
         maxContext: parseInt(profileMaxContextInput.value)
     };
-
-    if (!profile.name || !profile.model) {
-        showToast('Profile name and AI model are required.', 'error');
-        return;
+    if (profileIdInput.value) {
+        profile.id = parseInt(profileIdInput.value, 10);
     }
 
     try {
