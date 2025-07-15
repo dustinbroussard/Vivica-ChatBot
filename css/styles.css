@@ -215,7 +215,8 @@ body {
 /* Main Container */
 .main-container {
   margin-left: 0;
-  min-height: 100vh;
+  min-height: 0;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -227,6 +228,7 @@ body {
 
 /* Header */
 .chat-header {
+  flex-shrink: 0;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -302,7 +304,8 @@ body {
 
 /* Chat Body */
 .chat-body {
-  flex: 1;
+  flex: 1 1 0%;
+  min-height: 0;
   padding: 20px;
   overflow-y: auto;
   display: flex;
@@ -512,12 +515,13 @@ pre code {
 
 /* Chat Footer */
 .chat-footer {
+  flex-shrink: 0;
   padding: 20px;
   border-top: 1px solid var(--border);
   background: var(--bg-secondary);
   position: sticky;
   bottom: 0;
-  z-index: 5;
+  z-index: 200;
 }
 
 .chat-input-container {
@@ -1220,6 +1224,38 @@ kbd {
   .status-indicator {
     animation: none;
   }
+}
+
+/* Scroll to bottom button */
+.scroll-to-bottom {
+  position: fixed;
+  right: 30px;
+  bottom: 110px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.scroll-to-bottom.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-to-bottom:hover {
+  background: var(--accent-secondary);
+  transform: translateY(0) scale(1.1);
 }
 
 /* Print styles */
