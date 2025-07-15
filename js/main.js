@@ -134,7 +134,11 @@ function debugLog(message, level = 'info') {
     if (isAndroidBridgeAvailable()) {
         sendToAndroidLog(level.toUpperCase(), 'VivicaApp', message);
     }
-    console.log();
+    if (console[level]) {
+        console[level](message);
+    } else {
+        console.log(message);
+    }
 }
 
 /**
