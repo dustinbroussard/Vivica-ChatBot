@@ -608,6 +608,7 @@ async function getAIResponse(userQuery) {
             // Process each complete line we receive
             let lineEnd;
             while ((lineEnd = buffer.indexOf('\n')) >= 0) {
+                let jsonStr;
                 const line = buffer.slice(0, lineEnd).trim();
                 buffer = buffer.slice(lineEnd + 1);
 
@@ -620,7 +621,7 @@ async function getAIResponse(userQuery) {
                         continue;
                     }
 
-                    const jsonStr = line.substring(5).trim();
+                    jsonStr = line.substring(5).trim();
                     if (jsonStr === '[DONE]') {
                         debugLog('Stream completed with [DONE] signal');
                         break;
