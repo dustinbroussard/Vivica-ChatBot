@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Vivica</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Clean up unused CSS classes */
+        .tools-container * {
+            box-sizing: border-box;
+        }
+        .section-heading {
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            color: #555;
+        }
+        .input-action-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #4b5563;
+            margin-right: 8px;
+            transition: background 0.15s ease;
+        }
+        .input-action-button:hover {
+            background: #e5e7eb;
+        }
+        .settings-group {
+            margin-bottom: 20px;
+        }
+    </style>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">
+                <i class="fas fa-robot"></i>
+                <span>Vivica</span>
+                <button type="button" id="close-sidebar-btn" class="sidebar-close-btn" aria-label="Close Sidebar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <button type="button" class="new-chat-btn" id="new-chat-btn" data-testid="new-chat-btn" aria-label="New conversation">
+                <i class="fas fa-plus"></i>
+                <span class="btn-text">New Chat</span>
+            </button>
+        </div>
+        
+        <div class="sidebar-content">
+            <div class="conversations-list" id="conversations-list">
+                <!-- Conversations will be populated here -->
+            </div>
+        </div>
+        
+        <div class="sidebar-footer">
+            <button type="button" class="sidebar-btn" id="profiles-btn" aria-label="Profiles">
+                <i class="fas fa-user-circle"></i>
+                <span>Profiles</span>
+            </button>
+            <button type="button" class="sidebar-btn" id="memory-btn" aria-label="Memory">
+                <i class="fas fa-brain"></i>
+                <span>Memory</span>
+            </button>
+            <button type="button" class="sidebar-btn" id="open-settings" aria-label="Settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Header -->
+        <div class="chat-header">
+            <button type="button" class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="header-title">
+                <h1 id="current-conversation-title">Vivica</h1>
+                <span class="status-indicator online"></span>
+            </div>
+            <div class="header-actions">
+                <button type="button" class="header-btn desktop-only" id="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
+                    <i class="fas fa-adjust"></i>
+                </button>
+                <button type="button" class="header-btn mobile-only" id="mobile-theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Body -->
+        <div class="chat-body" id="chat-body">
+            <div class="empty-state" id="empty-state">
+                <div class="empty-icon">
+                    <img id="logo-img" src="images/logo.png" alt="ChatBot Logo" style="height: 200px;" />
+                </div>
+                <h2 class="empty-title">Welcome to Vivica</h2>
+                <p class="empty-text">Start a new conversation to begin</p>
+                <div class="quick-actions">
+                    <button type="button" class="quick-action-btn" onclick="insertQuickPrompt('Help me write a professional email')">
+                        <i class="fas fa-envelope"></i>
+                        <span>Write Email</span>
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="insertQuickPrompt('Explain a complex concept')">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Explain</span>
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="insertQuickPrompt('Help me brainstorm ideas')">
+                        <i class="fas fa-brain"></i>
+                        <span>Brainstorm</span>
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="insertQuickPrompt('Review my code')">
+                        <i class="fas fa-code"></i>
+                        <span>Code Review</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Footer -->
+        <div class="chat-footer">
+            <div class="chat-input-container">
+                <div class="chat-input" id="chat-input-form">
+                    <div class="input-wrapper">
+                    <button id="voice-mode-toggle-btn" class="input-action-button" title="Toggle Voice Mode">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                        <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
+                        <div class="input-actions">
+                            <input type="file" id="file-upload" accept=".txt,.md,.csv,.json,.xml,.html,.log" hidden>
+                            <button type="button" class="input-btn" id="upload-btn" onclick="document.getElementById('file-upload').click()" aria-label="Upload file" title="Upload file">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <button type="button" class="input-btn" id="clear-btn" aria-label="Clear input" title="Clear input">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" class="send-btn" id="send-btn" aria-label="Send message" title="Send message">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-hint">
+                    <span class="typing-indicator" id="typing-indicator" style="display: none;">
+                        <i class="fas fa-circle"></i>
+                        <i class="fas fa-circle"></i>
+                        <i class="fas fa-circle"></i>
+                        <span>AI is typing...</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug Logger -->
+    <div id="log" class="debug-logger"></div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </div>
+                <button type="button" class="close-modal" aria-label="Close settings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group">
+                    <label class="settings-label">
+                        <i class="fas fa-key"></i>
+                        API Keys
+                    </label>
+                    <input type="password" id="api-key-1" class="settings-input" placeholder="Primary API Key">
+                    <input type="password" id="api-key-2" class="settings-input" placeholder="Secondary API Key (Optional)">
+                    <input type="password" id="api-key-3" class="settings-input" placeholder="Tertiary API Key (Optional)">
+                    <small class="settings-hint">Your API keys are stored locally and never shared</small>
+                </div>
+                <div class="settings-group danger-zone">
+                    <label class="settings-label">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Danger Zone
+                    </label>
+                    <button type="button" class="modal-btn danger-btn" id="clear-all-conversations">
+                        <i class="fas fa-trash"></i>
+                        Clear All Conversations
+                    </button>
+                    <small class="settings-hint">This action cannot be undone</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn cancel-btn" id="cancel-settings">Cancel</button>
+                <button type="button" class="modal-btn primary-btn" id="save-settings">
+                    <i class="fas fa-save"></i>
+                    Save Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profiles Modal -->
+    <div class="modal" id="profiles-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-user-circle"></i>
+                    AI Profiles
+                </div>
+                <button type="button" class="close-modal" aria-label="Close profiles">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="profiles-list" class="custom-models-list"></div>
+                <hr style="margin:24px 0;">
+                <form id="profile-form" class="settings-group" autocomplete="off">
+                    <input type="hidden" id="profile-id">
+                    <label class="settings-label" for="profile-name">Profile Name</label>
+                    <input type="text" id="profile-name" class="settings-input" required placeholder="Enter profile name...">
+                    
+                    <label class="settings-label" for="profile-model-search">AI Model</label>
+                    <input type="text" id="profile-model-search" class="settings-input" placeholder="Search models..." autocomplete="off">
+                    
+                    <label for="model1-select">Select Model for AI 1:</label>
+                    <select id="model1-select" class="input-field">
+                        <option value="">Loading models...</option>
+                    </select>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="model1-free-filter">
+                        <label for="model1-free-filter">Show only free models</label>
+                    </div>
+                    <div id="profile-model-dropdown" class="model-dropdown-list" style="display:none;max-height:160px;overflow:auto;border:1px solid var(--border);background:var(--bg-tertiary);border-radius:6px;z-index:99;position:relative;"></div>
+                    <input type="hidden" id="profile-model" value="">
+                    <span id="profile-model-selected" style="font-size:0.9em;color:var(--text-muted);display:none;"></span>
+                    
+                    <label class="settings-label" for="profile-system-prompt">System Prompt</label>
+                    <textarea id="profile-system-prompt" class="settings-input" rows="3" placeholder="Describe this AI's persona/role..."></textarea>
+                    
+                    <label class="settings-label" for="profile-temp">Temperature <span id="profile-temp-value">0.7</span></label>
+                    <input type="range" id="profile-temp" min="0" max="1" step="0.01" value="0.7" class="settings-input">
+                    
+                    <label class="settings-label" for="profile-max-tokens">Max Tokens</label>
+                    <input type="number" id="profile-max-tokens" min="100" max="4096" step="1" value="2000" class="settings-input">
+                    
+                    <label class="settings-label" for="profile-max-context">Max Context Length</label>
+                    <input type="number" id="profile-max-context" class="settings-input" value="20" min="1" max="50">
+                    <small class="settings-hint">How many previous messages this persona will use for context (history/memory window)</small>
+                    
+                    <div style="margin-top:20px;display:flex;gap:8px;">
+                        <button type="submit" class="modal-btn primary-btn" id="save-profile-btn">
+                            <i class="fas fa-save"></i>
+                            Save Profile
+                        </button>
+                        <button type="button" class="modal-btn cancel-btn" id="cancel-profile-btn">Cancel</button>
+                        <button type="button" class="modal-btn danger-btn" id="delete-profile-btn" style="display:none">
+                            <i class="fas fa-trash"></i>Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div class="modal" id="rename-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-edit"></i>
+                    Rename Conversation
+                </div>
+                <button type="button" class="close-modal" id="close-rename" aria-label="Close rename modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="conversation-name" class="settings-input" placeholder="Enter conversation name...">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn cancel-btn" id="cancel-rename">Cancel</button>
+                <button type="button" class="modal-btn primary-btn" id="save-rename">
+                    <i class="fas fa-check"></i>
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal" id="export-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-download"></i>
+                    Export Conversation
+                </div>
+                <button type="button" class="close-modal" id="close-export" aria-label="Close export modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <textarea id="export-content" class="settings-input" rows="15" readonly placeholder="Conversation content will appear here..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn" id="copy-export">
+                    <i class="fas fa-copy"></i>
+                    Copy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Memory Modal -->
+    <div class="modal" id="memory-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-brain"></i>
+                    Memory Editor
+                </div>
+                <button type="button" class="close-modal" id="close-memory" aria-label="Close memory modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group">
+                    <label class="settings-label">Memory Content</label>
+                    <textarea id="memory-content" class="settings-input" rows="4" placeholder="Enter information to remember..."></textarea>
+                </div>
+                <div class="settings-group">
+                    <label class="settings-label">Tags</label>
+                    <input type="text" id="memory-tags" class="settings-input" placeholder="Enter tags separated by commas...">
+                    <small class="settings-hint">Use tags to organize and search memories</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn cancel-btn" id="cancel-memory">Cancel</button>
+                <button type="button" class="modal-btn primary-btn" id="save-memory-btn">
+                    <i class="fas fa-save"></i>
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/db-utils.js"></script>
+    <script type="module" src="js/storage-wrapper.js"></script>
+    <script type="module" src="js-android-bridge.js"></script>
+    <script src="service-worker.js"></script>
+
+    <script>
+        // Helper functions for the UI
+        function insertQuickPrompt(prompt) {
+            document.getElementById('user-input').value = prompt;
+            document.getElementById('user-input').focus();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Add smooth scrolling and modern interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add ripple effect to buttons
+            const buttons = document.querySelectorAll('button, .quick-action-btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const ripple = document.createElement('span');
+                    ripple.classList.add('ripple');
+                    this.appendChild(ripple);
+                    
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                    ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+
+            // Auto-resize textarea
+            const textareas = document.querySelectorAll('textarea');
+            textareas.forEach(textarea => {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = this.scrollHeight + 'px';
+                });
+            });
+        });
+
+        // Global error handling
+        window.addEventListener('error', (event) => {
+            console.error('Global error:', event.error);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'global-error';
+            errorDiv.innerHTML = `
+                <h3>Application Error</h3>
+                <p>${event.error.message}</p>
+            `;
+            document.body.prepend(errorDiv);
+        });
+    </script>
+    <script src="js/theme-toggle.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
