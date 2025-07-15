@@ -96,7 +96,7 @@ function showToast(message, type = 'info', duration = 3000) {
     })();
 
     const toast = document.createElement('div');
-    toast.className = ;
+    toast.className = 'toast'; // Adding a class for styling
     toast.textContent = message;
     toastContainer.appendChild(toast);
 
@@ -121,7 +121,7 @@ function debugLog(message, level = 'info') {
     const logDiv = document.getElementById('log');
     if (logDiv) {
         const p = document.createElement('p');
-        p.textContent = ;
+        p.textContent = message;
         p.style.color = {
             info: 'var(--text-secondary)',
             warn: 'var(--warning)',
@@ -345,7 +345,7 @@ async function loadConversation(conversationId) {
     });
 
     const conversation = await Storage.ConversationStorage.getConversation(conversationId);
-    currentConversationTitle.textContent = conversation?.title || ;
+    currentConversationTitle.textContent = conversation?.title || 'Vivica';
     currentProfileId = conversation?.profileId || null; // Set current profile based on conversation
 
     const messages = await Storage.MessageStorage.getMessagesByConversationId(conversationId);
@@ -481,7 +481,7 @@ async function getAIResponse(userQuery) {
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
-                'Authorization': ,
+                'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
                 'HTTP-Referer': window.location.origin, // Important for OpenRouter
                 'X-Title': 'Vivica Chat App' // Optional: for OpenRouter dashboard
@@ -796,7 +796,7 @@ async function renderProfilesList() {
     profiles.forEach(profile => {
         const profileCard = document.createElement('div');
         profileCard.classList.add('custom-model-item');
-        profileCard.innerHTML = ;
+        profileCard.textContent = profile.name; // Create a simple display
         profilesListDiv.appendChild(profileCard);
     });
 
