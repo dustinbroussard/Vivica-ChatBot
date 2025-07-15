@@ -592,10 +592,6 @@ async function getAIResponse(userQuery) {
                                 }
                                 break; // Exit stream loop on error
                             }
-                        } catch (parseError) {
-                            debugLog(`Error parsing JSON from stream: ${parseError.message}. Line: ${jsonStr}`, 'error');
-                            // Continue to next line - don't break the stream
-                            continue;
                         }
                         } catch (parseError) {
                             debugLog(`Error parsing JSON from stream: ${parseError.message}. Line: ${jsonStr}`, 'error');
@@ -626,6 +622,7 @@ async function getAIResponse(userQuery) {
                         } catch (parseError) {
                             debugLog(`Error parsing JSON from stream: ${parseError.message}. Line: ${jsonStr}`, 'error');
                             // Continue to next line - don't break the stream
+                            continue;
                         }
             }
         }
