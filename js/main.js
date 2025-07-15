@@ -558,7 +558,7 @@ async function getAIResponse(userQuery) {
                 try {
                     // Debug the raw line we're processing
                     debugLog(`Processing line: ${line.slice(0, 100)}...`); // Limit to 100 chars for logging
-                        
+                            
                     if (!line.startsWith('data:')) {
                         debugLog('Skipping non-data line', 'warn');
                         continue;
@@ -574,6 +574,11 @@ async function getAIResponse(userQuery) {
                         debugLog('Empty data object received');
                         continue;
                     }
+                } catch (error) {
+                    debugLog(`Error processing stream line: ${error}`, 'error');
+                    continue; // Skip to next line if this one fails
+                }
+                try {
 
                         try {
                             debugLog(`Parsing JSON: ${jsonStr}`);
