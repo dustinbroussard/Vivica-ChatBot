@@ -597,6 +597,11 @@ async function getAIResponse(userQuery) {
                             // Continue to next line - don't break the stream
                             continue;
                         }
+                        } catch (parseError) {
+                            debugLog(`Error parsing JSON from stream: ${parseError.message}. Line: ${jsonStr}`, 'error');
+                            // Continue to next line - don't break the stream
+                            continue;
+                        }
 
                             // Log the full data for debugging
                             debugLog(`Received data: ${JSON.stringify(data, null, 2)}`);
