@@ -578,8 +578,6 @@ async function getAIResponse(userQuery) {
                     debugLog(`Error processing stream line: ${error}`, 'error');
                     continue; // Skip to next line if this one fails
                 }
-                try {
-
                         try {
                             debugLog(`Parsing JSON: ${jsonStr}`);
                             const data = JSON.parse(jsonStr);
@@ -619,11 +617,6 @@ async function getAIResponse(userQuery) {
                             debugLog(`Error parsing JSON from stream: ${parseError.message}. Line: ${jsonStr}`, 'error');
                             // Continue to next line - don't break the stream
                         }
-                    }
-                } catch (parseError) {
-                    debugLog(`Error parsing JSON from stream: ${parseError.message}. Line: ${jsonStr}`, 'error');
-                    // Continue to next line - don't break the stream
-                }
             }
         }
 
