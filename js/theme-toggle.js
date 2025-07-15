@@ -1,3 +1,4 @@
+/* Only handles light/dark theme toggle */
 document.addEventListener('DOMContentLoaded', () => {
   const body = document.body;
   const toggleBtn = document.getElementById('theme-toggle-btn');
@@ -11,24 +12,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mobileToggleBtn) mobileToggleBtn.innerHTML = `<i class="fas fa-${isDark() ? 'sun' : 'moon'}"></i>`;
   };
 
-  export const applyTheme = () => {
-    updateToggleIcons();
-    if (isDark()) {
-      body.classList.remove('light-mode');
-      logo.src = 'images/logo.png';
-    } else {
-      body.classList.add('light-mode');
-      logo.src = 'images/logo2.png';
-    }
+  const refreshLogo = () => {
+    const theme = localStorage.getItem('colorTheme') || 'default';
+    const suffix = isDark() ? 'dark' : 'light';
+    logo.src = `images/logo-${theme}${suffix}.png`;
   };
 
   const toggleTheme = () => {
     localStorage.setItem('theme', isDark() ? 'light' : 'dark');
-    applyTheme();
+    updateToggleIcons();
+    refreshLogo();
+    body.classList.toggle('light-mode', !isDark());
   };
 
   toggleBtn?.addEventListener('click', toggleTheme);
   mobileToggleBtn?.addEventListener('click', toggleTheme);
 
-  applyTheme(); // On load
+  // Initialize
+  updateToggleIcons();
+  refreshLogo();
+  body.classList.toggle('light-mode', !isDark());
 });

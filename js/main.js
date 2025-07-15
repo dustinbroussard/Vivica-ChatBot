@@ -11,7 +11,6 @@ import Storage from './storage-wrapper.js';
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
 import { initVoiceMode, startListening, stopListening, toggleListening, speak, getIsListening, getIsSpeaking, updateVoiceModeConfig } from './voice-mode.js';
 import { voiceAnimation } from './voice-animation.js';
-import { applyTheme } from './theme-toggle.js';
 
 // --- Global Variables and Constants ---
 const chatBody = document.getElementById('chat-body');
@@ -774,7 +773,8 @@ async function saveSettings() {
     };
     if (themeSelect) {
         localStorage.setItem('colorTheme', themeSelect.value);
-        applyTheme();
+        const suffix = localStorage.getItem('theme') !== 'light' ? 'dark' : 'light';
+        document.getElementById('logo-img').src = `images/logo-${themeSelect.value}${suffix}.png`;
     }
     try {
         // Settings are stored in the 'memory' store with a fixed key
