@@ -55,6 +55,9 @@ const clearInputBtn = document.getElementById('clear-btn');
 const voiceModeToggleBtn = document.getElementById('voice-mode-toggle-btn');
 const themeSelect = document.getElementById('theme-select');
 
+// Mobile touch variables for sidebar swipe
+let touchStartX = null;
+
 // Profile form elements
 const profileForm = document.getElementById('profile-form');
 const profileIdInput = document.getElementById('profile-id');
@@ -146,7 +149,8 @@ function debugLog(message, level = 'info') {
  * @param {HTMLElement} modalElement - The modal DOM element.
  */
 function openModal(modalElement) {
-    modalElement.style.display = 'block';
+    modalElement.style.display = 'flex';
+    modalElement.classList.add('show');
     // Add a class to body to prevent scrolling
     document.body.classList.add('modal-open');
 }
@@ -156,6 +160,7 @@ function openModal(modalElement) {
  * @param {HTMLElement} modalElement - The modal DOM element.
  */
 function closeModal(modalElement) {
+    modalElement.classList.remove('show');
     modalElement.style.display = 'none';
     document.body.classList.remove('modal-open');
 }
@@ -758,6 +763,7 @@ async function openSettingsModal() {
     }
     if (themeSelect) {
         themeSelect.value = localStorage.getItem('colorTheme') || 'default';
+        if (window.applyColorTheme) window.applyColorTheme();
     }
 }
 
@@ -775,6 +781,7 @@ async function saveSettings() {
         localStorage.setItem('colorTheme', themeSelect.value);
         const suffix = localStorage.getItem('theme') !== 'light' ? 'dark' : 'light';
         document.getElementById('logo-img').src = `images/logo-${themeSelect.value}${suffix}.png`;
+        if (window.applyColorTheme) window.applyColorTheme();
     }
     try {
         // Settings are stored in the 'memory' store with a fixed key
@@ -1242,6 +1249,7 @@ function toggleScrollButton() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     debugLog('DOM Content Loaded. Initializing Vivica...');
+    if (window.applyColorTheme) window.applyColorTheme();
 
     // Register Service Worker
     if ('serviceWorker' in navigator) {
@@ -1285,6 +1293,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (voiceModeActive) {
                 voiceAnimation.setState(state);
             }
+        },
+        onVisualizerData: (vol) => {
+            if (voiceModeActive) {
+                voiceAnimation.updateVolume(vol);
+            }
         }
     });
     voiceModeToggleBtn.addEventListener('click', () => {
@@ -1311,6 +1324,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     newChatBtn.addEventListener('click', startNewConversation);
     menuToggle.addEventListener('click', toggleSidebar);
     closeSidebarBtn.addEventListener('click', toggleSidebar);
+
+    // Swipe gestures for mobile sidebar
+    document.addEventListener('touchstart', (e) => {
+        if (sidebar.classList.contains('open') || e.touches[0].clientX < 20) {
+            touchStartX = e.touches[0].clientX;
+        }
+    });
+    document.addEventListener('touchend', (e) => {
+        if (touchStartX === null) return;
+        const diff = e.changedTouches[0].clientX - touchStartX;
+        if (!sidebar.classList.contains('open') && diff > 50) {
+            toggleSidebar();
+        } else if (sidebar.classList.contains('open') && diff < -50) {
+            toggleSidebar();
+        }
+        touchStartX = null;
+    });
 
     // Modal event listeners
     openSettingsBtn.addEventListener('click', openSettingsModal);

@@ -5,6 +5,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const mobileToggleBtn = document.getElementById('mobile-theme-toggle-btn');
   const logo = document.getElementById('logo-img');
 
+  const applyColorTheme = () => {
+    const color = localStorage.getItem('colorTheme') || 'default';
+    const suffix = isDark() ? 'dark' : 'light';
+    body.setAttribute('data-theme', `${color}-${suffix}`);
+  };
+
   const isDark = () => localStorage.getItem('theme') !== 'light';
 
   const updateToggleIcons = () => {
@@ -23,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateToggleIcons();
     refreshLogo();
     body.classList.toggle('light-mode', !isDark());
+    applyColorTheme();
   };
 
   toggleBtn?.addEventListener('click', toggleTheme);
@@ -32,4 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
   updateToggleIcons();
   refreshLogo();
   body.classList.toggle('light-mode', !isDark());
+  applyColorTheme();
+
+  // Expose to global for other modules
+  window.applyColorTheme = applyColorTheme;
 });

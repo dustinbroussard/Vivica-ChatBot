@@ -983,6 +983,13 @@ kbd {
   height: 100%;
   z-index: 3000;
   display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.show {
+  display: flex;
+  animation: modalFadeIn 0.2s ease-out;
 }
 
 .modal-overlay {
@@ -1003,7 +1010,7 @@ kbd {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 16px;
-  width: min(90%, 500px);
+  width: min(92%, 520px);
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
@@ -1057,6 +1064,17 @@ kbd {
 .close-modal:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
 }
 
 .modal-body {
@@ -1475,7 +1493,7 @@ kbd {
   }
   
   .modal-content {
-    width: 95%;
+    width: 98%;
     margin: 20px;
   }
   
