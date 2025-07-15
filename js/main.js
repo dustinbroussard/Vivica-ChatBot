@@ -10,6 +10,7 @@
 import Storage from './storage-wrapper.js';
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
 import { initVoiceMode, startListening, stopListening, toggleListening, speak, getIsListening, getIsSpeaking, updateVoiceModeConfig } from './voice-mode.js';
+import { applyTheme } from './theme-toggle.js';
 
 // --- Global Variables and Constants ---
 const chatBody = document.getElementById('chat-body');
@@ -772,8 +773,7 @@ async function saveSettings() {
     };
     if (themeSelect) {
         localStorage.setItem('colorTheme', themeSelect.value);
-        applyTheme();
-    }
+        applyTheme(); // Now properly imported
     try {
         // Settings are stored in the 'memory' store with a fixed key
         await Storage.SettingsStorage.saveSettings(settings);
