@@ -57,6 +57,7 @@ const themeSelect = document.getElementById('theme-select');
 
 // Mobile touch variables for sidebar swipe
 let touchStartX = null;
+let touchMoved = false;
 
 // Profile form elements
 const profileForm = document.getElementById('profile-form');
@@ -1426,10 +1427,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('touchstart', (e) => {
         if (sidebar.classList.contains('open') || e.touches[0].clientX < 20) {
             touchStartX = e.touches[0].clientX;
+            touchMoved = false;
         }
     });
-    document.addEventListener('touchend', (e) => {
+    document.addEventListener('touchmove', (e) => {
         if (touchStartX === null) return;
+        const diff = e.touches[0].clientX - touchStartX;
+        if (!sidebar.classList.contains('open') && diff > 50) {
+            toggleSidebar();
+            touchStartX = null;
+        } else if (sidebar.classList.contains('open') && diff < -50) {
+            toggleSidebar();
+            touchStartX = null;
+        }
+        touchMoved = true;
+    });
+    document.addEventListener('touchend', (e) => {
+        if (touchStartX === null || touchMoved) {
+            touchStartX = null;
+            return;
+        }
         const diff = e.changedTouches[0].clientX - touchStartX;
         if (!sidebar.classList.contains('open') && diff > 50) {
             toggleSidebar();
