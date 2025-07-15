@@ -497,6 +497,10 @@ async function getAIResponse(userQuery) {
             throw new Error(`OpenRouter API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
         }
 
+        if (!response.body) {
+            throw new Error('OpenRouter response body is empty');
+        }
+
         const reader = response.body.getReader();
         const decoder = new TextDecoder('utf-8');
         let buffer = '';
@@ -513,7 +517,13 @@ async function getAIResponse(userQuery) {
 
         // Get the DOM element for the AI message to update its content directly
         const aiMessageElement = chatBody.querySelector(`[data-message-id="${aiMessageId}"] .message-bubble`);
+        if (!aiMessageElement) {
+            throw new Error('Failed to find AI message bubble element');
+        }
+
         let currentContent = '';
+        let lastRenderTime = 0;
+        const RENDER_THROTTLE = 100; // Only update DOM every 100ms
 
         while (true) {
             const { value, done } = await reader.read();
@@ -521,31 +531,40 @@ async function getAIResponse(userQuery) {
 
             buffer += decoder.decode(value, { stream: true });
 
-            // Process each line, as chunks might contain multiple lines or partial lines
+            // Process each line as we receive it
             const lines = buffer.split('\n');
-            buffer = lines.pop(); // Keep the last (possibly incomplete) line in the buffer
+            buffer = lines.pop(); // Keep last incomplete line for next iteration
 
             for (const line of lines) {
                 if (line.trim() === '') continue;
-                if (line.startsWith('data:')) {
-                    const jsonStr = line.substring(5).trim();
-                    if (jsonStr === '[DONE]') {
-                        debugLog('OpenRouter stream done.');
-                        break;
-                    }
-                    try {
+
+                try {
+                    if (line.startsWith('data:')) {
+                        const jsonStr = line.substring(5).trim();
+                        if (jsonStr === '[DONE]') {
+                            debugLog('OpenRouter stream done.');
+                            break;
+                        }
+
                         const data = JSON.parse(jsonStr);
                         const delta = data.choices[0]?.delta?.content || '';
+                        
                         if (delta) {
                             currentContent += delta;
-                            // Update the content in the DOM
-                            aiMessageElement.innerHTML = marked.parse(currentContent);
-                            // Keep scrolling to bottom as content arrives
-                            chatBody.scrollTop = chatBody.scrollHeight;
+                            
+                            // Throttle DOM updates for performance
+                            const now = performance.now();
+                            if (now - lastRenderTime > RENDER_THROTTLE || done) {
+                                aiMessageElement.innerHTML = marked.parse(currentContent);
+                                chatBody.scrollTop = chatBody.scrollHeight;
+                                lastRenderTime = now;
+                            }
                         }
-                    } catch (parseError) {
-                        debugLog(`Error parsing JSON from stream: ${parseError.message}. Line: ${jsonStr}`, 'error');
                     }
+                } catch (parseError) {
+                    debugLog(`Error parsing JSON from stream: ${parseError.message}`, 'error');
+                    debugLog(`Raw line that failed: ${line}`, 'debug');
+                    // Continue to next line - don't break the stream
                 }
             }
         }
