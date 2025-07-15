@@ -163,6 +163,20 @@ export const MessageStorage = {
             console.error('MessageStorage: Error deleting message:', error);
             throw error;
         }
+    },
+
+    /**
+     * Updates an existing message.
+     * @param {object} message - The message object with updated data (must include ID).
+     * @returns {Promise<void>}
+     */
+    updateMessage: async (message) => {
+        try {
+            await update(STORES.MESSAGES, message);
+        } catch (error) {
+            console.error('MessageStorage: Error updating message:', error);
+            throw error;
+        }
     }
 };
 

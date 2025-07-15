@@ -606,7 +606,7 @@ async function getAIResponse(userQuery) {
                  content: `Error: ${error.message}`,
                  timestamp: Date.now()
              };
-             await Storage.MessageStorage.update(errorMsg);
+             await Storage.MessageStorage.updateMessage(errorMsg);
              const aiMessageElement = chatBody.querySelector(`[data-message-id="${aiMessageId}"] .message-bubble`);
              if (aiMessageElement) {
                  aiMessageElement.innerHTML = marked.parse(errorMsg.content);
