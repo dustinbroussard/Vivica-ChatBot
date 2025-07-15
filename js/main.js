@@ -856,12 +856,15 @@ async function renderProfilesList() {
                     }
                 }
                     
-                // Update the profile card UI
-                e.currentTarget.closest('.profile-card').querySelectorAll('.set-active-profile-btn').forEach(btn => {
-                    btn.disabled = true; // Disable all set-active buttons during update
+                // Get profile name from card
+                const profileName = e.currentTarget.closest('.custom-model-item').querySelector('.profile-info strong').textContent;
+                
+                // Disable all set-active buttons during update
+                profilesListDiv.querySelectorAll('.set-active-profile-btn').forEach(btn => {
+                    btn.disabled = true;
                 });
                     
-                showToast(`Profile "${profile.name}" activated!`, 'success');
+                showToast(`Profile "${profileName}" activated!`, 'success');
                 await renderProfilesList(); // Refresh badges
                     
                 // Re-enable buttons after UI update
