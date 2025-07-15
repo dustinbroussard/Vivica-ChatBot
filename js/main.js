@@ -10,6 +10,7 @@
 import Storage from './storage-wrapper.js';
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
 import { initVoiceMode, startListening, stopListening, toggleListening, speak, getIsListening, getIsSpeaking, updateVoiceModeConfig } from './voice-mode.js';
+import { voiceAnimation } from './voice-animation.js';
 import { applyTheme } from './theme-toggle.js';
 
 // --- Global Variables and Constants ---
@@ -1281,14 +1282,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         onListenStateChange: (state) => {
             voiceModeToggleBtn.classList.toggle('listening', state === 'listening');
             voiceModeToggleBtn.classList.toggle('speaking', state === 'speaking');
+            if (voiceModeActive) {
+                voiceAnimation.setState(state);
+            }
         }
     });
     voiceModeToggleBtn.addEventListener('click', () => {
         voiceModeActive = !voiceModeActive;
         voiceModeToggleBtn.classList.toggle('active', voiceModeActive);
         if (voiceModeActive) {
+            voiceAnimation.show();
+            voiceAnimation.setState('listening');
             startListening();
         } else {
+            voiceAnimation.hide();
             stopListening();
         }
     });
