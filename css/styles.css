@@ -1,4 +1,5 @@
 /* CSS Variables for AMOLED Theme */
+/* Base dark theme colors */
 :root {
   --bg-primary: #000000;
   --bg-secondary: #0a0a0a;
@@ -8,8 +9,8 @@
   --text-primary: #ffffff;
   --text-secondary: #cccccc;
   --text-muted: #888888;
-  --accent-primary: #ffffff;
-  --accent-secondary: #f0f0f0;
+  --accent-primary: var(--theme-primary);   /* Will be set by theme class */
+  --accent-secondary: var(--theme-accent);  /* Will be set by theme class */ 
   --border: #333333;
   --border-light: #2a2a2a;
   --shadow: rgba(255, 255, 255, 0.1);
@@ -19,7 +20,33 @@
   --danger: #ff0000;
   --info: #00ffff;
   --gradient-primary: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-  --gradient-accent: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+  --gradient-accent: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-accent) 100%);
+}
+
+/* Color Themes */
+.theme-default {
+  --theme-primary: #8b5cf6; /* Purple */
+  --theme-accent: #a78bfa;  /* Lighter purple */
+}
+
+.theme-blue {
+  --theme-primary: #3b82f6; /* Blue */
+  --theme-accent: #60a5fa;  /* Lighter blue */
+}
+
+.theme-red {
+  --theme-primary: #ef4444; /* Red */
+  --theme-accent: #f87171;  /* Lighter red */
+}
+
+.theme-green {
+  --theme-primary: #10b981; /* Green */
+  --theme-accent: #34d399;  /* Lighter green */
+}
+
+.theme-purple {
+  --theme-primary: #8b5cf6; /* Purple */
+  --theme-accent: #a78bfa;  /* Lighter purple */
 }
 
 /* BLUE DARK THEME */
@@ -1580,6 +1607,7 @@ body.light-mode .theme-logo {
 }
 
 /* Light Mode Theme */
+/* Light mode overrides */
 body.light-mode {
   --bg-primary: #ffffff;
   --bg-secondary: #f5f5f5;
@@ -1589,12 +1617,32 @@ body.light-mode {
   --text-primary: #000000;
   --text-secondary: #333333;
   --text-muted: #666666;
-  --accent-primary: #000000;
-  --accent-secondary: #1a1a1a;
+  /* Accent colors remain from theme */
   --border: #cccccc;
   --border-light: #d0d0d0;
   --shadow: rgba(0, 0, 0, 0.1);
   --shadow-heavy: rgba(0, 0, 0, 0.2);
+}
+
+/* Light mode theme adjustments */
+body.light-mode .theme-default {
+  --theme-primary: #6d28d9; /* Darker purple */
+}
+
+body.light-mode .theme-blue {
+  --theme-primary: #1d4ed8; /* Darker blue */
+}
+
+body.light-mode .theme-red {
+  --theme-primary: #dc2626; /* Darker red */
+}
+
+body.light-mode .theme-green {
+  --theme-primary: #059669; /* Darker green */
+}
+
+body.light-mode .theme-purple {
+  --theme-primary: #7c3aed; /* Darker purple */
 }
 
 /* Conversation Item Actions */
