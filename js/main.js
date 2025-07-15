@@ -51,6 +51,8 @@ const exportContentTextarea = document.getElementById('export-content');
 const uploadBtn = document.getElementById('upload-btn');
 const fileUploadInput = document.getElementById('file-upload');
 const clearInputBtn = document.getElementById('clear-btn');
+const voiceModeToggleBtn = document.getElementById('voice-mode-toggle-btn');
+const themeSelect = document.getElementById('theme-select');
 
 // Profile form elements
 const profileForm = document.getElementById('profile-form');
@@ -75,6 +77,7 @@ const model1FreeFilter = document.getElementById('model1-free-filter');
 let currentConversationId = null;
 let currentProfileId = null; // ID of the currently active AI profile
 let availableModels = []; // To store fetched AI models
+let voiceModeActive = false
 
 // --- Utility Functions ---
 
