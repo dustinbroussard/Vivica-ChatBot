@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mobileToggleBtn) mobileToggleBtn.innerHTML = `<i class="fas fa-${isDark() ? 'sun' : 'moon'}"></i>`;
   };
 
-  const applyTheme = () => {
+  export const applyTheme = () => {
     updateToggleIcons();
     if (isDark()) {
       body.classList.remove('light-mode');
