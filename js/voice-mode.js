@@ -41,6 +41,8 @@ let vivicaVoiceModeConfig = {
     onSpeakingError: (error) => {}, // Callback for TTS errors
     onListenStateChange: (state) => {}, // Callback for listening state (e.g., "listening", "speaking", "idle")
     onVisualizerData: (data) => {} // Callback for visualizer data (e.g., audio levels)
+    ,useGoogleTTS: false,
+    googleApiKey: ''
 };
 
 /**
@@ -270,6 +272,9 @@ function initSpeechSynthesis() {
  * @returns {Promise<void>} A promise that resolves when speech ends or rejects on error.
  */
 export function speak(text) {
+    if (vivicaVoiceModeConfig.useGoogleTTS && vivicaVoiceModeConfig.googleApiKey) {
+        return googleSpeak(text);
+    }
     return new Promise((resolve, reject) => {
         if (!synth) {
             initSpeechSynthesis();
@@ -329,6 +334,28 @@ export function speak(text) {
 
         synth.speak(currentSpeechUtterance);
     });
+}
+
+async function googleSpeak(text) {
+    const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${vivicaVoiceModeConfig.googleApiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            input: { text },
+            voice: { languageCode: 'en-US', ssmlGender: 'FEMALE' },
+            audioConfig: { audioEncoding: 'MP3' }
+        })
+    });
+    const data = await response.json();
+    if (data.audioContent) {
+        return new Promise(resolve => {
+            const audio = new Audio('data:audio/mp3;base64,' + data.audioContent);
+            audio.onended = resolve;
+            audio.onerror = resolve;
+            audio.play();
+        });
+    }
+    throw new Error('Google TTS failed');
 }
 
 /**

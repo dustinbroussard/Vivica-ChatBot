@@ -110,6 +110,12 @@ export const ConversationStorage = {
             console.error('ConversationStorage: Error clearing all conversations:', error);
             throw error;
         }
+    },
+
+    searchConversations: async (query) => {
+        const all = await ConversationStorage.getAllConversations();
+        const q = query.toLowerCase();
+        return all.filter(c => (c.title || '').toLowerCase().includes(q));
     }
 };
 
@@ -177,6 +183,12 @@ export const MessageStorage = {
             console.error('MessageStorage: Error updating message:', error);
             throw error;
         }
+    },
+
+    searchMessages: async (conversationId, query) => {
+        const messages = await MessageStorage.getMessagesByConversationId(conversationId);
+        const q = query.toLowerCase();
+        return messages.filter(m => m.content.toLowerCase().includes(q));
     }
 };
 
