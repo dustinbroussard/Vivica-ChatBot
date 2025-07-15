@@ -129,6 +129,10 @@ class VoiceAnimation {
     }
   }
 
+  updateVolume(vol) {
+    this.targetVolume = Math.max(0, Math.min(vol, 1));
+  }
+
   updateMood(color) {
     this.targetMoodColor = color;
     this.animationContainer.style.background = `radial-gradient(circle, ${color}22 0%, black 80%)`;

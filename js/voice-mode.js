@@ -20,6 +20,12 @@ let isSpeaking = false; // Is the synthesis active?
 let silenceTimer; // Timer to detect prolonged silence
 const SILENCE_TIMEOUT = 3000; // 3 seconds of silence to stop recognition
 
+// Audio visualization variables
+let audioCtx = null;
+let analyser = null;
+let audioStream = null;
+let volumeInterval = null;
+
 // --- Configuration (can be passed from main.js or managed internally) ---
 let vivicaVoiceModeConfig = {
     apiKey: '', // API key for backend (if TTS/STT is API-driven)
@@ -66,6 +72,47 @@ function debugLog(...args) {
     } else {
         console.log(`[${VOICE_MODE_DEBUG_TAG}]`, ...args);
     }
+}
+
+// --- Audio visualization helpers ---
+async function startAudioVisualization() {
+    try {
+        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioCtx.createMediaStreamSource(audioStream);
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        source.connect(analyser);
+        const dataArray = new Uint8Array(analyser.fftSize);
+        volumeInterval = setInterval(() => {
+            analyser.getByteTimeDomainData(dataArray);
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                const v = (dataArray[i] - 128) / 128;
+                sum += v * v;
+            }
+            const rms = Math.sqrt(sum / dataArray.length);
+            vivicaVoiceModeConfig.onVisualizerData(rms);
+        }, 50);
+    } catch (err) {
+        console.error('Audio visualization error:', err);
+    }
+}
+
+function stopAudioVisualization() {
+    if (volumeInterval) {
+        clearInterval(volumeInterval);
+        volumeInterval = null;
+    }
+    if (audioStream) {
+        audioStream.getTracks().forEach(t => t.stop());
+        audioStream = null;
+    }
+    if (audioCtx) {
+        audioCtx.close();
+        audioCtx = null;
+    }
+    vivicaVoiceModeConfig.onVisualizerData(0);
 }
 
 // --- Speech Recognition (Web Speech API) ---
@@ -130,6 +177,7 @@ function initSpeechRecognition() {
             clearSilenceTimer();
             vivicaVoiceModeConfig.onSpeechEnd();
             vivicaVoiceModeConfig.onListenStateChange('idle');
+            stopAudioVisualization();
         };
 
     } else {
@@ -146,6 +194,7 @@ export function startListening() {
         try {
             recognition.start();
             debugLog('Listening started.');
+            startAudioVisualization();
         } catch (e) {
             console.error('Failed to start recognition:', e);
             vivicaVoiceModeConfig.onSpeechError(e);
@@ -165,6 +214,7 @@ export function stopListening() {
         recognition.stop();
         debugLog('Listening stopped.');
         clearSilenceTimer();
+        stopAudioVisualization();
     }
 }
 
