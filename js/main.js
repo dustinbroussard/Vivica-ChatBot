@@ -569,9 +569,13 @@ async function getAIResponse(userQuery) {
                             // Throttle DOM updates for performance
                             const now = performance.now();
                             if (now - lastRenderTime > RENDER_THROTTLE || done) {
-                                aiMessageElement.innerHTML = marked.parse(currentContent);
-                                chatBody.scrollTop = chatBody.scrollHeight;
-                                lastRenderTime = now;
+                                if (aiMessageElement) {
+                                    aiMessageElement.innerHTML = marked.parse(currentContent);
+                                    chatBody.scrollTop = chatBody.scrollHeight;
+                                    lastRenderTime = now;
+                                } else {
+                                    debugLog('Could not find AI message element, skipping update.', 'warn');
+                                }
                             }
                         }
                     }
@@ -610,6 +614,8 @@ async function getAIResponse(userQuery) {
              const aiMessageElement = chatBody.querySelector(`[data-message-id="${aiMessageId}"] .message-bubble`);
              if (aiMessageElement) {
                  aiMessageElement.innerHTML = marked.parse(errorMsg.content);
+             } else {
+                 debugLog('Failed to find AI message element to show error', 'warn');
              }
         }
     } finally {
