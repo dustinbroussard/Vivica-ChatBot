@@ -833,12 +833,46 @@ async function renderProfilesList() {
         profilesListDiv.appendChild(profileCard);
     });
 
-    // Add event listeners for edit and delete buttons
+    // Add event listeners for edit, delete, and set-active buttons
     profilesListDiv.querySelectorAll('.edit-profile-btn').forEach(btn => {
         btn.addEventListener('click', (e) => editProfile(parseInt(e.currentTarget.dataset.profileId)));
     });
     profilesListDiv.querySelectorAll('.delete-profile-btn').forEach(btn => {
         btn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(e.currentTarget.dataset.profileId)));
+    });
+    profilesListDiv.querySelectorAll('.set-active-profile-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            try {
+                e.stopPropagation();
+                const pid = parseInt(e.currentTarget.dataset.profileId);
+                currentProfileId = pid;
+                    
+                // Update current conversation to use this profile if exists
+                if (currentConversationId) {
+                    const conv = await Storage.ConversationStorage.getConversation(currentConversationId);
+                    if (conv) {
+                        conv.profileId = currentProfileId;
+                        await Storage.ConversationStorage.updateConversation(conv);
+                    }
+                }
+                    
+                // Update the profile card UI
+                e.currentTarget.closest('.profile-card').querySelectorAll('.set-active-profile-btn').forEach(btn => {
+                    btn.disabled = true; // Disable all set-active buttons during update
+                });
+                    
+                showToast(`Profile "${profile.name}" activated!`, 'success');
+                await renderProfilesList(); // Refresh badges
+                    
+                // Re-enable buttons after UI update
+                document.querySelectorAll('.set-active-profile-btn').forEach(btn => {
+                    btn.disabled = false;
+                });
+            } catch (error) {
+                console.error('Error setting active profile:', error);
+                showToast('Failed to activate profile', 'error');
+            }
+        });
     });
 }
 
