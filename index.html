@@ -69,6 +69,7 @@
         </div>
         
         <div class="sidebar-content">
+            <input type="text" id="conversation-search" class="sidebar-search" placeholder="Search conversations...">
             <div class="conversations-list" id="conversations-list">
                 <!-- Conversations will be populated here -->
             </div>
@@ -142,9 +143,6 @@
 
         <!-- Chat Footer -->
         <div class="chat-footer">
-        <button class="scroll-to-bottom" id="scroll-to-bottom-btn" title="Scroll to bottom">
-          <i class="fas fa-chevron-down"></i>
-        </button>
             <div class="chat-input-container">
                 <div class="chat-input" id="chat-input-form">
                     <div class="input-wrapper">
@@ -200,8 +198,23 @@
                     </label>
                     <input type="password" id="api-key-1" class="settings-input" placeholder="Primary API Key">
                     <input type="password" id="api-key-2" class="settings-input" placeholder="Secondary API Key (Optional)">
-                    <input type="password" id="api-key-3" class="settings-input" placeholder="Tertiary API Key (Optional)">
+                <input type="password" id="api-key-3" class="settings-input" placeholder="Tertiary API Key (Optional)">
+                    <input type="password" id="google-tts-key" class="settings-input" placeholder="Google TTS API Key (Optional)">
+                    <input type="text" id="weather-api-key" class="settings-input" placeholder="OpenWeatherMap API Key (Optional)">
+                    <input type="text" id="weather-location" class="settings-input" placeholder="Weather location e.g. London">
                     <small class="settings-hint">Your API keys are stored locally and never shared</small>
+                </div>
+                <div class="settings-group">
+                    <label class="settings-label">
+                        <i class="fas fa-rss"></i>
+                        Custom RSS Feeds
+                    </label>
+                    <input type="text" id="rss-feeds" class="settings-input" placeholder="https://example.com/feed1, https://feed2.com/rss">
+                    <small class="settings-hint">Comma separated list of feeds</small>
+                </div>
+                <div class="settings-group">
+                    <label><input type="checkbox" id="include-weather"> Include Weather in context</label>
+                    <label><input type="checkbox" id="include-rss"> Include RSS feeds in context</label>
                 </div>
                 <div class="settings-group">
                     <label class="settings-label">
@@ -368,6 +381,11 @@
                     <label class="settings-label">Tags</label>
                     <input type="text" id="memory-tags" class="settings-input" placeholder="Enter tags separated by commas...">
                     <small class="settings-hint">Use tags to organize and search memories</small>
+                </div>
+                <div class="settings-group">
+                    <label class="settings-label">Search Memories</label>
+                    <input type="text" id="memory-search" class="settings-input" placeholder="Search...">
+                    <div id="memory-search-results" class="search-results"></div>
                 </div>
             </div>
             <div class="modal-footer">

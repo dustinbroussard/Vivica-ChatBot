@@ -186,7 +186,7 @@ function renderMessage(message, isNew = false) {
 
     const avatar = document.createElement('div');
     avatar.classList.add('message-avatar');
-    avatar.textContent = message.sender === 'user' ? 'You' : 'AI';
+    avatar.innerHTML = message.sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
 
     const contentWrapper = document.createElement('div');
     contentWrapper.classList.add('message-content');
@@ -433,6 +433,50 @@ async function getChatHistory() {
     }));
 }
 
+async function fetchWeather(apiKey, city = 'London') {
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${apiKey}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Weather fetch failed');
+    const data = await res.json();
+    return `${data.weather[0].description}, ${data.main.temp}°C`;
+}
+
+async function fetchRSSSummaries(urls) {
+    const parser = new DOMParser();
+    const summaries = [];
+    for (const url of urls) {
+        try {
+            const resp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+            const data = await resp.json();
+            const doc = parser.parseFromString(data.contents, 'text/xml');
+            const item = doc.querySelector('item');
+            if (item) summaries.push(item.querySelector('title').textContent.trim());
+        } catch (err) {
+            console.error('RSS fetch error', err);
+        }
+    }
+    return summaries.join('; ');
+}
+
+async function buildSystemPrompt(basePrompt) {
+    let prompt = basePrompt || '';
+    const settings = await Storage.SettingsStorage.getSettings();
+    if (settings?.includeWeather && settings.weatherApiKey) {
+        try {
+            const weather = await fetchWeather(settings.weatherApiKey, settings.weatherLocation || 'London');
+            prompt += `\nCurrent weather: ${weather}`;
+        } catch (e) { console.error(e); }
+    }
+    if (settings?.includeRss && settings.rssFeeds) {
+        const feeds = settings.rssFeeds.split(',').map(f => f.trim()).filter(Boolean);
+        if (feeds.length) {
+            const news = await fetchRSSSummaries(feeds.slice(0,3));
+            if (news) prompt += `\nNews: ${news}`;
+        }
+    }
+    return prompt;
+}
+
 
 /**
  * Fetches an AI response from OpenRouter.
@@ -460,7 +504,7 @@ async function getAIResponse(userQuery) {
 
         // Use default values if no profile or profile values are missing
         const model = profile?.model || 'mistralai/mistral-7b-instruct'; // Default model
-        const systemPrompt = profile?.systemPrompt || 'You are a helpful AI assistant.';
+        const systemPrompt = await buildSystemPrompt(profile?.systemPrompt || 'You are a helpful AI assistant.');
         const temperature = profile?.temperature !== undefined ? profile.temperature : 0.7;
         const maxTokens = profile?.maxTokens || 2000;
         const maxContext = profile?.maxContext || 20; // Number of previous messages to include
@@ -760,6 +804,12 @@ async function openSettingsModal() {
         document.getElementById('api-key-1').value = settings.apiKey1 || '';
         document.getElementById('api-key-2').value = settings.apiKey2 || '';
         document.getElementById('api-key-3').value = settings.apiKey3 || '';
+        document.getElementById('google-tts-key').value = settings.googleTtsKey || '';
+        document.getElementById('weather-api-key').value = settings.weatherApiKey || '';
+        document.getElementById('weather-location').value = settings.weatherLocation || '';
+        document.getElementById('rss-feeds').value = settings.rssFeeds || '';
+        document.getElementById('include-weather').checked = settings.includeWeather || false;
+        document.getElementById('include-rss').checked = settings.includeRss || false;
     }
     if (themeSelect) {
         themeSelect.value = localStorage.getItem('colorTheme') || 'default';
@@ -775,7 +825,13 @@ async function saveSettings() {
     const settings = {
         apiKey1: document.getElementById('api-key-1').value,
         apiKey2: document.getElementById('api-key-2').value,
-        apiKey3: document.getElementById('api-key-3').value
+        apiKey3: document.getElementById('api-key-3').value,
+        googleTtsKey: document.getElementById('google-tts-key').value,
+        weatherApiKey: document.getElementById('weather-api-key').value,
+        weatherLocation: document.getElementById('weather-location').value,
+        rssFeeds: document.getElementById('rss-feeds').value,
+        includeWeather: document.getElementById('include-weather').checked,
+        includeRss: document.getElementById('include-rss').checked
     };
     if (themeSelect) {
         localStorage.setItem('colorTheme', themeSelect.value);
@@ -1267,6 +1323,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       chatBody.scrollTop = chatBody.scrollHeight;
     });
 
+    const convSearch = document.getElementById('conversation-search');
+    if (convSearch) {
+        convSearch.addEventListener('input', () => {
+            const term = convSearch.value.toLowerCase();
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.style.display = item.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+    }
+
+    const memSearch = document.getElementById('memory-search');
+    if (memSearch) {
+        memSearch.addEventListener('input', async () => {
+            const term = memSearch.value.toLowerCase();
+            const memories = await Storage.MemoryStorage.getAllMemories();
+            const resultsDiv = document.getElementById('memory-search-results');
+            resultsDiv.innerHTML = '';
+            memories.filter(m => (m.content||'').toLowerCase().includes(term) || (m.tags||[]).some(t => t.toLowerCase().includes(term))).forEach(m => {
+                const d = document.createElement('div');
+                d.textContent = m.content;
+                resultsDiv.appendChild(d);
+            });
+        });
+    }
+
     // Initial render of conversations list
     await renderConversationsList();
 
@@ -1280,6 +1361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Voice mode setup
+    const settings = await Storage.SettingsStorage.getSettings();
     initVoiceMode({
         onSpeechResult: (text, final) => {
             userInput.value = text;
@@ -1298,7 +1380,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (voiceModeActive) {
                 voiceAnimation.updateVolume(vol);
             }
-        }
+        },
+        useGoogleTTS: settings?.googleTtsKey ? true : false,
+        googleApiKey: settings?.googleTtsKey || ''
     });
     voiceModeToggleBtn.addEventListener('click', () => {
         voiceModeActive = !voiceModeActive;
