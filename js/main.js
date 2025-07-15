@@ -560,23 +560,41 @@ async function getAIResponse(userQuery) {
                             break;
                         }
 
-                        const data = JSON.parse(jsonStr);
-                        const delta = data.choices[0]?.delta?.content || '';
-                        
-                        if (delta) {
-                            currentContent += delta;
-                            
-                            // Throttle DOM updates for performance
-                            const now = performance.now();
-                            if (now - lastRenderTime > RENDER_THROTTLE || done) {
+                        try {
+                            const data = JSON.parse(jsonStr);
+
+                            // If server returned an error, handle it here:
+                            if (data.error) {
+                                debugLog(`OpenRouter error: ${data.error.message}`, 'error');
+                                // Show the error in the AI message bubble
+                                currentContent += `<div style="color:var(--danger);"><strong>Error:</strong> ${data.error.message}</div>`;
                                 if (aiMessageElement) {
                                     aiMessageElement.innerHTML = marked.parse(currentContent);
-                                    chatBody.scrollTop = chatBody.scrollHeight;
-                                    lastRenderTime = now;
-                                } else {
-                                    debugLog('Could not find AI message element, skipping update.', 'warn');
+                                }
+                                // Break out of the loop since this is terminal
+                                break;
+                            }
+
+                            // Otherwise handle delta as normal:
+                            const delta = data.choices && data.choices[0]?.delta?.content || '';
+                            if (delta) {
+                                currentContent += delta;
+                                
+                                // Throttle DOM updates for performance
+                                const now = performance.now();
+                                if (now - lastRenderTime > RENDER_THROTTLE || done) {
+                                    if (aiMessageElement) {
+                                        aiMessageElement.innerHTML = marked.parse(currentContent);
+                                        chatBody.scrollTop = chatBody.scrollHeight;
+                                        lastRenderTime = now;
+                                    } else {
+                                        debugLog('Could not find AI message element, skipping update.', 'warn');
+                                    }
                                 }
                             }
+                        } catch (parseError) {
+                            debugLog(`Error parsing JSON from stream: ${parseError.message}. Line: ${jsonStr}`, 'error');
+                            // Continue to next line - don't break the stream
                         }
                     }
                 } catch (parseError) {
