@@ -435,8 +435,9 @@ async function sendMessage() {
     };
 
     try {
-        await Storage.MessageStorage.addMessage(userMessage);
-        renderMessage(userMessage, true);
+        const userMessageId = await Storage.MessageStorage.addMessage(userMessage);
+        const userMessageElement = renderMessage(userMessage, true);
+        Prism.highlightAllUnder(userMessageElement); // Ensure immediate highlighting
         const convo = await Storage.ConversationStorage.getConversation(currentConversationId);
         if (convo) {
             convo.timestamp = Date.now();
@@ -624,8 +625,11 @@ async function getAIResponse(userQuery) {
                 if (now - lastRenderTime > RENDER_THROTTLE) {
                     if (aiMessageElement) {
                         aiMessageElement.innerHTML = renderMarkdown(currentContent);
-                        Prism.highlightAllUnder(aiMessageElement);
-                        chatBody.scrollTop = chatBody.scrollHeight;
+                        // Only highlight new parts of the code to avoid flickering
+                        Prism.highlightAllUnder(chatBody); 
+                        if (currentContent.includes('\n')) {
+                            chatBody.scrollTop = chatBody.scrollHeight;
+                        }
                         lastRenderTime = now;
                     }
                 }
@@ -641,6 +645,8 @@ async function getAIResponse(userQuery) {
         };
         aiMessageId = await Storage.MessageStorage.addMessage(initialAiMessage);
         const aiMessageElement = renderMessage(initialAiMessage, true); // Render empty bubble and get direct reference
+        // Ensure UI scroll accounts for both messages
+        chatBody.scrollTop = chatBody.scrollHeight;
 
         let currentContent = '';
         let lastRenderTime = 0;
