@@ -581,13 +581,14 @@ async function getAIResponse(userQuery) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder('utf-8');
         const parser = createParser({ onEvent: (ev) => {
-            if (!ev.data) return;
-            if (ev.data === '[DONE]') return; // ignore done signal here
+            const jsonStr = ev.data;
+            if (!jsonStr) return;
+            if (jsonStr === '[DONE]') return; // ignore done signal here
             let data;
             try {
-                data = JSON.parse(ev.data);
+                data = JSON.parse(jsonStr);
             } catch (err) {
-                debugLog(`Failed to parse JSON: ${err}`, 'error');
+                debugLog(`Failed to parse JSON: ${err}. Input: ${jsonStr}`, 'error');
                 return;
             }
 
