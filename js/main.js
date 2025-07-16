@@ -242,6 +242,7 @@ function renderMessage(message, isNew = false) {
     
     // Apply Prism.js highlighting to any code blocks
     Prism.highlightAllUnder(bubble);
+    return bubble;
 }
 
 /**
@@ -624,26 +625,7 @@ async function getAIResponse(userQuery) {
             timestamp: Date.now()
         };
         aiMessageId = await Storage.MessageStorage.addMessage(initialAiMessage);
-        renderMessage(initialAiMessage, true); // Render empty bubble
-
-        // Get the DOM element for the AI message to update its content directly
-        let aiMessageElement = chatBody.querySelector(`[data-message-id="${aiMessageId}"] .message-bubble`);
-        // Fallback attempt to find the bubble if first query fails
-        if (!aiMessageElement) {
-            aiMessageElement = chatBody.querySelector(`[data-message-id="${aiMessageId}"] .message-content .message-bubble`);
-            if (!aiMessageElement) {
-                debugLog('Could not find AI message element, creating fallback', 'warn');
-                // If still not found, create and append a placeholder bubble
-                const msgDiv = chatBody.querySelector(`[data-message-id="${aiMessageId}"]`);
-                if (msgDiv) {
-                    const bubble = document.createElement('div');
-                    bubble.className = 'message-bubble';
-                    const contentWrapper = msgDiv.querySelector('.message-content') || msgDiv;
-                    contentWrapper.insertBefore(bubble, contentWrapper.firstChild);
-                    aiMessageElement = bubble;
-                }
-            }
-        }
+        const aiMessageElement = renderMessage(initialAiMessage, true); // Render empty bubble and get direct reference
 
         let currentContent = '';
         let lastRenderTime = 0;
