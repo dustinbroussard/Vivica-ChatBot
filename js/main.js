@@ -21,6 +21,7 @@ const conversationsList = document.getElementById('conversations-list');
 const currentConversationTitle = document.getElementById('current-conversation-title');
 const emptyState = document.getElementById('empty-state');
 const typingIndicator = document.getElementById('typing-indicator');
+const charCountSpan = document.getElementById('char-count');
 const menuToggle = document.getElementById('menu-toggle');
 const sidebar = document.getElementById('sidebar');
 const closeSidebarBtn = document.getElementById('close-sidebar-btn');
@@ -83,6 +84,11 @@ let currentConversationId = null;
 let currentProfileId = null; // ID of the currently active AI profile
 let availableModels = []; // To store fetched AI models
 let voiceModeActive = false;
+
+function checkProfileFormValidity() {
+    const valid = profileNameInput.value.trim() && profileSystemPromptInput.value.trim();
+    saveProfileBtn.disabled = !valid;
+}
 
 // --- Utility Functions ---
 
@@ -286,14 +292,18 @@ async function renderConversationsList() {
         return;
     }
 
-    conversations.forEach(conv => {
+    for (const conv of conversations) {
         const convItem = document.createElement('button');
         convItem.classList.add('conversation-item');
         if (conv.id === currentConversationId) {
             convItem.classList.add('active');
         }
         convItem.dataset.conversationId = conv.id;
-        convItem.textContent = conv.title || 'New Chat'; // Default title
+        const lastMessages = await Storage.MessageStorage.getMessagesByConversationId(conv.id);
+        const lastMsg = lastMessages[lastMessages.length - 1];
+        const snippet = lastMsg ? lastMsg.content.slice(0, 30) : '';
+        const time = new Date(conv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        convItem.innerHTML = `<div class="conv-title">${conv.title || 'New Chat'}</div><div class="conv-snippet">${snippet}</div><div class="conv-time">${time}</div>`;
 
         convItem.addEventListener('click', () => loadConversation(conv.id));
 
@@ -334,7 +344,7 @@ async function renderConversationsList() {
         convItem.appendChild(actionsDiv);
 
         conversationsList.appendChild(convItem);
-    });
+    }
 }
 
 /**
@@ -344,6 +354,7 @@ async function renderConversationsList() {
 async function loadConversation(conversationId) {
     debugLog(`Loading conversation ID: ${conversationId}`);
     currentConversationId = conversationId;
+    localStorage.setItem('lastConversationId', conversationId);
     chatBody.innerHTML = ''; // Clear current messages
     emptyState.style.display = 'none'; // Hide empty state
 
@@ -380,6 +391,7 @@ async function startNewConversation() {
     showToast('New chat started!', 'success');
     await renderConversationsList();
     await loadConversation(id);
+    localStorage.setItem('lastConversationId', id);
     userInput.value = ''; // Clear input field
     userInput.focus();
 }
@@ -409,6 +421,11 @@ async function sendMessage() {
     try {
         await Storage.MessageStorage.addMessage(userMessage);
         renderMessage(userMessage, true);
+        const convo = await Storage.ConversationStorage.getConversation(currentConversationId);
+        if (convo) {
+            convo.timestamp = Date.now();
+            await Storage.ConversationStorage.updateConversation(convo);
+        }
         userInput.value = ''; // Clear input after sending
         userInput.style.height = 'auto'; // Reset textarea height
 
@@ -688,6 +705,11 @@ async function getAIResponse(userQuery) {
             timestamp: initialAiMessage.timestamp // Keep original timestamp
         };
         await Storage.MessageStorage.updateMessage(finalAiMessage);
+        const conv = await Storage.ConversationStorage.getConversation(currentConversationId);
+        if (conv) {
+            conv.timestamp = Date.now();
+            await Storage.ConversationStorage.updateConversation(conv);
+        }
         debugLog('AI response fully streamed and saved.');
         if (voiceModeActive) {
             speak(currentContent).catch(err => debugLog('TTS error: ' + err, 'error'));
@@ -709,6 +731,14 @@ async function getAIResponse(userQuery) {
              const aiMessageElement = chatBody.querySelector(`[data-message-id="${aiMessageId}"] .message-bubble`);
              if (aiMessageElement) {
                  aiMessageElement.innerHTML = marked.parse(errorMsg.content);
+                 const retryBtn = document.createElement('button');
+                 retryBtn.className = 'retry-btn';
+                 retryBtn.textContent = 'Retry';
+                 retryBtn.addEventListener('click', () => {
+                     aiMessageElement.innerHTML = '<em>Retrying...</em>';
+                     getAIResponse(userQuery);
+                 });
+                 aiMessageElement.appendChild(retryBtn);
              } else {
                  debugLog('Failed to find AI message element to show error', 'warn');
              }
@@ -1058,6 +1088,7 @@ function resetProfileForm() {
     model1Select.value = ''; // Reset select
     model1FreeFilter.checked = false; // Reset filter
     populateModelSelect(availableModels); // Repopulate select
+    checkProfileFormValidity();
 }
 
 /**
@@ -1084,6 +1115,7 @@ async function editProfile(profileId) {
         deleteProfileBtn.style.display = 'inline-block'; // Show delete button
         model1Select.value = profile.model; // Set the select value too
     }
+    checkProfileFormValidity();
 }
 
 /**
@@ -1103,6 +1135,12 @@ async function saveProfile(event) {
     };
     if (profileIdInput.value) {
         profile.id = parseInt(profileIdInput.value, 10);
+    }
+
+    if (!profile.name || !profile.systemPrompt) {
+        showToast('Profile name and system prompt are required.', 'error');
+        checkProfileFormValidity();
+        return;
     }
 
     try {
@@ -1139,22 +1177,27 @@ async function saveProfile(event) {
  * @param {number} profileId - The ID of the profile to delete.
  */
 function confirmAndDeleteProfile(profileId) {
-    const isConfirmed = window.confirm('Are you sure you want to delete this AI profile?');
-    if (isConfirmed) {
+    Storage.ProfileStorage.getAllProfiles().then(list => {
+        if (list.length <= 1) {
+            showToast('Cannot delete the last remaining profile.', 'error');
+            return;
+        }
+        const isConfirmed = window.confirm('Are you sure you want to delete this AI profile?');
+        if (!isConfirmed) return;
         Storage.ProfileStorage.deleteProfile(profileId)
             .then(() => {
                 showToast('Profile deleted!', 'success');
                 renderProfilesList();
-                resetProfileForm(); // Reset form if deleted profile was being edited
+                resetProfileForm();
                 if (currentProfileId === profileId) {
-                    currentProfileId = null; // Clear active profile if deleted
+                    currentProfileId = null;
                 }
             })
             .catch(error => {
                 debugLog(`Error deleting profile: ${error.message}`, 'error');
                 showToast('Failed to delete profile.', 'error');
             });
-    }
+    });
 }
 
 /**
@@ -1312,6 +1355,8 @@ function toggleScrollButton() {
 document.addEventListener('DOMContentLoaded', async () => {
     debugLog('DOM Content Loaded. Initializing Vivica...');
     if (window.applyColorTheme) window.applyColorTheme();
+    sendBtn.disabled = true;
+    if (charCountSpan) charCountSpan.textContent = '0w / 0c';
 
     // Register Service Worker
     if ('serviceWorker' in navigator) {
@@ -1366,13 +1411,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initial render of conversations list
     await renderConversationsList();
 
-    // Load the most recent conversation or show empty state
     const allConversations = await Storage.ConversationStorage.getAllConversations();
     if (allConversations.length > 0) {
-        // Load the first (most recent) conversation
-        await loadConversation(allConversations[0].id);
+        const lastId = parseInt(localStorage.getItem('lastConversationId') || '0');
+        const conv = allConversations.find(c => c.id === lastId) || allConversations[0];
+        await loadConversation(conv.id);
     } else {
-        emptyState.style.display = 'flex'; // Ensure empty state is visible
+        emptyState.style.display = 'flex';
     }
 
     // Voice mode setup
@@ -1414,6 +1459,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Event listeners for main UI
     sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('input', () => {
+        sendBtn.disabled = userInput.value.trim().length === 0;
+        if (charCountSpan) {
+            const chars = userInput.value.length;
+            const words = userInput.value.trim().split(/\s+/).filter(Boolean).length;
+            charCountSpan.textContent = `${words}w / ${chars}c`;
+        }
+    });
     userInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault(); // Prevent new line
@@ -1470,6 +1523,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     profileForm.addEventListener('submit', saveProfile);
     deleteProfileBtn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(profileIdInput.value)));
 
+    profileNameInput.addEventListener('input', checkProfileFormValidity);
+    profileSystemPromptInput.addEventListener('input', checkProfileFormValidity);
+
     profileTempInput.addEventListener('input', (e) => {
         profileTempValueSpan.textContent = parseFloat(e.target.value).toFixed(2);
     });
@@ -1522,8 +1578,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     fileUploadInput.addEventListener('change', handleFileUpload);
     clearInputBtn.addEventListener('click', clearUserInput);
 
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal.show').forEach(m => closeModal(m));
+        }
+    });
+
     // Initial fetch of models for profile creation
     await fetchOpenRouterModels();
+    checkProfileFormValidity();
 
     debugLog('Vivica initialization complete.');
 });
