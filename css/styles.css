@@ -769,7 +769,7 @@ body {
 }
 
 .message.user {
-  flex-direction: row-reverse;
+  flex-direction: row;
 }
 
 .message-avatar {
@@ -893,7 +893,7 @@ pre code {
   background: none;
   border: none;
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: .8rem;
   padding: 12px 0;
   outline: none;
   resize: none;
@@ -915,9 +915,9 @@ pre code {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 1.1rem;
+  font-size: .9rem;
   cursor: pointer;
-  padding: 8px;
+  padding: 7px;
   border-radius: 50%;
   transition: all 0.2s ease;
 }
@@ -1956,7 +1956,7 @@ body.light-mode .sidebar-btn:hover {
 
 /* Style for the voice mode button */
 #voice-mode-toggle-btn {
-    background-color: var(--bg-secondary);
+    background-color: transparent;
     color: var(--text-primary);
     border: none;
     padding: 10px 15px;
