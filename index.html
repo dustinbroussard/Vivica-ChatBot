@@ -139,6 +139,15 @@
                     </button>
                 </div>
             </div>
+            <span class="typing-indicator" id="typing-indicator" style="display: none;">
+                <i class="fas fa-circle"></i>
+                <i class="fas fa-circle"></i>
+                <i class="fas fa-circle"></i>
+                <span>AI is typing...</span>
+            </span>
+            <button id="scroll-to-bottom-btn" class="scroll-to-bottom" title="Scroll to bottom">
+                <i class="fas fa-chevron-down"></i>
+            </button>
         </div>
 
         <!-- Chat Footer -->
@@ -165,12 +174,6 @@
                     </button>
                 </div>
                 <div class="input-hint">
-                    <span class="typing-indicator" id="typing-indicator" style="display: none;">
-                        <i class="fas fa-circle"></i>
-                        <i class="fas fa-circle"></i>
-                        <i class="fas fa-circle"></i>
-                        <span>AI is typing...</span>
-                    </span>
                     <span id="char-count" class="char-count"></span>
                 </div>
             </div>
@@ -469,9 +472,5 @@
 	<script type="module" src="js/main.js"></script>
     <canvas id="orbCanvas"></canvas>
     <div class="vivica-name">V I V I C A</div>
-    <!-- Scroll to bottom button -->
-    <button id="scroll-to-bottom-btn" class="scroll-to-bottom" title="Scroll to bottom">
-        <i class="fas fa-chevron-down"></i>
-    </button>
 </body>
 </html>

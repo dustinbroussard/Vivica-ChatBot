@@ -11,6 +11,7 @@ import Storage from './storage-wrapper.js';
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
 import { initVoiceMode, startListening, stopListening, toggleListening, speak, getIsListening, getIsSpeaking, updateVoiceModeConfig } from './voice-mode.js';
 import { voiceAnimation } from './voice-animation.js';
+import { createParser } from './eventsource-parser.js';
 
 // --- Global Variables and Constants ---
 const chatBody = document.getElementById('chat-body');
@@ -579,7 +580,40 @@ async function getAIResponse(userQuery) {
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder('utf-8');
-        let buffer = '';
+        const parser = createParser({ onEvent: (ev) => {
+            if (!ev.data) return;
+            if (ev.data === '[DONE]') return; // ignore done signal here
+            let data;
+            try {
+                data = JSON.parse(ev.data);
+            } catch (err) {
+                debugLog(`Failed to parse JSON: ${err}`, 'error');
+                return;
+            }
+
+            if (data.error) {
+                debugLog(`OpenRouter error: ${data.error.message}`, 'error');
+                currentContent += `<div style="color:var(--danger);"><strong>Error:</strong> ${data.error.message}</div>`;
+                if (aiMessageElement) {
+                    aiMessageElement.innerHTML = marked.parse(currentContent);
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                }
+                return;
+            }
+
+            const delta = data.choices?.[0]?.delta?.content || '';
+            if (delta) {
+                currentContent += delta;
+                const now = performance.now();
+                if (now - lastRenderTime > RENDER_THROTTLE) {
+                    if (aiMessageElement) {
+                        aiMessageElement.innerHTML = marked.parse(currentContent);
+                        chatBody.scrollTop = chatBody.scrollHeight;
+                        lastRenderTime = now;
+                    }
+                }
+            }
+        }});
 
         // Create an initial AI message bubble to stream into
         const initialAiMessage = {
@@ -617,86 +651,14 @@ async function getAIResponse(userQuery) {
         while (true) {
             const { value, done } = await reader.read();
             if (done) {
+                parser.feed('\n');
                 debugLog('Stream completed');
                 break;
             }
-
-            debugLog(`Received chunk size: ${value?.length} bytes`);
-            buffer += decoder.decode(value, { stream: true });
-
-            // Process each complete line we receive
-            let lineEnd;
-            while ((lineEnd = buffer.indexOf('\n')) >= 0) {
-                let jsonStr;
-                const line = buffer.slice(0, lineEnd).trim();
-                buffer = buffer.slice(lineEnd + 1);
-
-                try {
-                    // Debug the raw line we're processing
-                    debugLog(`Processing line: ${line.slice(0, 100)}...`); // Limit to 100 chars for logging
-                            
-                    if (!line.startsWith('data:')) {
-                        debugLog('Skipping non-data line', 'warn');
-                        continue;
-                    }
-
-                    jsonStr = line.substring(5).trim();
-                    if (jsonStr === '[DONE]') {
-                        debugLog('Stream completed with [DONE] signal');
-                        break;
-                    }
-
-                    if (!jsonStr) {
-                        debugLog('Empty data object received');
-                        continue;
-                    }
-                } catch (error) {
-                    debugLog(`Error processing stream line: ${error}`, 'error');
-                    continue; // Skip to next line if this one fails
-                }
-                try {
-                    debugLog(`Parsing JSON: ${jsonStr}`);
-                    const data = JSON.parse(jsonStr);
-
-                    // If server returned an error, handle it here:
-                    if (data.error) {
-                        debugLog(`OpenRouter error: ${data.error.message}`, 'error');
-                        currentContent += `<div style="color:var(--danger);"><strong>Error:</strong> ${data.error.message}</div>`;
-                        if (aiMessageElement) {
-                            aiMessageElement.innerHTML = marked.parse(currentContent);
-                            chatBody.scrollTop = chatBody.scrollHeight;
-                        }
-                        break; // Exit stream loop on error
-                    }
-
-                    // Log the full data for debugging
-                    debugLog(`Received data: ${JSON.stringify(data, null, 2)}`);
-
-                    // Handle normal response delta
-                    const delta = data.choices?.[0]?.delta?.content || '';
-                    if (delta) {
-                        currentContent += delta;
-
-                        // Throttle DOM updates for performance
-                        const now = performance.now();
-                        if (now - lastRenderTime > RENDER_THROTTLE || done) {
-                            if (aiMessageElement) {
-                                aiMessageElement.innerHTML = marked.parse(currentContent);
-                                chatBody.scrollTop = chatBody.scrollHeight;
-                                lastRenderTime = now;
-                            } else {
-                                debugLog('Could not find AI message element, skipping update.', 'warn');
-                            }
-                        }
-                    }
-                } catch (parseError) {
-                    debugLog(`Error parsing JSON from stream: ${parseError.message}. Line: ${jsonStr}`, 'error');
-                    // Continue to next line - don't break the stream
-                    continue;
-                }
-            }
+            const chunk = decoder.decode(value, { stream: true });
+            debugLog(`Received chunk size: ${chunk.length} bytes`);
+            parser.feed(chunk);
         }
-
         // Final update to the stored message
         const finalAiMessage = {
             id: aiMessageId,
