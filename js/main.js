@@ -128,6 +128,13 @@ function showToast(message, type = 'info', duration = 3000) {
 // Expose globally for other modules or pages
 window.showToast = showToast;
 
+// Function to safely render markdown with proper line breaks
+function renderMarkdown(content) {
+    // First replace literal newlines with markdown line breaks
+    const withLineBreaks = content.replace(/\n/g, '  \n');
+    return window.marked.parse(withLineBreaks);
+}
+
 /**
  * Logs messages to a debug div.
  * @param {string} message - The message to log.
@@ -211,13 +218,6 @@ function renderMessage(message, isNew = false) {
 
     const bubble = document.createElement('div');
     bubble.classList.add('message-bubble');
-
-    // Function to safely render markdown with proper line breaks
-    const renderMarkdown = (content) => {
-        // First replace literal newlines with markdown line breaks
-        const withLineBreaks = content.replace(/\n/g, '  \n');
-        return window.marked.parse(withLineBreaks);
-    };
 
     // Initial render of message content with markdown support
     bubble.innerHTML = renderMarkdown(message.content);
