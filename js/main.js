@@ -189,6 +189,12 @@ function toggleSidebar() {
  * @param {object} message - The message object {id, conversationId, sender, content, timestamp}.
  * @param {boolean} isNew - True if this is a new message being added, for scrolling.
  */
+// Helper function to update message content with proper formatting
+function updateMessageContent(element, content) {
+    element.innerHTML = renderMarkdown(content);
+    Prism.highlightAllUnder(element);
+}
+
 function renderMessage(message, isNew = false) {
   toggleScrollButton();
     const messageElement = document.createElement('div');
@@ -205,8 +211,15 @@ function renderMessage(message, isNew = false) {
     const bubble = document.createElement('div');
     bubble.classList.add('message-bubble');
 
-    // Use marked.js for Markdown rendering
-    bubble.innerHTML = marked.parse(message.content);
+    // Function to safely render markdown with proper line breaks
+    const renderMarkdown = (content) => {
+        // First replace literal newlines with markdown line breaks
+        const withLineBreaks = content.replace(/\n/g, '  \n');
+        return marked.parse(withLineBreaks);
+    };
+
+    // Initial render of message content with markdown support
+    bubble.innerHTML = renderMarkdown(message.content);
 
     // Add copy button for AI messages
     if (message.sender === 'ai') {
@@ -609,7 +622,8 @@ async function getAIResponse(userQuery) {
                 const now = performance.now();
                 if (now - lastRenderTime > RENDER_THROTTLE) {
                     if (aiMessageElement) {
-                        aiMessageElement.innerHTML = marked.parse(currentContent);
+                        aiMessageElement.innerHTML = renderMarkdown(currentContent);
+                        Prism.highlightAllUnder(aiMessageElement);
                         chatBody.scrollTop = chatBody.scrollHeight;
                         lastRenderTime = now;
                     }
@@ -652,7 +666,7 @@ async function getAIResponse(userQuery) {
         };
         await Storage.MessageStorage.updateMessage(finalAiMessage);
         if (aiMessageElement) {
-            aiMessageElement.innerHTML = marked.parse(currentContent);
+            updateMessageContent(aiMessageElement, currentContent);
             chatBody.scrollTop = chatBody.scrollHeight;
         }
         const conv = await Storage.ConversationStorage.getConversation(currentConversationId);
