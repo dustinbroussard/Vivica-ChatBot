@@ -8,6 +8,7 @@
  */
 
 import Storage from './storage-wrapper.js';
+import { marked } from 'marked';
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
 import { initVoiceMode, startListening, stopListening, toggleListening, speak, getIsListening, getIsSpeaking, updateVoiceModeConfig } from './voice-mode.js';
 import { voiceAnimation } from './voice-animation.js';
