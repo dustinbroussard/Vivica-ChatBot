@@ -30,6 +30,9 @@
 .theme-default {
   --theme-primary: #8b5cf6; /* Purple */
   --theme-accent: #a78bfa;  /* Lighter purple */
+  --user-bubble-bg: var(--bg-primary); /* Matches the background */
+  --user-bubble-text: var(--text-primary); /* Matches text color */
+  --user-bubble-border: 1px solid var(--accent-primary); /* Accent border */
 }
 
 .theme-blue {
@@ -807,9 +810,10 @@ body {
 }
 
 .message.user .message-bubble {
-  background: var(--accent-primary);
-  color: var(--bg-primary);
-  border-color: var(--accent-primary);
+  background: var(--user-bubble-bg, var(--accent-primary));
+  color: var(--user-bubble-text, var(--bg-primary));
+  border: var(--user-bubble-border, 1px solid var(--accent-primary));
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .message-time {
