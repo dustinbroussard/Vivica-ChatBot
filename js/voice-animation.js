@@ -197,9 +197,9 @@ class VoiceAnimation {
     }
 
     // Update particles
+    this.particles.forEach(p => p.update());
     this.particles = this.particles.filter(p => p.life > 0);
     this.particles.forEach(p => {
-      p.update();
       p.draw(this.ctx, this.currentMoodColor);
     });
   }
