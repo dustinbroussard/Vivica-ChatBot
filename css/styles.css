@@ -810,7 +810,7 @@ body {
 }
 
 .message.user .message-bubble {
-  background: var(--user-bubble-bg, var(--accent-primary));
+  background: var(--user-bubble-bg, var(--text-primary));
   color: var(--user-bubble-text, var(--bg-primary));
   border: var(--user-bubble-border, 1px solid var(--accent-primary));
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
