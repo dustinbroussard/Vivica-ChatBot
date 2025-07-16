@@ -79,6 +79,9 @@ function debugLog(...args) {
 // --- Audio visualization helpers ---
 async function startAudioVisualization() {
     try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error('getUserMedia not supported');
+        }
         audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const source = audioCtx.createMediaStreamSource(audioStream);

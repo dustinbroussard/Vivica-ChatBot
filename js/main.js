@@ -555,6 +555,7 @@ async function getAIResponse(userQuery) {
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
+                'Accept': 'text/event-stream',
                 'HTTP-Referer': window.location.origin, // Important for OpenRouter
                 'X-Title': 'Vivica Chat App' // Optional: for OpenRouter dashboard
             },
@@ -705,6 +706,10 @@ async function getAIResponse(userQuery) {
             timestamp: initialAiMessage.timestamp // Keep original timestamp
         };
         await Storage.MessageStorage.updateMessage(finalAiMessage);
+        if (aiMessageElement) {
+            aiMessageElement.innerHTML = marked.parse(currentContent);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
         const conv = await Storage.ConversationStorage.getConversation(currentConversationId);
         if (conv) {
             conv.timestamp = Date.now();
@@ -1519,7 +1524,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     profilesBtn.addEventListener('click', openProfilesModal);
     closeProfilesModalBtn.addEventListener('click', () => closeModal(profilesModal));
-    cancelProfileBtn.addEventListener('click', resetProfileForm); // Reset form on cancel
+    cancelProfileBtn.addEventListener('click', () => {
+        resetProfileForm();
+        closeModal(profilesModal);
+    });
     profileForm.addEventListener('submit', saveProfile);
     deleteProfileBtn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(profileIdInput.value)));
 
