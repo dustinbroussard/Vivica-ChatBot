@@ -931,9 +931,9 @@ pre code {
 }
 
 .send-btn {
-  background: var(--accent-primary);
-  border: 2px solid var(--accent-secondary);
-  color: var(--bg-primary);
+  background: var(--bg-secondary);
+  border: 2px solid var(--accent-primary);
+  color: var(--text-primary);
   font-size: 1.1rem;
   cursor: pointer;
   padding: 12px;
@@ -949,6 +949,7 @@ pre code {
 
 .send-btn:hover {
   background: var(--accent-secondary);
+  border: 2px solid var(--text-primary);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
 }
