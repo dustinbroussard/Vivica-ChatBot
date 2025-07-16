@@ -8,7 +8,7 @@
  */
 
 import Storage from './storage-wrapper.js';
-import { marked } from 'marked';
+// Marked is loaded via CDN in index.html, available globally as 'marked'
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
 import { initVoiceMode, startListening, stopListening, toggleListening, speak, getIsListening, getIsSpeaking, updateVoiceModeConfig } from './voice-mode.js';
 import { voiceAnimation } from './voice-animation.js';
@@ -216,7 +216,7 @@ function renderMessage(message, isNew = false) {
     const renderMarkdown = (content) => {
         // First replace literal newlines with markdown line breaks
         const withLineBreaks = content.replace(/\n/g, '  \n');
-        return marked.parse(withLineBreaks);
+        return window.marked.parse(withLineBreaks);
     };
 
     // Initial render of message content with markdown support
