@@ -101,6 +101,7 @@
             <div class="header-title">
                 <h1 id="current-conversation-title">Vivica</h1>
                 <span class="status-indicator online"></span>
+                <span id="memory-indicator" class="memory-indicator" title="Memory enabled" style="display:none;"></span>
             </div>
             <div class="header-actions">
                 <button type="button" class="header-btn desktop-only" id="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
@@ -381,6 +382,9 @@
                     <label class="settings-label">Tags</label>
                     <input type="text" id="memory-tags" class="settings-input" placeholder="Enter tags separated by commas...">
                     <small class="settings-hint">Use tags to organize and search memories</small>
+                </div>
+                <div class="settings-group">
+                    <label><input type="checkbox" id="memory-enabled"> Enable memory in chat</label>
                 </div>
                 <div class="settings-group">
                     <label class="settings-label">Search Memories</label>
