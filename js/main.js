@@ -1409,14 +1409,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initial render of conversations list
     await renderConversationsList();
 
-    const allConversations = await Storage.ConversationStorage.getAllConversations();
-    if (allConversations.length > 0) {
-        const lastId = parseInt(localStorage.getItem('lastConversationId') || '0');
-        const conv = allConversations.find(c => c.id === lastId) || allConversations[0];
-        await loadConversation(conv.id);
-    } else {
-        emptyState.style.display = 'flex';
-    }
+    // Always show the welcome screen on startup
+    emptyState.style.display = 'flex';
 
     // Voice mode setup
     const settings = await Storage.SettingsStorage.getSettings();

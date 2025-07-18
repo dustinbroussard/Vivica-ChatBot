@@ -893,7 +893,7 @@ pre code {
   padding: 20px;
   border-top: 1px solid var(--border);
   background: var(--bg-secondary);
-  position: bottom;
+  position: sticky;
   bottom: 0;
   z-index: 200;
 }
