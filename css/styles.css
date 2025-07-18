@@ -609,6 +609,14 @@ body {
   animation: pulse 2s infinite;
 }
 
+.memory-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  margin-left: 4px;
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 0.8; }
   50% { opacity: 0.5; }

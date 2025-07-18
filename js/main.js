@@ -43,6 +43,8 @@ const saveMemoryBtn = document.getElementById('save-memory-btn');
 const cancelMemoryBtn = document.getElementById('cancel-memory');
 const memoryContentInput = document.getElementById('memory-content');
 const memoryTagsInput = document.getElementById('memory-tags');
+const memoryEnabledCheckbox = document.getElementById('memory-enabled');
+const memoryIndicator = document.getElementById('memory-indicator');
 const renameModal = document.getElementById('rename-modal');
 const closeRenameModalBtn = document.getElementById('close-rename');
 const cancelRenameBtn = document.getElementById('cancel-rename');
@@ -133,6 +135,21 @@ function renderMarkdown(content) {
     // First replace literal newlines with markdown line breaks
     const withLineBreaks = content.replace(/\n/g, '  \n');
     return window.marked.parse(withLineBreaks);
+}
+
+function updateMemoryIndicator() {
+    if (!memoryIndicator) return;
+    const enabled = localStorage.getItem('memoryEnabled') === 'true';
+    memoryIndicator.style.display = enabled ? 'inline-block' : 'none';
+}
+
+async function getMemoryPrompt() {
+    const enabled = localStorage.getItem('memoryEnabled') === 'true';
+    if (!enabled) return '';
+    const memories = await Storage.MemoryStorage.getAllMemories();
+    if (!memories.length) return '';
+    const lines = memories.map(m => `- ${m.content}`);
+    return `\nMemories:\n${lines.join('\n')}`;
 }
 
 /**
@@ -512,6 +529,8 @@ async function buildSystemPrompt(basePrompt) {
             if (news) prompt += `\nNews: ${news}`;
         }
     }
+    const mem = await getMemoryPrompt();
+    if (mem) prompt += `\n${mem}`;
     return prompt;
 }
 
@@ -1181,6 +1200,9 @@ async function openMemoryModal() {
     // For now, just a simple editor. You'd list memories here.
     memoryContentInput.value = '';
     memoryTagsInput.value = '';
+    if (memoryEnabledCheckbox) {
+        memoryEnabledCheckbox.checked = localStorage.getItem('memoryEnabled') === 'true';
+    }
 }
 
 /**
@@ -1204,6 +1226,10 @@ async function saveMemory() {
 
     try {
         await Storage.MemoryStorage.addMemory(memory);
+        if (memoryEnabledCheckbox) {
+            localStorage.setItem('memoryEnabled', memoryEnabledCheckbox.checked ? 'true' : 'false');
+            updateMemoryIndicator();
+        }
         showToast('Memory saved!', 'success');
         closeModal(memoryModal);
         // Optionally, re-render a memory list if you had one
@@ -1328,6 +1354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.applyColorTheme) window.applyColorTheme();
     sendBtn.disabled = true;
     if (charCountSpan) charCountSpan.textContent = '0w / 0c';
+    updateMemoryIndicator();
 
     // Register Service Worker
     if ('serviceWorker' in navigator) {
@@ -1540,6 +1567,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     closeMemoryModalBtn.addEventListener('click', () => closeModal(memoryModal));
     cancelMemoryBtn.addEventListener('click', () => closeModal(memoryModal));
     saveMemoryBtn.addEventListener('click', saveMemory);
+    if (memoryEnabledCheckbox) {
+        memoryEnabledCheckbox.addEventListener('change', () => {
+            localStorage.setItem('memoryEnabled', memoryEnabledCheckbox.checked ? 'true' : 'false');
+            updateMemoryIndicator();
+        });
+    }
 
     closeRenameModalBtn.addEventListener('click', () => closeModal(renameModal));
     cancelRenameBtn.addEventListener('click', () => closeModal(renameModal));
