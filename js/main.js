@@ -100,6 +100,8 @@ const profilesBtn = document.getElementById('profiles-btn');
 const closeProfilesModalBtn = profilesModal.querySelector('.close-modal');
 const memoryModal = document.getElementById('memory-modal');
 const memoryBtn = document.getElementById('memory-btn');
+const closeMemoryModalBtn = document.getElementById('close-memory');
+const cancelMemoryBtn = document.getElementById('cancel-memory');
 const renameModal = document.getElementById('rename-modal');
 const closeRenameModalBtn = document.getElementById('close-rename');
 const cancelRenameBtn = document.getElementById('cancel-rename');
@@ -1754,6 +1756,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     profileForm.addEventListener('submit', saveProfile);
     deleteProfileBtn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(profileIdInput.value)));
+    closeMemoryModalBtn.addEventListener('click', () => closeModal(memoryModal));
+    cancelMemoryBtn.addEventListener('click', () => closeModal(memoryModal));
 
     profileNameInput.addEventListener('input', checkProfileFormValidity);
     profileSystemPromptInput.addEventListener('input', checkProfileFormValidity);
