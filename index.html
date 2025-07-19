@@ -10,39 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css">
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        /* Clean up unused CSS classes */
-        .tools-container * {
-            box-sizing: border-box;
-        }
-        .section-heading {
-            margin-top: 0;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-            color: #555;
-        }
-        .input-action-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: #f3f4f6;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 14px;
-            color: #4b5563;
-            margin-right: 8px;
-            transition: background 0.15s ease;
-        }
-        .input-action-button:hover {
-            background: #e5e7eb;
-        }
-        .settings-group {
-            margin-bottom: 20px;
-        }
-    </style>
+
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -116,7 +84,7 @@
         <div class="chat-body" id="chat-body">
             <div class="empty-state" id="empty-state">
                 <div class="empty-icon">
-                    <img id="logo-img" src="images/logo-defaultdark.png" alt="ChatBot Logo" style="height: 200px;" />
+                    <img id="logo-img" src="images/logo-defaultdark.png" alt="ChatBot Logo" />
                 </div>
                 <h2 class="empty-title">Welcome to Vivica</h2>
                 <p class="empty-text">Start a new conversation to begin</p>
@@ -139,7 +107,7 @@
                     </button>
                 </div>
             </div>
-            <span class="typing-indicator" id="typing-indicator" style="display: none;">
+            <span class="typing-indicator" id="typing-indicator">
                 <i class="fas fa-circle"></i>
                 <i class="fas fa-circle"></i>
                 <i class="fas fa-circle"></i>
@@ -265,7 +233,7 @@
             </div>
             <div class="modal-body">
                 <div id="profiles-list" class="custom-models-list"></div>
-                <hr style="margin:24px 0;">
+                <hr>
                 <form id="profile-form" class="settings-group" autocomplete="off">
                     <input type="hidden" id="profile-id">
                     <label class="settings-label" for="profile-name">Profile Name</label>
@@ -282,9 +250,9 @@
                         <input type="checkbox" id="model1-free-filter">
                         <label for="model1-free-filter">Show only free models</label>
                     </div>
-                    <div id="profile-model-dropdown" class="model-dropdown-list" style="display:none;max-height:160px;overflow:auto;border:1px solid var(--border);background:var(--bg-tertiary);border-radius:6px;z-index:99;position:relative;"></div>
+                    <div id="profile-model-dropdown" class="model-dropdown-list"></div>
                     <input type="hidden" id="profile-model" value="">
-                    <span id="profile-model-selected" style="font-size:0.9em;color:var(--text-muted);display:none;"></span>
+                    <span id="profile-model-selected"></span>
                     
                     <label class="settings-label" for="profile-system-prompt">System Prompt</label>
                     <textarea id="profile-system-prompt" class="settings-input" rows="3" placeholder="Describe this AI's persona/role..."></textarea>
@@ -299,13 +267,13 @@
                     <input type="number" id="profile-max-context" class="settings-input" value="20" min="1" max="50">
                     <small class="settings-hint">How many previous messages this persona will use for context (history/memory window)</small>
                     
-                    <div style="margin-top:20px;display:flex;gap:8px;">
+                    <div class="modal-actions">
                         <button type="submit" class="modal-btn primary-btn" id="save-profile-btn">
                             <i class="fas fa-save"></i>
                             Save Profile
                         </button>
                         <button type="button" class="modal-btn cancel-btn" id="cancel-profile-btn">Cancel</button>
-                        <button type="button" class="modal-btn danger-btn" id="delete-profile-btn" style="display:none">
+                        <button type="button" class="modal-btn danger-btn" id="delete-profile-btn">
                             <i class="fas fa-trash"></i>Delete
                         </button>
                     </div>
@@ -402,7 +370,7 @@
     </div>
 
     <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+    <div class="loading-overlay" id="loading-overlay">
         <div class="loading-spinner">
             <div class="spinner"></div>
             <p>Processing...</p>
@@ -414,61 +382,8 @@
     <script type="module" src="js/storage-wrapper.js"></script>
     <script type="module" src="js/android-bridge.js"></script>
 
-    <script>
-        // Helper functions for the UI
-        function insertQuickPrompt(prompt) {
-            document.getElementById('user-input').value = prompt;
-            document.getElementById('user-input').focus();
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        // Add smooth scrolling and modern interactions
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add ripple effect to buttons
-            const buttons = document.querySelectorAll('button, .quick-action-btn');
-            buttons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    const ripple = document.createElement('span');
-                    ripple.classList.add('ripple');
-                    this.appendChild(ripple);
-                    
-                    const rect = this.getBoundingClientRect();
-                    const size = Math.max(rect.width, rect.height);
-                    ripple.style.width = ripple.style.height = size + 'px';
-                    ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
-                    ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
-                    
-                    setTimeout(() => {
-                        ripple.remove();
-                    }, 600);
-                });
-            });
-
-            // Auto-resize textarea
-            const textareas = document.querySelectorAll('textarea');
-            textareas.forEach(textarea => {
-                textarea.addEventListener('input', function() {
-                    this.style.height = 'auto';
-                    this.style.height = this.scrollHeight + 'px';
-                });
-            });
-        });
-
-        // Global error handling
-        window.addEventListener('error', (event) => {
-            console.error('Global error:', event.error || event.message);
-            if (window.showToast) {
-                window.showToast('Error: ' + (event.error?.message || event.message), 'error', 5000);
-            }
-        });
-        
-    </script>
-	<script type="module" src="js/android-bridge.js"></script>
-	<script src="js/theme-toggle.js"></script>
-	<script type="module" src="js/main.js"></script>
+    <script type="module" src="js/theme-toggle.js"></script>
+    <script type="module" src="js/main.js"></script>
 
 </body>
 </html>

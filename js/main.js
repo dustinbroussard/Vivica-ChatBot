@@ -130,6 +130,48 @@ function showToast(message, type = 'info', duration = 3000) {
 // Expose globally for other modules or pages
 window.showToast = showToast;
 
+// Inserts a quick prompt into the user input field
+function insertQuickPrompt(prompt) {
+    userInput.value = prompt;
+    userInput.focus();
+}
+window.insertQuickPrompt = insertQuickPrompt;
+
+// Apply ripple effects to all buttons
+function addRippleEffects() {
+    document.querySelectorAll('button, .quick-action-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            btn.appendChild(ripple);
+            const rect = btn.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+            ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+            setTimeout(() => ripple.remove(), 600);
+        });
+    });
+}
+
+// Auto resize all textareas on input
+function enableAutoResize() {
+    document.querySelectorAll('textarea').forEach(t => {
+        t.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    });
+}
+
+// Global error handler
+window.addEventListener('error', (event) => {
+    console.error('Global error:', event.error || event.message);
+    if (window.showToast) {
+        window.showToast('Error: ' + (event.error?.message || event.message), 'error', 5000);
+    }
+});
+
 // Function to safely render markdown with proper line breaks
 function renderMarkdown(content) {
     // First replace literal newlines with markdown line breaks
@@ -1374,6 +1416,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     sendBtn.disabled = true;
     if (charCountSpan) charCountSpan.textContent = '0w / 0c';
     updateMemoryIndicator();
+    addRippleEffects();
+    enableAutoResize();
     adjustChatLayout();
     window.addEventListener('resize', adjustChatLayout);
     if (window.innerWidth <= 768) {
