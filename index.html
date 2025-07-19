@@ -71,7 +71,6 @@
                 <span class="status-indicator online"></span>
             </div>
             <div class="header-actions">
-                <button type="button" class="header-btn" id="summarize-save-btn" style="display:none;">Summarize &amp; Save</button>
                 <button type="button" class="header-btn desktop-only" id="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
                     <i class="fas fa-adjust"></i>
                 </button>
@@ -83,11 +82,13 @@
 
         <!-- Chat Body -->
         <div class="chat-body" id="chat-body">
-            <div class="empty-state welcome-center" id="empty-state">
-                <img src="images/logo-defaultdark.png" alt="Vivica Logo" class="welcome-logo"/>
-                <h2>Welcome to Vivica</h2>
-                <p>Start a new conversation to begin</p>
-                <div class="welcome-buttons">
+            <div class="empty-state" id="empty-state">
+                <div class="empty-icon">
+                    <img id="logo-img" src="images/logo-defaultdark.png" alt="ChatBot Logo" />
+                </div>
+                <h2 class="empty-title">Welcome to Vivica</h2>
+                <p class="empty-text">Start a new conversation to begin</p>
+                <div class="quick-actions">
                     <button type="button" class="quick-action-btn" onclick="insertQuickPrompt('Help me write a professional email')">
                         <i class="fas fa-envelope"></i>
                         <span>Write Email</span>
@@ -116,7 +117,7 @@
                 <i class="fas fa-chevron-down"></i>
             </button>
         </div>
-        <canvas id="orbCanvas"></canvas>
+                   </div canvas id="orbCanvas"></canvas>        </div>
         <!-- Chat Footer -->
         <div class="chat-footer">
             <div class="chat-input-container">
@@ -148,9 +149,9 @@
         </div>
     </div>
     <!-- Settings Modal -->
-    <div class="modal" id="settingsModal" style="display:none">
+    <div class="modal" id="settingsModal">
         <div class="modal-overlay"></div>
-        <div class="modal-content small-modal">
+        <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">
                     <i class="fas fa-cog"></i>
@@ -236,9 +237,9 @@
     </div>
 
     <!-- Profiles Modal -->
-    <div class="modal" id="profiles-modal" style="display:none">
+    <div class="modal" id="profiles-modal">
         <div class="modal-overlay"></div>
-        <div class="modal-content small-modal">
+        <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">
                     <i class="fas fa-user-circle"></i>
@@ -298,7 +299,7 @@
     </div>
 
     <!-- Rename Modal -->
-    <div class="modal" id="rename-modal" style="display:none">
+    <div class="modal" id="rename-modal">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header">
@@ -322,7 +323,7 @@
     </div>
 
     <!-- Export Modal -->
-    <div class="modal" id="export-modal" style="display:none">
+    <div class="modal" id="export-modal">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header">
@@ -345,7 +346,7 @@
     </div>
 
     <!-- Memory Modal -->
-    <div class="modal" id="memory-modal" style="display:none">
+    <div class="modal" id="memory-modal">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header">
@@ -353,7 +354,6 @@
                     <i class="fas fa-brain"></i>
                     Memory Manager
                 </div>
-                <button class="close-modal" id="memory-close-btn" aria-label="Close">&times;</button>
             </div>
             <form id="memory-form" class="modal-body memory-editor-form">
                 <div class="section-columns">
