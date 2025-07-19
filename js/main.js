@@ -1815,7 +1815,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     memoryBtn.addEventListener('click', openMemoryModal);
-    summarizeBtn.addEventListener('click', summarizeAndSaveConversation);
+    document.getElementById('summarize-btn')?.addEventListener('click', summarizeAndSaveConversation);
 
     closeRenameModalBtn.addEventListener('click', () => closeModal(renameModal));
     cancelRenameBtn.addEventListener('click', () => closeModal(renameModal));
