@@ -1766,12 +1766,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     profileForm.addEventListener('submit', saveProfile);
     deleteProfileBtn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(profileIdInput.value)));
-    document.getElementById('summarize-btn')?.addEventListener('click', summarizeAndSaveConversation);
-    document.querySelectorAll('#memory-modal .close-modal').forEach(btn => {
-        if (btn) btn.addEventListener('click', () => closeModal(memoryModal));
-    });
-    
-    if (cancelMemoryBtn && memoryModal) {
+    const summarizeButton = document.getElementById('summarize-btn');
+    if (summarizeButton) {
+        summarizeButton.addEventListener('click', summarizeAndSaveConversation);
+    }
+
+    const memoryModalCloseButtons = document.querySelectorAll('#memory-modal .close-modal');
+    if (memoryModalCloseButtons.length) {
+        memoryModalCloseButtons.forEach(btn => 
+            btn.addEventListener('click', () => closeModal(memoryModal))
+        );
+    }
+
+    if (cancelMemoryBtn) {
         cancelMemoryBtn.addEventListener('click', () => closeModal(memoryModal));
     }
 
