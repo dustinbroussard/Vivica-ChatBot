@@ -52,6 +52,8 @@ const fileUploadInput = document.getElementById('file-upload');
 const clearInputBtn = document.getElementById('clear-btn');
 const voiceModeToggleBtn = document.getElementById('voice-mode-toggle-btn');
 const themeSelect = document.getElementById('theme-select');
+const darkModeToggle = document.getElementById('dark-mode-toggle');
+const currentThemeLabel = document.getElementById('current-theme-label');
 
 // Mobile touch variables for sidebar swipe
 let touchStartX = null;
@@ -155,6 +157,14 @@ function enableAutoResize() {
             this.style.height = this.scrollHeight + 'px';
         });
     });
+}
+
+function updateCurrentThemeLabel() {
+    if (!currentThemeLabel) return;
+    const color = localStorage.getItem('colorTheme') || 'default';
+    const mode = localStorage.getItem('theme') === 'light' ? 'Light' : 'Dark';
+    const label = color.charAt(0).toUpperCase() + color.slice(1);
+    currentThemeLabel.textContent = `${label} ${mode}`;
 }
 
 // Global error handler
@@ -922,6 +932,10 @@ async function openSettingsModal() {
         themeSelect.value = localStorage.getItem('colorTheme') || 'default';
         if (window.applyColorTheme) window.applyColorTheme();
     }
+    if (darkModeToggle) {
+        darkModeToggle.checked = localStorage.getItem('theme') !== 'light';
+    }
+    updateCurrentThemeLabel();
 }
 
 /**
@@ -945,6 +959,7 @@ async function saveSettings() {
         const suffix = localStorage.getItem('theme') !== 'light' ? 'dark' : 'light';
         document.getElementById('logo-img').src = `images/logo-${themeSelect.value}${suffix}.png`;
         if (window.applyColorTheme) window.applyColorTheme();
+        updateCurrentThemeLabel();
     }
     try {
         // Settings are stored in the 'memory' store with a fixed key
@@ -1390,6 +1405,7 @@ function toggleScrollButton() {
 document.addEventListener('DOMContentLoaded', async () => {
     debugLog('DOM Content Loaded. Initializing Vivica...');
     if (window.applyColorTheme) window.applyColorTheme();
+    updateCurrentThemeLabel();
     sendBtn.disabled = true;
     if (charCountSpan) charCountSpan.textContent = '0w / 0c';
     addRippleEffects();
@@ -1434,6 +1450,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         themeSelect.addEventListener('change', () => {
             localStorage.setItem('colorTheme', themeSelect.value);
             if (window.applyColorTheme) window.applyColorTheme();
+            updateCurrentThemeLabel();
         });
     }
 
@@ -1561,6 +1578,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     cancelSettingsBtn.addEventListener('click', () => closeModal(settingsModal));
     saveSettingsBtn.addEventListener('click', saveSettings);
     clearAllConversationsBtn.addEventListener('click', confirmClearAllConversations);
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('change', () => {
+            document.getElementById('theme-toggle-btn')?.click();
+            updateCurrentThemeLabel();
+        });
+    }
 
     profilesBtn.addEventListener('click', openProfilesModal);
     closeProfilesModalBtn.addEventListener('click', () => closeModal(profilesModal));
