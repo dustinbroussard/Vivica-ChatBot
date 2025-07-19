@@ -62,25 +62,24 @@ class VoiceAnimation {
       touch-action: none;
     `;
     
-    // Create name display
-    const nameDiv = document.createElement('div');
-    nameDiv.className = 'vivica-name';
-    nameDiv.textContent = 'VIVICA';
-    nameDiv.style.cssText = `
+    this.profileSelect = document.createElement('select');
+    this.profileSelect.id = 'voice-profile-select';
+    this.profileSelect.className = 'profile-select';
+    this.profileSelect.style.cssText = `
       position: absolute;
       bottom: 40px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: clamp(20px, 5vw, 32px);
-      font-weight: bold;
-      letter-spacing: 3px;
-      opacity: 0.9;
-      text-shadow: 0 0 20px rgba(255,255,255,0.5);
-      pointer-events: none;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.3);
+      pointer-events: auto;
     `;
 
     this.animationContainer.appendChild(this.canvas);
-    this.animationContainer.appendChild(nameDiv);
+    this.animationContainer.appendChild(this.profileSelect);
     this.animationContainer.appendChild(closeBtn);
     document.body.appendChild(this.animationContainer);
 

@@ -20,7 +20,7 @@ const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
 const newChatBtn = document.getElementById('new-chat-btn');
 const conversationsList = document.getElementById('conversations-list');
-const currentConversationTitle = document.getElementById('current-conversation-title');
+const profileSelect = document.getElementById('profile-select');
 const emptyState = document.getElementById('empty-state');
 const typingIndicator = document.getElementById('typing-indicator');
 const charCountSpan = document.getElementById('char-count');
@@ -207,6 +207,35 @@ function debugLog(message, level = 'info') {
     console.log();
 }
 
+function applyChatProfile(profile) {
+    currentProfileId = profile.id;
+}
+
+function setActiveProfile(profile) {
+    localStorage.setItem('activeProfileId', profile.id);
+    window.currentProfile = profile;
+    applyChatProfile(profile);
+    updateVoiceModeConfig({
+        model: profile.model,
+        systemPrompt: profile.systemPrompt,
+        temperature: profile.temperature,
+        memoryMode: profile.memoryMode
+    });
+}
+
+async function buildFullPrompt(userInput) {
+    const profile = window.currentProfile || {};
+    let memoryText = '';
+    if (profile.memoryMode !== 'off') {
+        const allMemory = await Storage.MemoryStorage.getAllMemories();
+        const relevant = allMemory.filter(m =>
+            (m.tags && (m.tags.includes('identity') || m.tags.includes('instruction') || m.tags.includes('personality'))) || m.pinned === true
+        );
+        memoryText = relevant.map(m => m.content).join('\n');
+    }
+    return `${profile.systemPrompt || ''}\n\n### Memory Context:\n${memoryText}\n\n### User Message:\n${userInput}`;
+}
+
 /**
  * Opens a modal.
  * @param {HTMLElement} modalElement - The modal DOM element.
@@ -226,6 +255,18 @@ function closeModal(modalElement) {
     modalElement.classList.remove('show');
     modalElement.style.display = 'none';
     document.body.classList.remove('modal-open');
+}
+
+function populateProfileDropdown(selectEl, profiles, activeId) {
+    if (!selectEl) return;
+    selectEl.innerHTML = '';
+    profiles.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.name;
+        selectEl.appendChild(opt);
+    });
+    if (activeId) selectEl.value = activeId;
 }
 
 /**
@@ -440,7 +481,6 @@ async function loadConversation(conversationId) {
     });
 
     const conversation = await Storage.ConversationStorage.getConversation(conversationId);
-    currentConversationTitle.textContent = conversation?.title || 'Vivica';
     currentProfileId = conversation?.profileId || null; // Set current profile based on conversation
 
     const messages = await Storage.MessageStorage.getMessagesByConversationId(conversationId);
@@ -467,7 +507,6 @@ async function startNewConversation() {
     localStorage.setItem('lastConversationId', id);
     chatBody.innerHTML = '';
     emptyState.style.display = 'flex';
-    currentConversationTitle.textContent = 'Vivica';
     userInput.value = '';
     userInput.focus();
     if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
@@ -510,8 +549,8 @@ async function sendMessage() {
         userInput.style.height = 'auto'; // Reset textarea height
 
         showTypingIndicator(true);
-        // Call the real AI response function
-        await getAIResponse(content);
+        const fullPrompt = await buildFullPrompt(content);
+        await getAIResponse(fullPrompt);
     } catch (error) {
         debugLog(`Error sending message: ${error.message}`, 'error');
         showToast('Failed to send message.', 'error');
@@ -600,22 +639,18 @@ async function getAIResponse(userQuery) {
             return;
         }
 
-        let profile = null;
-        if (currentProfileId) {
-            profile = await Storage.ProfileStorage.getProfile(currentProfileId);
-        }
+        const profile = window.currentProfile || (currentProfileId ? await Storage.ProfileStorage.getProfile(currentProfileId) : null);
 
         // Use default values if no profile or profile values are missing
         const model = profile?.model || 'mistralai/mistral-7b-instruct'; // Default model
-        const systemPrompt = await buildSystemPrompt(profile?.systemPrompt || 'You are a helpful AI assistant.');
+        const systemPrompt = '';
         const temperature = profile?.temperature !== undefined ? profile.temperature : 0.7;
         const maxTokens = profile?.maxTokens || 2000;
         const maxContext = profile?.maxContext || 20; // Number of previous messages to include
 
         const chatHistory = await getChatHistory();
 
-        // Add system prompt to the beginning of the messages if it exists
-        const messages = [{ role: 'system', content: systemPrompt }, ...chatHistory];
+        const messages = [...chatHistory];
 
         // Trim messages to fit maxContext
         const relevantMessages = messages.slice(Math.max(messages.length - maxContext, 0));
@@ -936,7 +971,6 @@ function confirmClearAllConversations() {
                 chatBody.innerHTML = ''; // Clear chat display
                 emptyState.style.display = 'flex'; // Show empty state
                 renderConversationsList(); // Re-render empty list
-                currentConversationTitle.textContent = 'Vivica'; // Reset header title
                 closeModal(settingsModal);
             })
             .catch(error => {
@@ -1277,7 +1311,7 @@ async function saveConversationName() {
             showToast('Conversation renamed!', 'success');
             await renderConversationsList();
             if (currentConversationId === convId) {
-                currentConversationTitle.textContent = newTitle;
+                // Conversation title updated
             }
             closeModal(renameModal);
         }
@@ -1301,7 +1335,6 @@ function confirmAndDeleteConversation(convId) {
                     currentConversationId = null;
                     chatBody.innerHTML = '';
                     emptyState.style.display = 'flex';
-                    currentConversationTitle.textContent = 'Vivica';
                 }
                 renderConversationsList();
             })
@@ -1403,6 +1436,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (window.applyColorTheme) window.applyColorTheme();
         });
     }
+
+    const profiles = await Storage.ProfileStorage.getAllProfiles();
+    let activeId = parseInt(localStorage.getItem('activeProfileId'), 10);
+    if (!activeId && profiles.length) activeId = profiles[0].id;
+    const activeProfile = activeId ? await Storage.ProfileStorage.getProfile(activeId) : profiles[0];
+    if (activeProfile) setActiveProfile(activeProfile);
+    populateProfileDropdown(profileSelect, profiles, activeProfile?.id);
+    if (voiceAnimation.profileSelect) {
+        populateProfileDropdown(voiceAnimation.profileSelect, profiles, activeProfile?.id);
+        voiceAnimation.profileSelect.addEventListener('change', async (e) => {
+            const p = await Storage.ProfileStorage.getProfile(parseInt(e.target.value));
+            setActiveProfile(p);
+            profileSelect.value = p.id;
+            showToast(`Profile switched to ${p.name}`, 'info');
+        });
+    }
+    profileSelect.addEventListener('change', async (e) => {
+        const p = await Storage.ProfileStorage.getProfile(parseInt(e.target.value));
+        setActiveProfile(p);
+        if (voiceAnimation.profileSelect) voiceAnimation.profileSelect.value = p.id;
+        showToast(`Profile switched to ${p.name}`, 'info');
+    });
 
     // Initial render of conversations list
     await renderConversationsList();
