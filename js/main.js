@@ -1756,7 +1756,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     profileForm.addEventListener('submit', saveProfile);
     deleteProfileBtn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(profileIdInput.value)));
-    closeMemoryModalBtn.addEventListener('click', () => closeModal(memoryModal));
+    document.querySelectorAll('#memory-modal .close-modal').forEach(btn =>
+  btn.addEventListener('click', () => closeModal(memoryModal))
+);
     cancelMemoryBtn?.addEventListener('click', () => closeModal(memoryModal));
 
     profileNameInput.addEventListener('input', checkProfileFormValidity);
