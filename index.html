@@ -9,7 +9,9 @@
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.cleaned.css">
+    <link rel="stylesheet" href="css/modals.css">
+
 
 
     <!-- Scripts -->
@@ -347,75 +349,80 @@
         </div>
     </div>
 
-    <!-- Memory Modal -->
-    <div class="modal" id="memory-modal">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <i class="fas fa-brain"></i>
-                    Memory Manager
-                </div>
-            </div>
-            <form id="memory-form" class="modal-body memory-editor-form">
-                <div class="section-columns">
-                    <section>
-                        <h3>Identity &amp; Personality</h3>
-                        <div class="settings-group">
-                            <label class="settings-label" for="name">Name</label>
-                            <input type="text" id="name" class="settings-input">
-                        </div>
-                        <div class="settings-group">
-                            <label class="settings-label" for="pronouns">Pronouns</label>
-                            <input type="text" id="pronouns" class="settings-input">
-                        </div>
-                        <div class="settings-group">
-                            <label class="settings-label" for="occupation">Occupation</label>
-                            <input type="text" id="occupation" class="settings-input">
-                        </div>
-                        <div class="settings-group">
-                            <label class="settings-label" for="location">Location</label>
-                            <input type="text" id="location" class="settings-input">
-                        </div>
-                        <div class="settings-group">
-                            <label class="settings-label" for="tone">Preferred Tone</label>
-                            <input type="text" id="tone" class="settings-input">
-                        </div>
-                        <div class="settings-group">
-                            <label class="settings-label" for="style">Communication Style</label>
-                            <input type="text" id="style" class="settings-input">
-                        </div>
-                        <div class="settings-group">
-                            <label class="settings-label" for="hobbies">Interests &amp; Hobbies</label>
-                            <textarea id="hobbies" class="settings-input" rows="3"></textarea>
-                        </div>
-                    </section>
-                    <section>
-                        <h3>Instructions &amp; Notes</h3>
-                        <div class="settings-group">
-                            <label class="settings-label" for="instructions">Custom Instructions</label>
-                            <textarea id="instructions" class="settings-input" rows="3"></textarea>
-                        </div>
-                        <div class="settings-group">
-                            <label class="settings-label" for="systemNotes">System Notes</label>
-                            <textarea id="systemNotes" class="settings-input" rows="3"></textarea>
-                        </div>
-                        <div class="settings-group">
-                            <label class="settings-label" for="tags">Tags</label>
-                            <input type="text" id="tags" class="settings-input" placeholder="comma, separated">
-                        </div>
-                    </section>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="modal-btn" id="memory-reset-btn">Reset</button>
-                    <button type="button" class="modal-btn" id="memory-export-btn">Export Memory</button>
-                    <button type="button" class="modal-btn" id="memory-import-btn">Import Memory</button>
-                    <button type="button" class="modal-btn cancel-btn" id="memory-cancel-btn">Cancel</button>
-                    <button type="submit" class="modal-btn primary-btn" id="memory-save-btn">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
+	<!-- Memory Modal -->
+	<div class="modal" id="memory-modal">
+	  <div class="modal-overlay"></div>
+	  <div class="modal-content">
+	  <button class="close-modal" aria-label="Close">&times;</button>
+	    <div class="modal-header">
+	      <div class="modal-title">
+		<i class="fas fa-brain"></i>
+		Memory Manager
+	      </div>
+	    </div>
+	    <form id="memory-form" class="modal-body memory-editor-form">
+	      <div class="section-columns">
+		<section>
+		  <h3>Identity &amp; Personality</h3>
+		  <div class="memory-grid">
+		    <div class="settings-group">
+		      <label class="settings-label" for="name">Name</label>
+		      <input type="text" id="name" class="settings-input">
+		    </div>
+		    <div class="settings-group">
+		      <label class="settings-label" for="pronouns">Pronouns</label>
+		      <input type="text" id="pronouns" class="settings-input">
+		    </div>
+		    <div class="settings-group">
+		      <label class="settings-label" for="occupation">Occupation</label>
+		      <input type="text" id="occupation" class="settings-input">
+		    </div>
+		    <div class="settings-group">
+		      <label class="settings-label" for="location">Location</label>
+		      <input type="text" id="location" class="settings-input">
+		    </div>
+		    <div class="settings-group grid-span">
+		      <label class="settings-label" for="tone">Preferred Tone</label>
+		      <input type="text" id="tone" class="settings-input">
+		    </div>
+		    <div class="settings-group grid-span">
+		      <label class="settings-label" for="style">Communication Style</label>
+		      <input type="text" id="style" class="settings-input">
+		    </div>
+		    <div class="settings-group grid-span">
+		      <label class="settings-label" for="hobbies">Interests &amp; Hobbies</label>
+		      <textarea id="hobbies" class="settings-input" rows="3"></textarea>
+		    </div>
+		  </div>
+		</section>
+
+		<section>
+		  <h3>Instructions &amp; Notes</h3>
+		  <div class="settings-group">
+		    <label class="settings-label" for="instructions">Custom Instructions</label>
+		    <textarea id="instructions" class="settings-input" rows="3"></textarea>
+		  </div>
+		  <div class="settings-group">
+		    <label class="settings-label" for="systemNotes">System Notes</label>
+		    <textarea id="systemNotes" class="settings-input" rows="3"></textarea>
+		  </div>
+		  <div class="settings-group">
+		    <label class="settings-label" for="tags">Tags</label>
+		    <input type="text" id="tags" class="settings-input" placeholder="comma, separated">
+		  </div>
+		</section>
+	      </div>
+
+	      <div class="modal-footer">
+		<button type="button" class="modal-btn" id="memory-reset-btn">Reset</button>
+		<button type="button" class="modal-btn" id="memory-export-btn">Export Memory</button>
+		<button type="button" class="modal-btn" id="memory-import-btn">Import Memory</button>
+		<button type="button" class="modal-btn cancel-btn" id="memory-cancel-btn">Cancel</button>
+		<button type="submit" class="modal-btn primary-btn" id="memory-save-btn">Save</button>
+	      </div>
+	    </form>
+	  </div>
+	</div>
 
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loading-overlay">
