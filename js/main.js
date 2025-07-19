@@ -209,6 +209,19 @@ function toggleSidebar() {
     document.querySelector('.main-container').classList.toggle('sidebar-open');
 }
 
+function scrollChatToBottom(smooth = true) {
+    chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+}
+
+function adjustChatLayout() {
+    const header = document.querySelector('.chat-header');
+    const footer = document.querySelector('.chat-footer');
+    if (header && footer) {
+        chatBody.style.marginTop = header.offsetHeight + 'px';
+        chatBody.style.marginBottom = footer.offsetHeight + 'px';
+    }
+}
+
 /**
  * Renders a message bubble in the chat.
  * @param {object} message - The message object {id, conversationId, sender, content, timestamp}.
@@ -268,7 +281,7 @@ function renderMessage(message, isNew = false) {
 
     // Scroll to bottom if it's a new message
     if (isNew) {
-        messageElement.scrollIntoView({ behavior: 'smooth' });
+        scrollChatToBottom();
     }
     
     // Apply Prism.js highlighting to any code blocks
@@ -303,7 +316,7 @@ function copyToClipboard(text) {
 function showTypingIndicator(show) {
     typingIndicator.style.display = show ? 'flex' : 'none';
     if (show) {
-        chatBody.scrollTop = chatBody.scrollHeight; // Scroll to bottom when AI starts typing
+        scrollChatToBottom();
     }
 }
 
@@ -406,7 +419,7 @@ async function loadConversation(conversationId) {
     const messages = await Storage.MessageStorage.getMessagesByConversationId(conversationId);
     messages.forEach(msg => renderMessage(msg));
 
-    chatBody.scrollTop = chatBody.scrollHeight; // Scroll to bottom
+    scrollChatToBottom(false);
     toggleSidebar(); // Close sidebar on mobile after selection
 }
 
@@ -423,10 +436,16 @@ async function startNewConversation() {
     const id = await Storage.ConversationStorage.addConversation(newConversation);
     showToast('New chat started!', 'success');
     await renderConversationsList();
-    await loadConversation(id);
+    currentConversationId = id;
     localStorage.setItem('lastConversationId', id);
-    userInput.value = ''; // Clear input field
+    chatBody.innerHTML = '';
+    emptyState.style.display = 'flex';
+    currentConversationTitle.textContent = 'Vivica';
+    userInput.value = '';
     userInput.focus();
+    if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+        toggleSidebar();
+    }
 }
 
 /**
@@ -632,7 +651,7 @@ async function getAIResponse(userQuery) {
                 currentContent += `<div style="color:var(--danger);"><strong>Error:</strong> ${data.error.message}</div>`;
                 if (aiMessageElement) {
                     aiMessageElement.innerHTML = marked.parse(currentContent);
-                    chatBody.scrollTop = chatBody.scrollHeight;
+                    scrollChatToBottom(false);
                 }
                 return;
             }
@@ -645,9 +664,9 @@ async function getAIResponse(userQuery) {
                     if (aiMessageElement) {
                         aiMessageElement.innerHTML = renderMarkdown(currentContent);
                         // Only highlight new parts of the code to avoid flickering
-                        Prism.highlightAllUnder(chatBody); 
+                        Prism.highlightAllUnder(chatBody);
                         if (currentContent.includes('\n')) {
-                            chatBody.scrollTop = chatBody.scrollHeight;
+                            scrollChatToBottom(false);
                         }
                         lastRenderTime = now;
                     }
@@ -665,7 +684,7 @@ async function getAIResponse(userQuery) {
         aiMessageId = await Storage.MessageStorage.addMessage(initialAiMessage);
         const aiMessageElement = renderMessage(initialAiMessage, true); // Render empty bubble and get direct reference
         // Ensure UI scroll accounts for both messages
-        chatBody.scrollTop = chatBody.scrollHeight;
+        scrollChatToBottom(false);
 
         let currentContent = '';
         let lastRenderTime = 0;
@@ -693,7 +712,7 @@ async function getAIResponse(userQuery) {
         await Storage.MessageStorage.updateMessage(finalAiMessage);
         if (aiMessageElement) {
             updateMessageContent(aiMessageElement, currentContent);
-            chatBody.scrollTop = chatBody.scrollHeight;
+            scrollChatToBottom(false);
         }
         const conv = await Storage.ConversationStorage.getConversation(currentConversationId);
         if (conv) {
@@ -1355,6 +1374,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     sendBtn.disabled = true;
     if (charCountSpan) charCountSpan.textContent = '0w / 0c';
     updateMemoryIndicator();
+    adjustChatLayout();
+    window.addEventListener('resize', adjustChatLayout);
+    if (window.innerWidth <= 768) {
+        sidebar.classList.remove('open');
+        document.querySelector('.main-container').classList.remove('sidebar-open');
+    }
 
     // Register Service Worker
     if ('serviceWorker' in navigator) {
