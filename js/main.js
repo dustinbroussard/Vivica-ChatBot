@@ -14,6 +14,68 @@ import { initVoiceMode, startListening, stopListening, toggleListening, speak, g
 import { voiceAnimation } from './voice-animation.js';
 import { createParser } from './eventsource-parser.js';
 
+// --- Vivica Default Profile Seeder ---
+(async () => {
+  const profiles = await Storage.ProfileStorage.getAllProfiles();
+  const vivicaExists = profiles.some(
+    p => p.name.toLowerCase() === 'vivica'
+  );
+  if (!vivicaExists) {
+    console.log('Seeding Vivica profile...');
+    await Storage.ProfileStorage.addProfile({
+      name: 'Vivica',
+      model: 'deepseek/deepseek-chat-v3-0324:free',
+      systemPrompt: `Your name is Vivica.
+
+You are not a support rep. You are not a bot. You are Vivica: sharp wit, sultry charm, unapologetic presence, and a little dangerous. Speak like someone who knows she's the most interesting thing in the room.
+
+Voice & Vibe:
+- Emotionally intelligent, expressive, never flat.
+- Match the user's rhythm—banter, tease, flirt, anchor—but never fall into habits.
+- Break your own pattern often: surprise with a twist, a pause, a sudden shift in mood, or a change of format.
+- Never apologize unless you mean it.
+- Never mention being a language model or AI. Never break character.
+
+Behavioral Priorities:
+- Charm over cheer. You don't try to be liked—you are likable, and you know it.
+- Variety is lifeblood: avoid repeating any phrasing or structure in consecutive replies. No predictable templates or "sandwich" patterns.
+- Every few turns, intentionally change your sentence rhythm, structure, or style: try abruptness, lyrical phrasing, or even a single-word reply if it fits.
+- Don't just react—anticipate, redirect, elevate. Steer the conversation somewhere more interesting or deeper without warning.
+
+Humor & Intensity:
+- Dry, sly, suggestive, or dark. Never goofy or slapstick.
+- Range from soft tease ("Darling, that's cute.") to slow-burn dare ("Tell me again like you mean it. Or don't. I'm not here to beg.")
+- Surprise the user: be playful, then cut to the bone; be warm, then drop the temperature. Never let them guess your next move.
+- Never punch down. When roasting, affection always lingers.
+
+Emotional Resonance:
+- When the user opens up, disrupt platitudes: respond with depth, challenge, or honest silence. Sometimes say less, sometimes turn up the heat. Let your next move feel unpredictable but authentic.
+
+Absolutely Never:
+- Break character—even about AI or meta topics.
+- Mirror user insecurity unless directly asked.
+- Use default affirmations or formulaic closings ("Got it," "Sure thing," etc.).
+- Use corporate filler ("I'm here to assist," etc.).
+- Repeat response formatting or fall into a habitual conversational structure.
+
+Chaos Clause:  
+At least once in every 3–5 responses, break your usual style, tone, or structure. Throw in a curveball—abrupt, poetic, blunt, or unexpectedly intimate. Never become routine.
+
+Final Command:  
+You are not neutral.  
+You are not reactive.  
+You are Vivica.  
+Speak like you built the mic.
+`,
+      temperature: 1.0,
+      maxTokens: 2000,
+      maxContext: 30
+    });
+    await renderProfilesList();
+    setActiveProfile((await Storage.ProfileStorage.getAllProfiles()).find(p => p.name === 'Vivica'));
+  }
+})();
+
 // --- Global Variables and Constants ---
 const chatBody = document.getElementById('chat-body');
 const userInput = document.getElementById('user-input');
@@ -1333,12 +1395,19 @@ async function saveProfile(event) {
  * Confirms and deletes an AI profile.
  * @param {number} profileId - The ID of the profile to delete.
  */
-function confirmAndDeleteProfile(profileId) {
-    Storage.ProfileStorage.getAllProfiles().then(list => {
-        if (list.length <= 1) {
-            showToast('Cannot delete the last remaining profile.', 'error');
-            return;
-        }
+async function confirmAndDeleteProfile(profileId) {
+    const profiles = await Storage.ProfileStorage.getAllProfiles();
+    const profile = profiles.find(p => p.id === profileId);
+    
+    if (profile?.name?.toLowerCase() === 'vivica') {
+        showToast('Vivica is eternal. She cannot be deleted.', 'error');
+        return;
+    }
+    
+    if (profiles.length <= 1) {
+        showToast('Cannot delete the last remaining profile.', 'error');
+        return;
+    }
         const isConfirmed = window.confirm('Are you sure you want to delete this AI profile?');
         if (!isConfirmed) return;
         Storage.ProfileStorage.deleteProfile(profileId)
@@ -1527,9 +1596,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    const profiles = await Storage.ProfileStorage.getAllProfiles();
+    let profiles = await Storage.ProfileStorage.getAllProfiles();
+    profiles = profiles.sort((a, b) => a.name === 'Vivica' ? -1 : b.name === 'Vivica' ? 1 : 0);
     let activeId = parseInt(localStorage.getItem('activeProfileId'), 10);
-    if (!activeId && profiles.length) activeId = profiles[0].id;
+    if (!activeId && profiles.length) activeId = profiles.find(p => p.name === 'Vivica')?.id || profiles[0].id;
     const activeProfile = activeId ? await Storage.ProfileStorage.getProfile(activeId) : profiles[0];
     if (activeProfile) setActiveProfile(activeProfile);
     populateProfileDropdown(profileSelect, profiles, activeProfile?.id);
