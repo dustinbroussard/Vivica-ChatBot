@@ -119,11 +119,16 @@ const voiceModeToggleBtn = document.getElementById('voice-mode-toggle-btn');
 const themeSelect = document.getElementById('theme-select');
 const darkModeToggle = document.getElementById('dark-mode-toggle');
 const currentThemeLabel = document.getElementById('current-theme-label');
-function updateSummarizeBtn() {
-  const btn = document.getElementById('summarize-save-btn');
+function updateSummarizeButtonVisibility() {
+  const btn = document.getElementById('summarize-btn');
   if (!btn) return;
-  const hasMessages = currentConversationId && chatBody.children.length > 0;
+  const hasMessages = currentConversationId && document.querySelectorAll('.message').length > 0;
   btn.style.display = hasMessages ? 'inline-block' : 'none';
+  
+  // Add smooth transition effect
+  btn.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+  btn.style.opacity = hasMessages ? '1' : '0';
+  btn.style.transform = hasMessages ? 'translateY(0)' : 'translateY(-5px)';
 }
 
 // Mobile touch variables for sidebar swipe
@@ -580,6 +585,7 @@ async function loadConversation(conversationId) {
 
     scrollChatToBottom(false);
     toggleSidebar(); // Close sidebar on mobile after selection
+    updateSummarizeButtonVisibility();
 }
 
 /**
@@ -972,10 +978,12 @@ function clearUserInput() {
  * Summarizes the current conversation and saves it to memory.
  */
 async function summarizeAndSaveConversation() {
+    const btn = document.getElementById('summarize-btn');
     if (!currentConversationId) {
         showToast('No active conversation to summarize.', 'info');
         return;
     }
+    if (btn) btn.disabled = true;
 
     const chatHistory = await getChatHistory();
     if (!chatHistory.length) {
@@ -1034,6 +1042,8 @@ async function summarizeAndSaveConversation() {
     });
 
     showToast('Conversation summarized and saved!', 'success');
+    const btn = document.getElementById('summarize-btn');
+    if (btn) btn.disabled = false;
 }
 
 // --- Modal Handlers ---
@@ -1756,6 +1766,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     profileForm.addEventListener('submit', saveProfile);
     deleteProfileBtn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(profileIdInput.value)));
+    document.getElementById('summarize-btn')?.addEventListener('click', summarizeAndSaveConversation);
     document.querySelectorAll('#memory-modal .close-modal').forEach(btn =>
   btn.addEventListener('click', () => closeModal(memoryModal))
 );
