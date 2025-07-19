@@ -2112,3 +2112,20 @@ body.light-mode .theme-purple {
     outline: none;
     border-color: var(--accent-primary);
 }
+
+/* Summarize & Save button */
+.summarize-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: background 0.2s ease;
+}
+
+.summarize-btn:hover {
+  background: var(--bg-hover);
+}
