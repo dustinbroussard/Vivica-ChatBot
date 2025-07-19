@@ -334,7 +334,6 @@ async function buildFullPrompt(userInput) {
 function openModal(modalElement) {
     modalElement.style.display = 'flex';
     modalElement.classList.add('show');
-    // Add a class to body to prevent scrolling
     document.body.classList.add('modal-open');
 }
 
