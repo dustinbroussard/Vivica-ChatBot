@@ -1559,6 +1559,11 @@ function toggleScrollButton() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Ensure ALL modals are hidden on startup
+    document.querySelectorAll('.modal').forEach(m => {
+        m.classList.remove('show');
+        m.style.display = 'none';
+    });
     debugLog('DOM Content Loaded. Initializing Vivica...');
     if (window.applyColorTheme) window.applyColorTheme();
     updateCurrentThemeLabel();
