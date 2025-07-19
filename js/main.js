@@ -1758,22 +1758,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    profilesBtn.addEventListener('click', openProfilesModal);
-    closeProfilesModalBtn.addEventListener('click', () => closeModal(profilesModal));
-    cancelProfileBtn.addEventListener('click', () => {
+    if (profilesBtn) profilesBtn.addEventListener('click', openProfilesModal);
+    if (closeProfilesModalBtn) closeProfilesModalBtn.addEventListener('click', () => closeModal(profilesModal));
+    if (cancelProfileBtn) cancelProfileBtn.addEventListener('click', () => {
         resetProfileForm();
         closeModal(profilesModal);
     });
-    profileForm.addEventListener('submit', saveProfile);
-    deleteProfileBtn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(profileIdInput.value)));
-    // Only set up event listeners if elements exist
-    document.getElementById('summarize-btn')?.addEventListener('click', summarizeAndSaveConversation);
+    if (profileForm) profileForm.addEventListener('submit', saveProfile);
+    if (deleteProfileBtn) deleteProfileBtn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(profileIdInput.value)));
     
-    document.querySelectorAll('#memory-modal .close-modal').forEach(btn => {
-        btn?.addEventListener('click', () => closeModal(memoryModal));
-    });
+    const summarizeButton = document.getElementById('summarize-btn');
+    if (summarizeButton) summarizeButton.addEventListener('click', summarizeAndSaveConversation);
+    
+    const memoryCloseButtons = document.querySelectorAll('#memory-modal .close-modal');
+    if (memoryCloseButtons) {
+        memoryCloseButtons.forEach(btn => {
+            btn.addEventListener('click', () => closeModal(memoryModal));
+        });
+    }
 
-    cancelMemoryBtn?.addEventListener('click', () => closeModal(memoryModal));
+    if (cancelMemoryBtn) cancelMemoryBtn.addEventListener('click', () => closeModal(memoryModal));
 
     profileNameInput.addEventListener('input', checkProfileFormValidity);
     profileSystemPromptInput.addEventListener('input', checkProfileFormValidity);
