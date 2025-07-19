@@ -26,7 +26,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const refreshLogo = () => {
     const theme = localStorage.getItem('colorTheme') || 'default';
     const suffix = isDark() ? 'dark' : 'light';
-    logo.src = `images/logo-${theme}${suffix}.png`;
+    try {
+      if (logo) {
+        logo.src = `images/logo-${theme}${suffix}.png`;
+      }
+    } catch (e) {
+      console.debug('Logo element not found or could not be updated:', e);
+    }
   };
 
   const toggleTheme = () => {
