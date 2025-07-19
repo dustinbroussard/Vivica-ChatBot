@@ -24,7 +24,6 @@ const profileSelect = document.getElementById('profile-select');
 const emptyState = document.getElementById('empty-state');
 const typingIndicator = document.getElementById('typing-indicator');
 const charCountSpan = document.getElementById('char-count');
-const summarizeBtn = document.getElementById('summarize-save-btn');
 const menuToggle = document.getElementById('menu-toggle');
 const sidebar = document.getElementById('sidebar');
 const closeSidebarBtn = document.getElementById('close-sidebar-btn');
