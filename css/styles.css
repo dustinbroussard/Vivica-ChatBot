@@ -1287,13 +1287,6 @@ kbd {
   border-left: 4px solid var(--border);
 }
 
-.memory-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent-primary);
-  margin-left: 4px;
-}
 
 .memory-item:hover {
   background: var(--bg-hover);
@@ -1357,6 +1350,24 @@ kbd {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+#memory-modal .section-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+#memory-modal .section-columns section {
+  flex: 1 1 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#memory-modal h3 {
+  margin: 0 0 8px;
+  color: var(--text-primary);
 }
 
 .danger-zone {

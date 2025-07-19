@@ -65,7 +65,9 @@ function resetForm() {
 }
 
 function closeModal() {
+  memoryModal.classList.remove('show');
   memoryModal.style.display = 'none';
+  document.body.classList.remove('modal-open');
 }
 
 async function exportMemory() {
