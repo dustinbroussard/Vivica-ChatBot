@@ -1768,10 +1768,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     deleteProfileBtn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(profileIdInput.value)));
     document.getElementById('summarize-btn')?.addEventListener('click', summarizeAndSaveConversation);
     document.querySelectorAll('#memory-modal .close-modal').forEach(btn => {
-        btn?.addEventListener('click', () => closeModal(memoryModal));
+        if (btn) btn.addEventListener('click', () => closeModal(memoryModal));
     });
     
-    if (cancelMemoryBtn) {
+    if (cancelMemoryBtn && memoryModal) {
         cancelMemoryBtn.addEventListener('click', () => closeModal(memoryModal));
     }
 
