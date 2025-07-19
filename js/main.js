@@ -1042,8 +1042,8 @@ async function summarizeAndSaveConversation() {
     });
 
     showToast('Conversation summarized and saved!', 'success');
-    const btn = document.getElementById('summarize-btn');
-    if (btn) btn.disabled = false;
+    const summaryBtn = document.getElementById('summarize-btn');
+    if (summaryBtn) summaryBtn.disabled = false;
 }
 
 // --- Modal Handlers ---
