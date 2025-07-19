@@ -410,3 +410,5 @@ export default {
     MemoryStorage,
     SettingsStorage
 };
+
+export { STORES } from './db-utils.js';

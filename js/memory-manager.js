@@ -1,7 +1,8 @@
 // memory-manager.js
 // Vivica AI: Memory Manager Modal
 
-import { add, update, getAll, remove, STORES } from './storage-wrapper.js';
+import { add, update, getAll, remove } from './storage-wrapper.js';
+import { STORES } from './db-utils.js';
 
 let memoryModal, formEl;
 
