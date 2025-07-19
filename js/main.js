@@ -1766,21 +1766,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     profileForm.addEventListener('submit', saveProfile);
     deleteProfileBtn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(profileIdInput.value)));
-    const summarizeButton = document.getElementById('summarize-btn');
-    if (summarizeButton) {
-        summarizeButton.addEventListener('click', summarizeAndSaveConversation);
-    }
+    // Only set up event listeners if elements exist
+    document.getElementById('summarize-btn')?.addEventListener('click', summarizeAndSaveConversation);
+    
+    document.querySelectorAll('#memory-modal .close-modal').forEach(btn => {
+        btn?.addEventListener('click', () => closeModal(memoryModal));
+    });
 
-    const memoryModalCloseButtons = document.querySelectorAll('#memory-modal .close-modal');
-    if (memoryModalCloseButtons.length) {
-        memoryModalCloseButtons.forEach(btn => 
-            btn.addEventListener('click', () => closeModal(memoryModal))
-        );
-    }
-
-    if (cancelMemoryBtn) {
-        cancelMemoryBtn.addEventListener('click', () => closeModal(memoryModal));
-    }
+    cancelMemoryBtn?.addEventListener('click', () => closeModal(memoryModal));
 
     profileNameInput.addEventListener('input', checkProfileFormValidity);
     profileSystemPromptInput.addEventListener('input', checkProfileFormValidity);
