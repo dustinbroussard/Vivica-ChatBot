@@ -434,7 +434,10 @@
     <script type="module">
         import { initMemoryManager } from './js/memory-manager.js';
         document.addEventListener('DOMContentLoaded', () => {
-            initMemoryManager();
+            // Ensure all required DOM elements exist before initialization
+            if (document.getElementById('memory-modal')) {
+                initMemoryManager();
+            }
         });
     </script>
 

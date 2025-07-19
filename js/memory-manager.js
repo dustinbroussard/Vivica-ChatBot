@@ -8,7 +8,16 @@ let memoryModal, formEl;
 
 export function initMemoryManager() {
   memoryModal = document.getElementById('memory-modal');
+  if (!memoryModal) {
+    console.error('Memory modal element not found');
+    return;
+  }
+
   formEl = memoryModal.querySelector('form');
+  if (!formEl) {
+    console.error('Memory form element not found');
+    return;
+  }
 
   formEl.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -19,12 +28,16 @@ export function initMemoryManager() {
     closeModal();
   });
 
-  document.getElementById('memory-reset-btn').addEventListener('click', resetForm);
-  document.getElementById('memory-cancel-btn').addEventListener('click', closeModal);
-  document.getElementById('memory-export-btn').addEventListener('click', exportMemory);
-  document.getElementById('memory-import-btn').addEventListener('click', importMemory);
-  
-  document.getElementById('memory-close-btn').addEventListener('click', closeModal);
+  const addListener = (id, fn) => {
+    const el = document.getElementById(id);
+    el?.addEventListener('click', fn);
+  };
+
+  addListener('memory-reset-btn', resetForm);
+  addListener('memory-cancel-btn', closeModal);
+  addListener('memory-export-btn', exportMemory);
+  addListener('memory-import-btn', importMemory);
+  addListener('memory-close-btn', closeModal);
 
   // Optional: close on Escape
   document.addEventListener('keydown', (e) => {
