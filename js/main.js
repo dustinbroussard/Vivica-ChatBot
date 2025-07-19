@@ -24,6 +24,7 @@ const profileSelect = document.getElementById('profile-select');
 const emptyState = document.getElementById('empty-state');
 const typingIndicator = document.getElementById('typing-indicator');
 const charCountSpan = document.getElementById('char-count');
+const summarizeBtn = document.getElementById('summarize-save-btn');
 const menuToggle = document.getElementById('menu-toggle');
 const sidebar = document.getElementById('sidebar');
 const closeSidebarBtn = document.getElementById('close-sidebar-btn');
@@ -173,7 +174,10 @@ function renderMarkdown(content) {
 }
 
 async function getMemoryPrompt() {
-    const memories = await Storage.MemoryStorage.getAllMemories();
+    let memories = await Storage.MemoryStorage.getAllMemories();
+    if (currentProfileId) {
+        memories = memories.filter(m => !m.profileId || m.profileId === currentProfileId);
+    }
     if (!memories.length) return '';
     const lines = memories.map(m => `- ${m.content}`);
     return `\nMemories:\n${lines.join('\n')}`;
@@ -874,6 +878,74 @@ function clearUserInput() {
     userInput.value = '';
     userInput.style.height = 'auto'; // Reset textarea height
     showToast('Input cleared.', 'info');
+}
+
+/**
+ * Summarizes the current conversation and saves it to memory.
+ */
+async function summarizeAndSaveConversation() {
+    if (!currentConversationId) {
+        showToast('No active conversation to summarize.', 'info');
+        return;
+    }
+
+    const chatHistory = await getChatHistory();
+    if (!chatHistory.length) {
+        showToast('Conversation is empty.', 'info');
+        return;
+    }
+
+    const settings = await Storage.SettingsStorage.getSettings();
+    const apiKey = settings?.apiKey1;
+    if (!apiKey) {
+        showToast('OpenRouter API Key is not set in settings.', 'error', 5000);
+        return;
+    }
+
+    const profile = window.currentProfile || (currentProfileId ? await Storage.ProfileStorage.getProfile(currentProfileId) : null);
+    if (!profile) {
+        showToast('No active profile found.', 'error');
+        return;
+    }
+
+    const summaryPrompt = 'Summarize the following conversation for long-term memory. Focus on the user\u2019s goals, tone, emotional state, and any significant tasks, themes, or preferences discussed.';
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': window.location.origin,
+            'X-Title': 'Vivica Chat App'
+        },
+        body: JSON.stringify({
+            model: profile.model || 'mistralai/mistral-7b-instruct',
+            messages: [{ role: 'system', content: summaryPrompt }, ...chatHistory],
+            temperature: profile.temperature ?? 0.7,
+            max_tokens: Math.min(profile.maxTokens || 500, 800),
+            stream: false
+        })
+    });
+
+    if (!response.ok) {
+        showToast('Failed to get summary.', 'error');
+        return;
+    }
+    const data = await response.json();
+    const summary = data.choices?.[0]?.message?.content?.trim();
+    if (!summary) {
+        showToast('No summary returned.', 'error');
+        return;
+    }
+
+    await Storage.MemoryStorage.addMemory({
+        content: summary,
+        tags: ['summary'],
+        profileId: profile.id,
+        timestamp: Date.now()
+    });
+
+    showToast('Conversation summarized and saved!', 'success');
 }
 
 // --- Modal Handlers ---
@@ -1611,6 +1683,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     memoryBtn.addEventListener('click', openMemoryModal);
+    summarizeBtn.addEventListener('click', summarizeAndSaveConversation);
 
     closeRenameModalBtn.addEventListener('click', () => closeModal(renameModal));
     cancelRenameBtn.addEventListener('click', () => closeModal(renameModal));
