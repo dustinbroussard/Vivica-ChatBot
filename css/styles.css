@@ -1066,6 +1066,22 @@ kbd {
   float: right;
 }
 
+.summarize-btn {
+  margin-left: 8px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.summarize-btn:hover {
+  background: var(--bg-hover);
+}
+
 @keyframes typing {
   0%, 100% { opacity: 0.5; }
   50% { opacity: 1; }
