@@ -112,6 +112,7 @@ const exportContentTextarea = document.getElementById('export-content');
 const uploadBtn = document.getElementById('upload-btn');
 const fileUploadInput = document.getElementById('file-upload');
 const clearInputBtn = document.getElementById('clear-btn');
+const summarizeBtn = document.getElementById('summarize-save-btn');
 const voiceModeToggleBtn = document.getElementById('voice-mode-toggle-btn');
 const themeSelect = document.getElementById('theme-select');
 const darkModeToggle = document.getElementById('dark-mode-toggle');
