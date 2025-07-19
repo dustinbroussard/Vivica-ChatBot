@@ -116,7 +116,12 @@ const voiceModeToggleBtn = document.getElementById('voice-mode-toggle-btn');
 const themeSelect = document.getElementById('theme-select');
 const darkModeToggle = document.getElementById('dark-mode-toggle');
 const currentThemeLabel = document.getElementById('current-theme-label');
-const summarizeBtn = document.getElementById('summarize-save-btn');
+function updateSummarizeBtn() {
+  const btn = document.getElementById('summarize-save-btn');
+  if (!btn) return;
+  const hasMessages = currentConversationId && chatBody.children.length > 0;
+  btn.style.display = hasMessages ? 'inline-block' : 'none';
+}
 
 // Mobile touch variables for sidebar swipe
 let touchStartX = null;
@@ -160,25 +165,34 @@ function checkProfileFormValidity() {
  * @param {'success'|'error'|'info'} type - The type of toast.
  * @param {number} duration - How long the toast should be visible in ms.
  */
-function showToast(message, type = 'info', duration = 3000) {
+function showToast(message, type = 'info', duration = 1800) {
     const toastContainer = document.getElementById('toast-container') || (() => {
         const div = document.createElement('div');
         div.id = 'toast-container';
+        div.style.position = 'fixed';
+        div.style.bottom = '32px';
+        div.style.right = '32px';
+        div.style.zIndex = '9999';
+        div.style.display = 'flex';
+        div.style.flexDirection = 'column-reverse';
         document.body.appendChild(div);
         return div;
     })();
 
     const toast = document.createElement('div');
-    toast.className = 'toast'; // Adding a class for styling
+    toast.className = `toast toast-${type}`;
     toast.textContent = message;
+
+    // Dismiss button
+    const dismiss = document.createElement('button');
+    dismiss.innerHTML = '&times;';
+    dismiss.className = 'toast-dismiss';
+    dismiss.onclick = () => toast.remove();
+    toast.appendChild(dismiss);
+
     toastContainer.appendChild(toast);
 
-    // Force reflow to enable transition
-    void toast.offsetWidth;
-
-    toast.style.opacity = '1';
-    toast.style.transform = 'translateY(0)';
-
+    // Fade out and remove after duration
     setTimeout(() => {
         toast.classList.add('fade-out');
         toast.addEventListener('transitionend', () => toast.remove(), { once: true });

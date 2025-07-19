@@ -23,6 +23,13 @@ export function initMemoryManager() {
   document.getElementById('memory-cancel-btn').addEventListener('click', closeModal);
   document.getElementById('memory-export-btn').addEventListener('click', exportMemory);
   document.getElementById('memory-import-btn').addEventListener('click', importMemory);
+  
+  document.getElementById('memory-close-btn').addEventListener('click', closeModal);
+
+  // Optional: close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && memoryModal.classList.contains('show')) closeModal();
+  });
 }
 
 function buildMemoryChunksFromForm() {
