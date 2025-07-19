@@ -38,13 +38,6 @@ const profilesBtn = document.getElementById('profiles-btn');
 const closeProfilesModalBtn = profilesModal.querySelector('.close-modal');
 const memoryModal = document.getElementById('memory-modal');
 const memoryBtn = document.getElementById('memory-btn');
-const closeMemoryModalBtn = memoryModal.querySelector('.close-modal');
-const saveMemoryBtn = document.getElementById('save-memory-btn');
-const cancelMemoryBtn = document.getElementById('cancel-memory');
-const memoryContentInput = document.getElementById('memory-content');
-const memoryTagsInput = document.getElementById('memory-tags');
-const memoryEnabledCheckbox = document.getElementById('memory-enabled');
-const memoryIndicator = document.getElementById('memory-indicator');
 const renameModal = document.getElementById('rename-modal');
 const closeRenameModalBtn = document.getElementById('close-rename');
 const cancelRenameBtn = document.getElementById('cancel-rename');
@@ -179,15 +172,7 @@ function renderMarkdown(content) {
     return window.marked.parse(withLineBreaks);
 }
 
-function updateMemoryIndicator() {
-    if (!memoryIndicator) return;
-    const enabled = localStorage.getItem('memoryEnabled') === 'true';
-    memoryIndicator.style.display = enabled ? 'inline-block' : 'none';
-}
-
 async function getMemoryPrompt() {
-    const enabled = localStorage.getItem('memoryEnabled') === 'true';
-    if (!enabled) return '';
     const memories = await Storage.MemoryStorage.getAllMemories();
     if (!memories.length) return '';
     const lines = memories.map(m => `- ${m.content}`);
@@ -1257,47 +1242,6 @@ function confirmAndDeleteProfile(profileId) {
 async function openMemoryModal() {
     debugLog('Opening memory modal...');
     openModal(memoryModal);
-    // Load existing memory (optional, for editing)
-    // For now, just a simple editor. You'd list memories here.
-    memoryContentInput.value = '';
-    memoryTagsInput.value = '';
-    if (memoryEnabledCheckbox) {
-        memoryEnabledCheckbox.checked = localStorage.getItem('memoryEnabled') === 'true';
-    }
-}
-
-/**
- * Saves memory content.
- */
-async function saveMemory() {
-    debugLog('Saving memory...');
-    const content = memoryContentInput.value.trim();
-    const tags = memoryTagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-
-    if (!content) {
-        showToast('Memory content cannot be empty.', 'error');
-        return;
-    }
-
-    const memory = {
-        content: content,
-        tags: tags,
-        timestamp: Date.now()
-    };
-
-    try {
-        await Storage.MemoryStorage.addMemory(memory);
-        if (memoryEnabledCheckbox) {
-            localStorage.setItem('memoryEnabled', memoryEnabledCheckbox.checked ? 'true' : 'false');
-            updateMemoryIndicator();
-        }
-        showToast('Memory saved!', 'success');
-        closeModal(memoryModal);
-        // Optionally, re-render a memory list if you had one
-    } catch (error) {
-        debugLog(`Error saving memory: ${error.message}`, 'error');
-        showToast('Failed to save memory.', 'error');
-    }
 }
 
 /**
@@ -1415,7 +1359,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.applyColorTheme) window.applyColorTheme();
     sendBtn.disabled = true;
     if (charCountSpan) charCountSpan.textContent = '0w / 0c';
-    updateMemoryIndicator();
     addRippleEffects();
     enableAutoResize();
     adjustChatLayout();
@@ -1453,20 +1396,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    const memSearch = document.getElementById('memory-search');
-    if (memSearch) {
-        memSearch.addEventListener('input', async () => {
-            const term = memSearch.value.toLowerCase();
-            const memories = await Storage.MemoryStorage.getAllMemories();
-            const resultsDiv = document.getElementById('memory-search-results');
-            resultsDiv.innerHTML = '';
-            memories.filter(m => (m.content||'').toLowerCase().includes(term) || (m.tags||[]).some(t => t.toLowerCase().includes(term))).forEach(m => {
-                const d = document.createElement('div');
-                d.textContent = m.content;
-                resultsDiv.appendChild(d);
-            });
-        });
-    }
 
     if (themeSelect) {
         themeSelect.addEventListener('change', () => {
@@ -1627,15 +1556,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     memoryBtn.addEventListener('click', openMemoryModal);
-    closeMemoryModalBtn.addEventListener('click', () => closeModal(memoryModal));
-    cancelMemoryBtn.addEventListener('click', () => closeModal(memoryModal));
-    saveMemoryBtn.addEventListener('click', saveMemory);
-    if (memoryEnabledCheckbox) {
-        memoryEnabledCheckbox.addEventListener('change', () => {
-            localStorage.setItem('memoryEnabled', memoryEnabledCheckbox.checked ? 'true' : 'false');
-            updateMemoryIndicator();
-        });
-    }
 
     closeRenameModalBtn.addEventListener('click', () => closeModal(renameModal));
     cancelRenameBtn.addEventListener('click', () => closeModal(renameModal));
