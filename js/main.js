@@ -1423,7 +1423,6 @@ async function confirmAndDeleteProfile(profileId) {
                 debugLog(`Error deleting profile: ${error.message}`, 'error');
                 showToast('Failed to delete profile.', 'error');
             });
-    });
 }
 
 /**
