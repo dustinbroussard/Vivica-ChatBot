@@ -1,7 +1,7 @@
 // memory-manager.js
 // Vivica AI: Memory Manager Modal
 
-import { add, update, getAll, remove } from './storage-wrapper.js';
+import { MemoryStorage } from './storage-wrapper.js';
 import { STORES } from './db-utils.js';
 
 let memoryModal, formEl;
@@ -14,7 +14,7 @@ export function initMemoryManager() {
     e.preventDefault();
     const memoryChunks = buildMemoryChunksFromForm();
     for (const chunk of memoryChunks) {
-      await add(STORES.MEMORY, chunk);
+      await MemoryStorage.addMemory(chunk);
     }
     closeModal();
   });
@@ -72,7 +72,7 @@ function closeModal() {
 }
 
 async function exportMemory() {
-  const memory = await getAll(STORES.MEMORY);
+  const memory = await MemoryStorage.getAllMemories();
   const blob = new Blob([JSON.stringify(memory, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -91,7 +91,7 @@ async function importMemory() {
     const text = await file.text();
     const data = JSON.parse(text);
     for (const entry of data) {
-      await add(STORES.MEMORY, entry);
+      await MemoryStorage.addMemory(entry);
     }
     alert('Memory imported!');
   };
