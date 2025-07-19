@@ -65,18 +65,18 @@ class VoiceAnimation {
     this.profileSelect = document.createElement('select');
     this.profileSelect.id = 'voice-profile-select';
     this.profileSelect.className = 'profile-select';
+    // Force dark background theme regardless of global theme
+    this.profileSelect.classList.add('force-dark');
     this.profileSelect.style.cssText = `
       position: absolute;
       bottom: 40px;
       left: 50%;
       transform: translateX(-50%);
-      padding: 8px 12px;
-      background: rgba(0,0,0,0.6);
-      color: white;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.3);
       pointer-events: auto;
+      max-width: 220px;
+      width: 90%;
     `;
+
 
     this.animationContainer.appendChild(this.canvas);
     this.animationContainer.appendChild(this.profileSelect);

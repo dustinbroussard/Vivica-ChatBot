@@ -1827,7 +1827,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     closeExportModalBtn.addEventListener('click', () => closeModal(exportModal));
     copyExportBtn.addEventListener('click', copyExportContent);
-    summarizeBtn.addEventListener('click', summarizeAndSaveConversation);
+
 
     // File upload and clear input
     fileUploadInput.addEventListener('change', handleFileUpload);

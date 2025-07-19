@@ -1,0 +1,211 @@
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.65);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: var(--modal-radius, 12px);
+  width: 100%;
+  max-width: 420px;
+  padding: 18px;
+  box-sizing: border-box;
+  box-shadow: 0 0 20px var(--shadow-heavy, rgba(0,0,0,0.6));
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* === Modal Sections === */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.modal-body {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 70vh;
+  max-width: 100%;
+  padding-right: 0;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+  gap: 8px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.modal-footer button {
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+/* === Close Buttons === */
+.close-modal,
+#memory-close-btn,
+#settings-close-btn,
+#profile-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  color: var(--text-primary);
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* === Inputs & Fields === */
+input[type="text"],
+input[type="url"],
+input[type="number"],
+textarea,
+select {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 9px;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+select:focus,
+input:focus,
+textarea:focus {
+  outline: 2px solid var(--accent-primary);
+}
+
+/* === Profile Cards === */
+.profile-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  background: var(--bg-primary);
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.profile-card .actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* === Grid for Memory Modal === */
+.memory-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.memory-grid .grid-span {
+  grid-column: span 2;
+}
+
+/* === Danger Zone === */
+.confirmation-dialog,
+.danger-zone {
+  padding: 14px;
+  background: var(--danger, #ff0000);
+  color: var(--text-primary);
+  border-radius: 8px;
+  margin-top: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* === Mobile === */
+@media (max-width: 480px) {
+  .modal-content {
+    max-width: 100%;
+    border-radius: var(--modal-mobile-radius, 8px);
+    padding: 14px;
+  }
+
+  .modal-title {
+    font-size: 1rem;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .memory-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === Profile Card Actions === */
+.profile-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-info {
+  flex-grow: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.custom-model-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--input-bg, #222);
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
