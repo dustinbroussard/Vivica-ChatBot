@@ -1,4 +1,4 @@
-# AGENT.md
+# AGENTS.md
 
 ## Project Name
 Vivica: Local-First AI Assistant with Voice and Memory
