@@ -1034,12 +1034,7 @@ pre code {
   background: var(--bg-secondary);
   border: 2px solid var(--accent-primary);
   color: var(--text-primary);
-  font-size: 1.1rem.header-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-;
+  font-size: 1.1rem;
   cursor: pointer;
   padding: 12px;
   border-radius: 50%;

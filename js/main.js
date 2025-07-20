@@ -230,7 +230,7 @@ User's name is Dustin.`;
                 stream: false
             })
         });
-        if (!response.ok) throw new Error('Vivica's attitude could not be loaded.');
+        if (!response.ok) throw new Error("Vivica's attitude could not be loaded.");
         const data = await response.json();
         const msg = data.choices?.[0]?.message?.content?.trim() || 'Vivica is refusing to perform right now.';
         el.textContent = msg.replace(/["“”]/g, '');
