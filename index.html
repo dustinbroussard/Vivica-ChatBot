@@ -87,17 +87,18 @@
         <!-- Chat Body -->
         <div class="chat-body" id="chat-body">
             <div class="empty-state" id="empty-state">
-              <div class="empty-icon">
-                <img id="welcome-logo" src="images/logo-defaultdark.png" alt="Vivica Logo" style="height:90px;">
-              </div>
-              <div class="empty-title" id="vivica-welcome-message">
-                <!-- Vivica's message will go here -->
-              </div>
-              <div class="empty-text">
-                <div id="weather-widget"></div>
-                <div id="rss-widget"></div>
-              </div>
-            </div>
+                <div class="empty-icon">
+                    <img id="logo-img" src="images/logo-defaultdark.png" alt="ChatBot Logo" />
+                </div>
+                <h2 class="empty-title">Welcome to Vivica</h2>
+                <div class="empty-title" id="vivica-welcome-message">
+		    <!-- Vivica's message will go here -->
+		  </div>
+		  <div class="empty-text">
+		    <div id="weather-widget"></div>
+		    <div id="rss-widget"></div>
+		  </div>
+		</div>
             </div>
             <span class="typing-indicator" id="typing-indicator">
                 <i class="fas fa-circle"></i>
@@ -167,14 +168,7 @@
                         <label class="settings-label" for="api-key-3">Tertiary API Key</label>
                         <input type="password" id="api-key-3" class="settings-input" placeholder="Tertiary API Key (Optional)">
                     </div>
-                    <div class="settings-group">
-                        <label class="settings-label" for="weather-api-key">OpenWeatherMap API Key</label>
-                        <input type="text" id="weather-api-key" class="settings-input" placeholder="OpenWeatherMap API Key (Optional)">
-                    </div>
-                    <div class="settings-group">
-                        <label class="settings-label" for="weather-location">Weather location</label>
-                        <input type="text" id="weather-location" class="settings-input" placeholder="Weather location e.g. London">
-                    </div>
+                  
                     <small class="settings-hint">Your API keys are stored locally and never shared</small>
                 </section>
                 <section class="settings-section">
@@ -186,7 +180,6 @@
                     </div>
                     <div class="settings-group checkbox-group">
                         <label><input type="checkbox" id="include-rss"> Include RSS feeds in context</label>
-                        <label><input type="checkbox" id="include-weather"> Include Weather in context</label>
                     </div>
                 </section>
                 <section class="settings-section">
