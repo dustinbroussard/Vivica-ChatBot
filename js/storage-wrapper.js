@@ -217,6 +217,9 @@ export const ProfileStorage = {
      */
     getProfile: async (id) => {
         try {
+            if (id === undefined || id === null) {
+                return undefined;
+            }
             return await get(STORES.PROFILES, id);
         } catch (error) {
             console.error('ProfileStorage: Error getting profile:', error);
