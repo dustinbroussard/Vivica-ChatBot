@@ -178,10 +178,20 @@ function checkProfileFormValidity() {
  * @param {number} duration - How long the toast should be visible in ms.
  */
 async function generateVivicaWelcomeMessage() {
-    const el = document.getElementById('vivica-welcome-message');
+    let el = document.getElementById('vivica-welcome-message');
     if (!el) {
-        console.debug('Vivica welcome message element not found - skipping');
-        return;
+        // Try to create the element if missing
+        const emptyState = document.getElementById('empty-state');
+        if (emptyState) {
+            const msgDiv = document.createElement('div');
+            msgDiv.id = 'vivica-welcome-message';
+            emptyState.querySelector('.empty-text').prepend(msgDiv);
+            el = msgDiv;
+        }
+        if (!el) {
+            debugLog('Vivica welcome message element missing and could not be created');
+            return;
+        }
     }
     el.innerHTML = '<span style="color:var(--text-muted);">Vivica is thinking…</span>';
     let lastSummary = '';
@@ -267,11 +277,15 @@ async function showWelcomeScreen() {
         document.getElementById('weather-widget'),
         document.getElementById('rss-widget'), 
         document.getElementById('vivica-welcome-message'),
-        document.getElementById('logo-img')
+        document.getElementById('logo-img'),
+        document.getElementById('empty-title')
     ];
     
     welcomeElements.forEach(el => {
-        if (el) el.style.display = 'block';
+        if (el) {
+            el.style.display = 'block';
+            el.style.opacity = '1';  // Ensure visible
+        }
     });
 
     // Render widgets
@@ -1889,7 +1903,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     populateProfileDropdown(profileSelect, profiles, activeProfile?.id);
     
     // Always show welcome screen on startup
-    await showWelcomeScreen();
+    try {
+        debugLog('Showing welcome screen...');
+        await showWelcomeScreen();
+        debugLog('Welcome screen shown successfully');
+    } catch (error) {
+        debugLog(`Error showing welcome screen: ${error.message}`, 'error');
+        // Fallback - at least show the empty state
+        emptyState.style.display = 'flex';
+        try {
+            await generateVivicaWelcomeMessage();
+        } catch (e) {
+            debugLog(`Failed to generate welcome message: ${e.message}`, 'error');
+        }
+    }
     if (voiceAnimation.profileSelect) {
         populateProfileDropdown(voiceAnimation.profileSelect, profiles, activeProfile?.id);
         voiceAnimation.profileSelect.addEventListener('change', async function (e) {
