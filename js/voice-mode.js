@@ -17,6 +17,7 @@ let synth;       // SpeechSynthesisUtterance instance
 let currentSpeechUtterance = null; // To manage ongoing speech
 let isListening = false; // Is the recognition active?
 let isSpeaking = false; // Is the synthesis active?
+let isProcessing = false; // Is response being processed?
 let silenceTimer; // Timer to detect prolonged silence
 const SILENCE_TIMEOUT = 3000; // 3 seconds of silence to stop recognition
 
@@ -170,10 +171,15 @@ function initSpeechRecognition() {
             clearSilenceTimer();
             vivicaVoiceModeConfig.onSpeechError(event.error);
             vivicaVoiceModeConfig.onListenStateChange('idle');
-            // Attempt to restart if it's a common transient error
-            if (event.error === 'network' || event.error === 'audio-capture') {
-                debugLog('Attempting to restart recognition after error...');
-                setTimeout(() => startListening(), 1000);
+            
+            if (event.error === 'no-speech' || event.error === 'network' || event.error === 'audio-capture') {
+                if (!isProcessing && !isSpeaking && !window.modalOpen) {
+                    setTimeout(() => {
+                        try { recognition.start(); } catch (e) { console.log('Recognition restart after no-speech failed:', e); }
+                    }, 1000);
+                }
+            } else {
+                setState('error');
             }
             if (window.showToast) window.showToast('Voice error: ' + event.error, 'error');
         };
@@ -185,6 +191,15 @@ function initSpeechRecognition() {
             vivicaVoiceModeConfig.onSpeechEnd();
             vivicaVoiceModeConfig.onListenStateChange('idle');
             stopAudioVisualization();
+            
+            // Only restart if not speaking, not processing, and no modal/settings open
+            if (isProcessing || isSpeaking || window.modalOpen) {
+                return;
+            }
+            setState('listening');
+            setTimeout(() => {
+                try { recognition.start(); } catch (e) { console.log('Recognition restart failed:', e); }
+            }, 500);
         };
 
     } else {
@@ -325,9 +340,13 @@ export function speak(text) {
             isSpeaking = false;
             vivicaVoiceModeConfig.onSpeakingEnd();
             vivicaVoiceModeConfig.onListenStateChange('idle');
+            setState('listening');
+            if (recognition && !window.modalOpen) {
+                setTimeout(() => {
+                    try { recognition.start(); } catch (e) { console.log('Recognition restart after speaking failed:', e); }
+                }, 500);
+            }
             resolve();
-            // Optionally restart listening after speaking if desired
-            // startListening();
         };
 
         currentSpeechUtterance.onerror = (event) => {
