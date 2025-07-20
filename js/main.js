@@ -1399,6 +1399,15 @@ async function saveProfile(event) {
         }
         await renderProfilesList();
         resetProfileForm();
+        
+        // Update dropdowns with latest profiles
+        const allProfiles = await Storage.ProfileStorage.getAllProfiles();
+        populateProfileDropdown(profileSelect, allProfiles, profile.id);
+
+        if (voiceAnimation.profileSelect) {
+            populateProfileDropdown(voiceAnimation.profileSelect, allProfiles, profile.id);
+        }
+
         // Set this new/updated profile as the current active one if no conversation is active
         if (!currentConversationId) { // Only set if no conversation is active
             currentProfileId = profile.id;
