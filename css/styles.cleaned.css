@@ -1918,6 +1918,36 @@ body.light-mode .theme-purple {
     font-size: 1.2em;
 }
 
+#weather-widget {
+  margin-bottom: 16px;
+  font-size: 1em;
+  background: var(--bg-tertiary);
+  padding: 10px 18px;
+  border-radius: 10px;
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+#rss-widget {
+  margin-top: 10px;
+  font-size: 1em;
+  min-height: 32px;
+  transition: opacity 0.3s;
+  display: block;
+}
+#rss-widget a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+#rss-widget a:hover {
+  text-decoration: underline;
+}
+#vivica-welcome-message {
+  font-size: 1.3em;
+  font-weight: 600;
+  margin-bottom: 16px;
+  min-height: 32px;
+}
+
 .model-dropdown-list {
   position: absolute;
   width: 100%;

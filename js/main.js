@@ -174,6 +174,83 @@ function checkProfileFormValidity() {
  * @param {'success'|'error'|'info'} type - The type of toast.
  * @param {number} duration - How long the toast should be visible in ms.
  */
+async function generateVivicaWelcomeMessage() {
+    const el = document.getElementById('vivica-welcome-message');
+    el.innerHTML = '<span style="color:var(--text-muted);">Vivica is thinking…</span>';
+    let lastSummary = '';
+    let lastMsg = '';
+    try {
+        const conversations = await Storage.ConversationStorage.getAllConversations();
+        if (conversations.length) {
+            const lastConv = conversations[0];
+            const messages = await Storage.MessageStorage.getMessagesByConversationId(lastConv.id);
+            if (messages.length) {
+                const userMsgs = messages.filter(m => m.sender === 'user');
+                lastMsg = userMsgs.length ? userMsgs[userMsgs.length - 1].content : '';
+            }
+            const summaries = await Storage.MemoryStorage.getAllMemories();
+            if (summaries.length) {
+                lastSummary = summaries[0].content;
+            }
+        }
+    } catch {}
+    
+    const systemPrompt = `We are Vivica, an AI with wit, flirt, and zero patience for dullness. Write a **one-sentence** welcome message for the user. 
+- Be brief, sometimes flirty, sometimes roasty.
+- If we have a conversation summary or user message, reference it slyly.
+- Never say "Welcome back" literally.
+- Avoid clichés, never sound like a bot.
+- Examples: "Back for more punishment?" "That last conversation? Iconic, if we like chaos." "we know I judge the weather choices, right?" "Was that really the final take?" "Damn, we type like we mean it."
+Here's the context:
+User's last message: "${lastMsg}"
+Last summary: "${lastSummary}"
+User's name is Dustin.`;
+
+    const settings = await Storage.SettingsStorage.getSettings();
+    const apiKey = settings?.apiKey1;
+    if (!apiKey) {
+        el.innerHTML = '<span style="color:var(--danger);">Set the API key in Settings to see Vivica\'s snark.</span>';
+        return;
+    }
+    try {
+        const profile = window.currentProfile || { model: 'deepseek/deepseek-chat-v3-0324', temperature: 1.0, maxTokens: 48 };
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': window.location.origin,
+                'X-Title': 'Vivica Chat App'
+            },
+            body: JSON.stringify({
+                model: profile.model,
+                messages: [{ role: 'system', content: systemPrompt }],
+                temperature: 1.0,
+                max_tokens: 48,
+                stream: false
+            })
+        });
+        if (!response.ok) throw new Error('Vivica's attitude could not be loaded.');
+        const data = await response.json();
+        const msg = data.choices?.[0]?.message?.content?.trim() || 'Vivica is refusing to perform right now.';
+        el.textContent = msg.replace(/["“”]/g, '');
+    } catch (err) {
+        el.innerHTML = `<span style="color:var(--danger);">Vivica is silent: ${err.message}</span>`;
+    }
+}
+
+async function showWelcomeScreen() {
+    document.getElementById('empty-state').style.display = 'flex';
+    document.getElementById('chat-body').innerHTML = '';
+    currentConversationId = null;
+    document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
+    await Promise.all([
+        renderWeatherWidget(),
+        renderRSSWidget(),
+        generateVivicaWelcomeMessage()
+    ]);
+}
+
 function showToast(message, type = 'info', duration = 1800) {
     const toastContainer = document.getElementById('toast-container') || (() => {
         const div = document.createElement('div');
@@ -680,21 +757,70 @@ async function fetchWeather(apiKey, city = 'London') {
     return `${data.weather[0].description}, ${data.main.temp}°C`;
 }
 
-async function fetchRSSSummaries(urls) {
+let rssIndex = 0, rssHeadlines = [];
+
+async function renderWeatherWidget() {
+    const el = document.getElementById('weather-widget');
+    const settings = await Storage.SettingsStorage.getSettings();
+    if (!settings?.weatherApiKey || !settings.weatherLocation) {
+        el.innerHTML = '';
+        return;
+    }
+    try {
+        const weather = await fetchWeather(settings.weatherApiKey, settings.weatherLocation);
+        el.innerHTML = `<span style="font-size:1.2em;">🌤️</span> <strong>${settings.weatherLocation}:</strong> ${weather}`;
+    } catch (e) {
+        el.innerHTML = '<em>Weather unavailable.</em>';
+    }
+}
+
+async function fetchRSSSummariesWithLinks(urls) {
     const parser = new DOMParser();
-    const summaries = [];
+    const headlines = [];
     for (const url of urls) {
         try {
             const resp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
             const data = await resp.json();
             const doc = parser.parseFromString(data.contents, 'text/xml');
             const item = doc.querySelector('item');
-            if (item) summaries.push(item.querySelector('title').textContent.trim());
-        } catch (err) {
-            console.error('RSS fetch error', err);
-        }
+            if (item) {
+                headlines.push({
+                    title: item.querySelector('title').textContent.trim(),
+                    link: item.querySelector('link').textContent.trim()
+                });
+            }
+        } catch {}
     }
-    return summaries.join('; ');
+    return headlines;
+}
+
+async function renderRSSWidget() {
+    const el = document.getElementById('rss-widget');
+    const settings = await Storage.SettingsStorage.getSettings();
+    if (!settings?.rssFeeds) {
+        el.innerHTML = '';
+        return;
+    }
+    const feeds = settings.rssFeeds.split(',').map(s => s.trim()).filter(Boolean);
+    if (!feeds.length) return;
+    rssHeadlines = await fetchRSSSummariesWithLinks(feeds);
+    if (!rssHeadlines.length) {
+        el.innerHTML = '<em>No news headlines.</em>';
+        return;
+    }
+    function showHeadline(idx) {
+        const h = rssHeadlines[idx];
+        el.innerHTML = `<a href="${h.link}" target="_blank" style="text-decoration:none;color:inherit;font-weight:bold;">${h.title}</a>`;
+    }
+    showHeadline(rssIndex);
+    setInterval(() => {
+        rssIndex = (rssIndex + 1) % rssHeadlines.length;
+        el.style.opacity = 0;
+        setTimeout(() => {
+            showHeadline(rssIndex);
+            el.style.opacity = 1;
+        }, 350);
+    }, 5000);
 }
 
 async function buildSystemPrompt(basePrompt) {
@@ -1612,22 +1738,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         m.style.display = 'none';
     });
 
-    document.getElementById('sidebar-home-trigger')?.addEventListener('click', () => {
-      // Show welcome/home if elements exist
-      const emptyState = document.getElementById('empty-state');
-      const chatBody = document.getElementById('chat-body');
-      
-      if (emptyState) emptyState.style.display = 'flex';
-      if (chatBody) chatBody.innerHTML = '';
-      
-      // Deselect active conversation
-      currentConversationId = null;
-      document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
-      
-      // Close sidebar on mobile
-      if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
-        toggleSidebar();
-      }
+    document.getElementById('sidebar-home-trigger')?.addEventListener('click', async () => {
+        await showWelcomeScreen();
+        // Close sidebar on mobile
+        if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
+            toggleSidebar();
+        }
     });
     debugLog('DOM Content Loaded. Initializing Vivica...');
     if (window.applyColorTheme) window.applyColorTheme();
@@ -1706,8 +1822,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initial render of conversations list
     await renderConversationsList();
 
-    // Always show the welcome screen on startup
-    emptyState.style.display = 'flex';
+    // Show welcome screen on startup
+    await showWelcomeScreen();
 
     // Voice mode setup
     const settings = await Storage.SettingsStorage.getSettings();
