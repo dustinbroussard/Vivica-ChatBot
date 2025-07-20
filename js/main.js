@@ -496,9 +496,12 @@ function populateProfileDropdown(selectEl, profiles, activeId) {
 /**
  * Toggles the sidebar open/close state.
  */
-function toggleSidebar() {
-    sidebar.classList.toggle('open');
-    document.querySelector('.main-container').classList.toggle('sidebar-open');
+function toggleSidebar(forceState) {
+    const shouldOpen = typeof forceState === 'boolean' ? forceState : !sidebar.classList.contains('open');
+    
+    sidebar.classList.toggle('open', shouldOpen);
+    document.querySelector('.main-container').classList.toggle('sidebar-open', shouldOpen);
+    localStorage.setItem('sidebarState', shouldOpen ? 'open' : 'closed');
 }
 
 function scrollChatToBottom(smooth = true) {
@@ -526,7 +529,15 @@ function updateMessageContent(element, content) {
 }
 
 function renderMessage(message, isNew = false) {
+  if (!message || !message.content) return null;
   toggleScrollButton();
+  
+  // Ensure message element exists before proceeding
+  const existingMsg = chatBody.querySelector(`[data-message-id="${message.id}"]`);
+  if (existingMsg) {
+      updateMessageContent(existingMsg.querySelector('.message-bubble'), message.content);
+      return existingMsg;
+  }
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', message.sender);
     messageElement.dataset.messageId = message.id;
@@ -1862,9 +1873,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     enableAutoResize();
     adjustChatLayout();
     window.addEventListener('resize', adjustChatLayout);
-    if (window.innerWidth <= 768) {
-        sidebar.classList.remove('open');
-        document.querySelector('.main-container').classList.remove('sidebar-open');
+    // Initialize sidebar state
+    const storedSidebarState = localStorage.getItem('sidebarState');
+    const isMobile = window.innerWidth <= 768;
+    const initialSidebarState = isMobile ? false : (storedSidebarState !== 'closed');
+    toggleSidebar(initialSidebarState);
+
+    // Make sidebar header clickable to reopen
+    const sidebarHeader = document.querySelector('.sidebar-header'); 
+    if (sidebarHeader) {
+        sidebarHeader.addEventListener('click', () => {
+            if (!sidebar.classList.contains('open')) {
+                toggleSidebar(true);
+            }
+        });
     }
 
     // Register Service Worker
@@ -1914,10 +1936,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Always show welcome screen on startup - don't load any conversation
     debugLog('Showing welcome screen...');
-    emptyState.style.display = 'flex';
+    // Hide elements first to prevent flash
+    emptyState.style.display = 'none';
+    chatBody.style.visibility = 'hidden';
     chatBody.innerHTML = '';
     currentConversationId = null;
-    localStorage.removeItem('lastConversationId'); // Ensure no auto-load
+    localStorage.removeItem('lastConversationId');
+    
+    // After initial render, make visible
+    setTimeout(() => {
+        emptyState.style.display = 'flex';
+        chatBody.style.visibility = 'visible';
+    }, 100);
     try {
         await generateVivicaWelcomeMessage();
         await renderWeatherWidget();
