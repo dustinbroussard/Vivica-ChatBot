@@ -281,12 +281,16 @@ async function showWelcomeScreen() {
         document.getElementById('vivica-welcome-message'),
         document.getElementById('logo-img'),
         document.getElementById('empty-title')
-    ];
+    ].filter(Boolean); // Filter out null elements
     
     welcomeElements.forEach(el => {
-        if (el && el.style) {
-            el.style.display = 'block';
-            el.style.opacity = '1';  // Ensure visible
+        try {
+            if (el.style) {
+                el.style.display = 'block';
+                el.style.opacity = '1';  // Ensure visible
+            }
+        } catch (e) {
+            console.debug('Error setting style for element:', el, e);
         }
     });
 
