@@ -209,5 +209,37 @@ textarea:focus {
   margin-bottom: 10px;
 }
 
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #aaa);
+  font-size: 1.2em;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  margin: 0 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:focus, .icon-btn:hover {
+  background: var(--bg-tertiary, #eee);
+  color: var(--accent, #6c63ff);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent, #6c63ff22);
+}
+
+.delete-profile-btn {
+  color: var(--danger, #d9534f);
+}
+
+.delete-profile-btn:focus, .delete-profile-btn:hover {
+  background: var(--danger, #d9534f);
+  color: #fff;
+  box-shadow: 0 0 0 2px var(--danger, #d9534f44);
+}
+
 
 
