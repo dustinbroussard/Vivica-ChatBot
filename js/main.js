@@ -1613,14 +1613,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('sidebar-home-trigger')?.addEventListener('click', () => {
-      // Show welcome/home
-      document.getElementById('empty-state').style.display = 'flex';
-      document.getElementById('chat-body').innerHTML = '';
+      // Show welcome/home if elements exist
+      const emptyState = document.getElementById('empty-state');
+      const chatBody = document.getElementById('chat-body');
+      
+      if (emptyState) emptyState.style.display = 'flex';
+      if (chatBody) chatBody.innerHTML = '';
+      
       // Deselect active conversation
       currentConversationId = null;
       document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
+      
       // Close sidebar on mobile
-      if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+      if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
         toggleSidebar();
       }
     });
