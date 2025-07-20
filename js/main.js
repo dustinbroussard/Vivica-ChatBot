@@ -1546,6 +1546,9 @@ async function renderProfilesList() {
     }
 
     profiles.forEach(profile => {
+        const snippet = profile.systemPrompt.length > 120
+            ? profile.systemPrompt.slice(0, 120) + '…'
+            : profile.systemPrompt;
         profilesListDiv.innerHTML += `
   <div class="profile-card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
@@ -1558,9 +1561,7 @@ async function renderProfilesList() {
     <div style="font-size:0.93em;color:var(--text-secondary);margin-bottom:1px;">
       Model: ${profile.model}
     </div>
-    <div style="font-size:0.92em;color:var(--text-muted);margin-bottom:2px;">
-      ${profile.systemPrompt}
-    </div>
+    <div class="profile-snippet">${snippet}</div>
     <div style="font-size:0.85em;color:var(--text-muted);">
       Temp: ${profile.temperature} &nbsp; Max Tokens: ${profile.maxTokens}
     </div>
@@ -1851,7 +1852,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         m.style.display = 'none';
     });
 
-    const homeTrigger = document.getElementById('sidebar-home');
+    const homeTrigger = document.getElementById('sidebar-home-trigger');
     homeTrigger?.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
