@@ -248,16 +248,18 @@ User's name is Dustin.`;
 async function showWelcomeScreen() {
     const emptyState = document.getElementById('empty-state');
     const chatBody = document.getElementById('chat-body');
+
+    if (!chatBody) {
+        console.debug('Chat body element not found - skipping welcome screen');
+        return;
+    }
+
+    chatBody.innerHTML = '';
     
     if (emptyState) {
         emptyState.style.display = 'flex';
     } else {
-        console.warn('Empty state element not found');
-        return;
-    }
-    
-    if (chatBody) {
-        chatBody.innerHTML = '';
+        console.debug('Empty state element not found - continuing without it');
     }
     currentConversationId = null;
     document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
