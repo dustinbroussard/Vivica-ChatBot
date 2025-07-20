@@ -1135,7 +1135,8 @@ async function saveSettings() {
     if (themeSelect) {
         localStorage.setItem('colorTheme', themeSelect.value);
         const suffix = localStorage.getItem('theme') !== 'light' ? 'dark' : 'light';
-        document.getElementById('logo-img').src = `images/logo-${themeSelect.value}${suffix}.png`;
+        const logo = document.getElementById('logo-img');
+        if (logo) logo.src = `images/logo-${themeSelect.value}${suffix}.png`;
         if (window.applyColorTheme) window.applyColorTheme();
         updateCurrentThemeLabel();
     }
