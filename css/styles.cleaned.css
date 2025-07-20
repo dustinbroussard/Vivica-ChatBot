@@ -856,6 +856,38 @@ header select {
   border: 2px solid var(--border);
 }
 
+.message.ai .message-avatar {
+  background: var(--text-primary);
+  color: var(--bg-tertiary);
+  border: 2px solid var(--border-light);
+}
+
+/* Static glow for Vivica's avatar */
+.message.ai .message-avatar {
+  background: var(--text-primary);
+  color: var(--bg-tertiary);
+  border: 2px solid var(--border-light);
+  box-shadow: 0 0 6px var(--accent-light, #a678ff);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+/* Speaking pulse effect */
+.message.ai.speaking .message-avatar {
+  animation: ai-speaking-glow 1s ease-in-out infinite alternate;
+}
+
+@keyframes ai-speaking-glow {
+  0% {
+    box-shadow: 0 0 6px var(--accent-light, #a678ff);
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 14px var(--accent, #6c63ff);
+    transform: scale(1.05);
+  }
+}
+
+
 .message-content {
   flex: 1;
   max-width: calc(100% - 60px);

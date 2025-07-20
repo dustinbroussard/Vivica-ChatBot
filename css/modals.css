@@ -204,8 +204,10 @@ textarea:focus {
   align-items: center;
   gap: 12px;
   padding: 8px 12px;
-  background: var(--input-bg, #222);
+  background: var(--bg-tertiary);
   border-radius: 8px;
   margin-bottom: 10px;
 }
+
+
 
