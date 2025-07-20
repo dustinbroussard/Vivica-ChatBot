@@ -1348,15 +1348,24 @@ async function openSettingsModal() {
  */
 async function saveSettings() {
     debugLog('Saving settings...');
+    const getValue = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+    };
+    const getChecked = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.checked : false;
+    };
+
     const settings = {
-        apiKey1: document.getElementById('api-key-1').value,
-        apiKey2: document.getElementById('api-key-2').value,
-        apiKey3: document.getElementById('api-key-3').value,
-        weatherApiKey: document.getElementById('weather-api-key').value,
-        weatherLocation: document.getElementById('weather-location').value,
-        rssFeeds: document.getElementById('rss-feeds').value,
-        includeWeather: document.getElementById('include-weather').checked,
-        includeRss: document.getElementById('include-rss').checked
+        apiKey1: getValue('api-key-1'),
+        apiKey2: getValue('api-key-2'),
+        apiKey3: getValue('api-key-3'),
+        weatherApiKey: getValue('weather-api-key'),
+        weatherLocation: getValue('weather-location'),
+        rssFeeds: getValue('rss-feeds'),
+        includeWeather: getChecked('include-weather'),
+        includeRss: getChecked('include-rss')
     };
     if (themeSelect) {
         localStorage.setItem('colorTheme', themeSelect.value);
