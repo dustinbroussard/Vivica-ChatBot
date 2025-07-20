@@ -28,19 +28,22 @@ Users can chat or talk to Vivica using multiple AI personas (e.g., snarky roaste
 - `android-bridge.js`: interface for Android WebView events
 - `service-worker.js` + `manifest.json`: enable PWA install and offline use
 
-## Priority Tasks
-- Add Memory Manager modal UI (view/edit/delete memory items)
-- Inject relevant memory into AI prompt on every message
-- Link "Remember this" buttons to save chat entries as memory
-- Replace Vivica label in orb mode with profile dropdown
-- Ensure voice and text mode use same profile and conversation context
+## Vivica App Polish TODOs
 
-## Expected AI Help
-- Generate memory modal UI logic
-- Inject memory into prompt flow in `main.js`
-- Enhance profile switching logic
-- Suggest UI improvements for accessibility and mobile
-- Refactor or simplify older JS as needed
+- [ ] Fix/clarify profile switching (no refresh required, always updates current chat)
+- [ ] Investigate/tweak scroll-to-bottom button logic or just remove if not needed
+- [ ] Always show sidebar conversation action buttons (desktop & mobile)
+      - Or: Implement long-press (mobile) and right-click (desktop) for action menu
+- [ ] Move "Summarize & Save" to a persistent, obvious location in chat UI
+- [ ] Remove Quick Actions from welcome screen; replace with something useful:
+      - Welcome home, stats, recent activity, Vivica’s sassy message, etc.
+      - Make Vivica logo/name in sidebar always return to welcome
+- [ ] (Optional) Enhance the welcome screen with per-profile stats/snark
+- [ ] Keep orb, keep logo handling as-is—no change needed
+
+## Stretch:
+- [ ] Add full import/export for ALL data (not just memory)
+- [ ] Optionally: Add a "Power Mode" toggle for advanced features
 
 ## Notes
 This is a mostly vanilla JS app (not React). File structure is modular but flat. App state is shared via top-level `window` variables and `localStorage`.
