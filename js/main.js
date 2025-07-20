@@ -1020,7 +1020,7 @@ async function getAIResponse(userQuery) {
                 model: model,
                 messages: relevantMessages,
                 temperature: temperature,
-                max_tokens: maxTokens,
+                max_tokens: voiceModeActive ? Math.min(maxTokens, 120) : maxTokens,
                 stream: true // Request streaming response
             })
         });

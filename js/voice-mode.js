@@ -145,8 +145,9 @@ function stopAudioVisualization() {
  * Initializes the Speech Recognition API.
  */
 function initSpeechRecognition() {
-    if ('webkitSpeechRecognition' in window) {
-        recognition = new webkitSpeechRecognition();
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const Recog = window.webkitSpeechRecognition || window.SpeechRecognition;
+        recognition = new Recog();
         recognition.continuous = false;
         recognition.interimResults = true; // Enable interim for Android to detect speech start
         recognition.maxAlternatives = 3; // Get more alternatives on Android
@@ -184,6 +185,8 @@ function initSpeechRecognition() {
             if (finalTranscript) {
                 handledSpeech = true;
                 debugLog('Final speech result:', finalTranscript);
+                let retryBtn = document.getElementById('voice-retry-btn');
+                if (retryBtn) retryBtn.style.display = 'none';
                 vivicaVoiceModeConfig.onSpeechResult(finalTranscript.trim(), true);
             } else {
                 debugLog('Interim speech result:', interimTranscript);
@@ -191,55 +194,51 @@ function initSpeechRecognition() {
             }
         };
 
-        recognition.onerror = (event) => {
-            const androidSpecificErrors = {
-                'no-speech': 'Speak now',
-                'audio-capture': 'Microphone blocked',
-                'not-allowed': 'Allow microphone access'
-            };
-            
-            const errorMessage = isAndroidBridgeAvailable() 
-                ? androidSpecificErrors[event.error] || event.error
-                : event.error;
-                
-            debugLog('Speech recognition error:', errorMessage);
-            isListening = false;
-            handledSpeech = false;
-            clearSilenceTimer();
-            vivicaVoiceModeConfig.onSpeechError(errorMessage);
-            vivicaVoiceModeConfig.onListenStateChange('idle');
-            
-            if (window.showToast) window.showToast('Voice: ' + errorMessage, 'error');
-
-            if (event.error === 'no-speech' || event.error === 'network' || event.error === 'audio-capture') {
-                if (!shouldRestartRecognition()) {
-                    return;
-                }
-                setTimeout(restartRecognition, 1000);
+        recognition.onerror = function(event) {
+            setState('error');
+            let retryBtn = document.getElementById('voice-retry-btn');
+            if (!retryBtn) {
+                retryBtn = document.createElement('button');
+                retryBtn.id = 'voice-retry-btn';
+                retryBtn.innerHTML = '<i class="fas fa-microphone"></i> Tap to Retry';
+                Object.assign(retryBtn.style, {
+                    position: 'fixed',
+                    bottom: '90px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'rgba(60,0,80,0.95)',
+                    color: '#fff',
+                    fontSize: '1.2em',
+                    border: 'none',
+                    borderRadius: '18px',
+                    padding: '14px 28px',
+                    zIndex: 9999,
+                    boxShadow: '0 0 20px #b05cff90',
+                });
+                retryBtn.onclick = function() {
+                    retryBtn.style.display = 'none';
+                    try { recognition.start(); } catch (e) {}
+                };
+                document.body.appendChild(retryBtn);
             } else {
-                setState('error');
+                retryBtn.style.display = 'block';
             }
         };
 
         recognition.onend = () => {
             debugLog('Speech recognition ended.');
             isListening = false;
-            handledSpeech = false; // Reset speech handling flag
+            handledSpeech = false;
             clearSilenceTimer();
             vivicaVoiceModeConfig.onSpeechEnd();
             vivicaVoiceModeConfig.onListenStateChange('idle');
             stopAudioVisualization();
-
-            // More robust restart logic that checks additional conditions
-            if (!shouldRestartRecognition()) {
-                return;
-            }
-            restartRecognition();
+            // No auto-restart here; retry button controls it
         };
 
     } else {
-        console.warn('Web Speech API (webkitSpeechRecognition) not supported in this browser.');
-        if (window.showToast) window.showToast('Voice input not supported in this browser.', 'error');
+        console.warn('Web Speech API not supported in this browser.');
+        if (window.showToast) window.showToast('Voice mode not supported on this device/browser.', 'error');
     }
 }
 
@@ -247,6 +246,10 @@ function initSpeechRecognition() {
  * Starts speech recognition.
  */
 export function startListening() {
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        if (window.showToast) window.showToast('Voice mode not supported on this device/browser.');
+        return;
+    }
     if (recognition && !isListening) {
         try {
             if (Notification.permission === 'denied') {
