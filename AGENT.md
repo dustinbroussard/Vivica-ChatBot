@@ -14,7 +14,7 @@ Users can chat or talk to Vivica using multiple AI personas (e.g., snarky roaste
 - AI profile system with persistent config per persona
 - IndexedDB for conversations, messages, memory, profiles
 - Theme switching (dark/light + color themes)
-- Voice support via Web Speech API and/or Google TTS
+- Voice support via Web Speech API
 - Android bridge for native logs and toasts
 - Fully installable PWA
 
@@ -29,18 +29,13 @@ Users can chat or talk to Vivica using multiple AI personas (e.g., snarky roaste
 - `service-worker.js` + `manifest.json`: enable PWA install and offline use
 
 ## Priority Tasks
-- Add Memory Manager modal UI (view/edit/delete memory items)
-- Inject relevant memory into AI prompt on every message
-- Link "Remember this" buttons to save chat entries as memory
-- Replace Vivica label in orb mode with profile dropdown
+
 - Ensure voice and text mode use same profile and conversation context
+- Get voice mode working on desktop and mobile (Android)
 
 ## Expected AI Help
-- Generate memory modal UI logic
-- Inject memory into prompt flow in `main.js`
-- Enhance profile switching logic
-- Suggest UI improvements for accessibility and mobile
-- Refactor or simplify older JS as needed
+- Final UI polish/refinement
+- Enable/enhance voice-mode
 
 ## Notes
 This is a mostly vanilla JS app (not React). File structure is modular but flat. App state is shared via top-level `window` variables and `localStorage`.
