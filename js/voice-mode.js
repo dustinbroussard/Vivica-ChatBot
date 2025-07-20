@@ -172,16 +172,16 @@ function initSpeechRecognition() {
             vivicaVoiceModeConfig.onSpeechError(event.error);
             vivicaVoiceModeConfig.onListenStateChange('idle');
             
+            if (window.showToast) window.showToast('Voice error: ' + event.error, 'error');
+
             if (event.error === 'no-speech' || event.error === 'network' || event.error === 'audio-capture') {
-                if (!isProcessing && !isSpeaking && !window.modalOpen) {
-                    setTimeout(() => {
-                        try { recognition.start(); } catch (e) { console.log('Recognition restart after no-speech failed:', e); }
-                    }, 1000);
+                if (!shouldRestartRecognition()) {
+                    return;
                 }
+                setTimeout(restartRecognition, 1000);
             } else {
                 setState('error');
             }
-            if (window.showToast) window.showToast('Voice error: ' + event.error, 'error');
         };
 
         recognition.onend = () => {
@@ -191,15 +191,12 @@ function initSpeechRecognition() {
             vivicaVoiceModeConfig.onSpeechEnd();
             vivicaVoiceModeConfig.onListenStateChange('idle');
             stopAudioVisualization();
-            
-            // Only restart if not speaking, not processing, and no modal/settings open
-            if (isProcessing || isSpeaking || window.modalOpen) {
+
+            // More robust restart logic that checks additional conditions
+            if (!shouldRestartRecognition()) {
                 return;
             }
-            setState('listening');
-            setTimeout(() => {
-                try { recognition.start(); } catch (e) { console.log('Recognition restart failed:', e); }
-            }, 500);
+            restartRecognition();
         };
 
     } else {
@@ -340,13 +337,12 @@ export function speak(text) {
             isSpeaking = false;
             vivicaVoiceModeConfig.onSpeakingEnd();
             vivicaVoiceModeConfig.onListenStateChange('idle');
-            setState('listening');
-            if (recognition && !window.modalOpen) {
-                setTimeout(() => {
-                    try { recognition.start(); } catch (e) { console.log('Recognition restart after speaking failed:', e); }
-                }, 500);
-            }
             resolve();
+
+            if (!shouldRestartRecognition()) {
+                return;
+            }
+            restartRecognition();
         };
 
         currentSpeechUtterance.onerror = (event) => {
@@ -423,4 +419,25 @@ export function initVoiceMode(initialConfig = {}) {
     initSpeechRecognition();
     initSpeechSynthesis();
     debugLog('Voice mode module initialized.');
+
+    // Set window.modalOpen if not already set
+    if (typeof window.modalOpen === 'undefined') {
+        window.modalOpen = false;
+    }
+}
+
+// Helper functions for recognition restart logic
+function shouldRestartRecognition() {
+    return !isProcessing && !isSpeaking && !window.modalOpen;
+}
+
+function restartRecognition() {
+    try {
+        if (recognition) {
+            setState('listening');
+            recognition.start();
+        }
+    } catch (e) {
+        console.log('Recognition restart failed:', e);
+    }
 }
