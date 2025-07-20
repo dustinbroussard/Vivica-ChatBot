@@ -177,7 +177,7 @@ function checkProfileFormValidity() {
 async function generateVivicaWelcomeMessage() {
     const el = document.getElementById('vivica-welcome-message');
     if (!el) {
-        console.warn('Vivica welcome message element not found');
+        console.debug('Vivica welcome message element not found - skipping');
         return;
     }
     el.innerHTML = '<span style="color:var(--text-muted);">Vivica is thinking…</span>';
@@ -212,6 +212,8 @@ User's name is Dustin.`;
 
     const settings = await Storage.SettingsStorage.getSettings();
     const apiKey = settings?.apiKey1;
+    if (!el) return;
+        
     if (!apiKey) {
         el.innerHTML = '<span style="color:var(--danger);">Set the API key in Settings to see Vivica\'s snark.</span>';
         return;
@@ -777,7 +779,7 @@ let rssIndex = 0, rssHeadlines = [];
 async function renderWeatherWidget() {
     const el = document.getElementById('weather-widget');
     if (!el) {
-        console.warn('Weather widget element not found');
+        console.debug('Weather widget element not found - skipping');
         return;
     }
     const settings = await Storage.SettingsStorage.getSettings();
@@ -816,7 +818,7 @@ async function fetchRSSSummariesWithLinks(urls) {
 async function renderRSSWidget() {
     const el = document.getElementById('rss-widget');
     if (!el) {
-        console.warn('RSS widget element not found');
+        console.debug('RSS widget element not found - skipping');
         return;
     }
     const settings = await Storage.SettingsStorage.getSettings();
