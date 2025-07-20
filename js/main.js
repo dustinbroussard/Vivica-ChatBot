@@ -246,8 +246,17 @@ User's name is Dustin.`;
 async function showWelcomeScreen() {
     const emptyState = document.getElementById('empty-state');
     const chatBody = document.getElementById('chat-body');
-    if (emptyState) emptyState.style.display = 'flex';
-    if (chatBody) chatBody.innerHTML = '';
+    
+    if (emptyState) {
+        emptyState.style.display = 'flex';
+    } else {
+        console.warn('Empty state element not found');
+        return;
+    }
+    
+    if (chatBody) {
+        chatBody.innerHTML = '';
+    }
     currentConversationId = null;
     document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
     await Promise.all([
@@ -767,6 +776,10 @@ let rssIndex = 0, rssHeadlines = [];
 
 async function renderWeatherWidget() {
     const el = document.getElementById('weather-widget');
+    if (!el) {
+        console.warn('Weather widget element not found');
+        return;
+    }
     const settings = await Storage.SettingsStorage.getSettings();
     if (!settings?.weatherApiKey || !settings.weatherLocation) {
         el.innerHTML = '';
@@ -802,6 +815,10 @@ async function fetchRSSSummariesWithLinks(urls) {
 
 async function renderRSSWidget() {
     const el = document.getElementById('rss-widget');
+    if (!el) {
+        console.warn('RSS widget element not found');
+        return;
+    }
     const settings = await Storage.SettingsStorage.getSettings();
     if (!settings?.rssFeeds) {
         el.innerHTML = '';
