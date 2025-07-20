@@ -1097,7 +1097,6 @@ async function openSettingsModal() {
         document.getElementById('api-key-1').value = settings.apiKey1 || '';
         document.getElementById('api-key-2').value = settings.apiKey2 || '';
         document.getElementById('api-key-3').value = settings.apiKey3 || '';
-        document.getElementById('google-tts-key').value = settings.googleTtsKey || '';
         document.getElementById('weather-api-key').value = settings.weatherApiKey || '';
         document.getElementById('weather-location').value = settings.weatherLocation || '';
         document.getElementById('rss-feeds').value = settings.rssFeeds || '';
@@ -1123,7 +1122,6 @@ async function saveSettings() {
         apiKey1: document.getElementById('api-key-1').value,
         apiKey2: document.getElementById('api-key-2').value,
         apiKey3: document.getElementById('api-key-3').value,
-        googleTtsKey: document.getElementById('google-tts-key').value,
         weatherApiKey: document.getElementById('weather-api-key').value,
         weatherLocation: document.getElementById('weather-location').value,
         rssFeeds: document.getElementById('rss-feeds').value,
