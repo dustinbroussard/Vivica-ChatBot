@@ -20,6 +20,7 @@ let isSpeaking = false; // Is the synthesis active?
 let isProcessing = false; // Is response being processed?
 let silenceTimer; // Timer to detect prolonged silence
 const SILENCE_TIMEOUT = 3000; // 3 seconds of silence to stop recognition
+let handledSpeech = false; // Flag to track if we've processed speech already
 
 // Audio visualization variables
 let audioCtx = null;
@@ -146,6 +147,8 @@ function initSpeechRecognition() {
         };
 
         recognition.onresult = (event) => {
+            if (handledSpeech) return; // Ignore duplicate results
+            
             resetSilenceTimer(); // Reset on any speech input
             let interimTranscript = '';
             let finalTranscript = '';
@@ -157,11 +160,11 @@ function initSpeechRecognition() {
                     interimTranscript += event.results[i][0].transcript;
                 }
             }
+            
             if (finalTranscript) {
+                handledSpeech = true;
                 debugLog('Final speech result:', finalTranscript);
                 vivicaVoiceModeConfig.onSpeechResult(finalTranscript.trim(), true);
-                // Optionally stop recognition after final result if not continuous input
-                // stopListening();
             } else {
                 debugLog('Interim speech result:', interimTranscript);
                 vivicaVoiceModeConfig.onSpeechResult(interimTranscript.trim(), false);
@@ -171,6 +174,7 @@ function initSpeechRecognition() {
         recognition.onerror = (event) => {
             console.error('Speech recognition error:', event.error);
             isListening = false;
+            handledSpeech = false; // Reset speech handling flag
             clearSilenceTimer();
             vivicaVoiceModeConfig.onSpeechError(event.error);
             vivicaVoiceModeConfig.onListenStateChange('idle');
@@ -190,6 +194,7 @@ function initSpeechRecognition() {
         recognition.onend = () => {
             debugLog('Speech recognition ended.');
             isListening = false;
+            handledSpeech = false; // Reset speech handling flag
             clearSilenceTimer();
             vivicaVoiceModeConfig.onSpeechEnd();
             vivicaVoiceModeConfig.onListenStateChange('idle');
