@@ -1887,6 +1887,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const activeProfile = activeId ? await Storage.ProfileStorage.getProfile(activeId) : profiles[0];
     if (activeProfile) setActiveProfile(activeProfile);
     populateProfileDropdown(profileSelect, profiles, activeProfile?.id);
+    
+    // Always show welcome screen on startup
+    await showWelcomeScreen();
     if (voiceAnimation.profileSelect) {
         populateProfileDropdown(voiceAnimation.profileSelect, profiles, activeProfile?.id);
         voiceAnimation.profileSelect.addEventListener('change', async function (e) {
@@ -1930,8 +1933,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initial render of conversations list
     await renderConversationsList();
 
-    // Show welcome screen on startup
-    await showWelcomeScreen();
+    // Welcome screen already shown above
 
     // Voice mode setup
     const settings = await Storage.SettingsStorage.getSettings();
