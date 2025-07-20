@@ -24,14 +24,16 @@
 <body>
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title">
-		<i class="fa-solid fa-comments"></i>
-                <span>Vivica</span>
-                <button type="button" id="close-sidebar-btn" class="sidebar-close-btn" aria-label="Close Sidebar">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
+	<div class="sidebar-header">
+	  <div class="sidebar-title" id="sidebar-home-trigger" style="cursor:pointer;">
+	    <img id="sidebar-vivica-logo" src="images/logo-defaultdark.png"
+		 alt="Vivica Logo" style="height:28px;width:28px;vertical-align:middle;margin-right:8px;">
+	    <span id="sidebar-vivica-name">Vivica</span>
+	    <button type="button" id="close-sidebar-btn" class="sidebar-close-btn" aria-label="Close Sidebar">
+	      <i class="fas fa-times"></i>
+	    </button>
+	  </div>
+
             <button type="button" class="new-chat-btn" id="new-chat-btn" data-testid="new-chat-btn" aria-label="New conversation">
                 <i class="fas fa-plus"></i>
                 <span class="btn-text">New Chat</span>
@@ -89,25 +91,14 @@
                     <img id="logo-img" src="images/logo-defaultdark.png" alt="ChatBot Logo" />
                 </div>
                 <h2 class="empty-title">Welcome to Vivica</h2>
-                <p class="empty-text">Start a new conversation to begin</p>
-                <div class="quick-actions">
-                    <button type="button" class="quick-action-btn" onclick="insertQuickPrompt('Help me write a professional email')">
-                        <i class="fas fa-envelope"></i>
-                        <span>Write Email</span>
-                    </button>
-                    <button type="button" class="quick-action-btn" onclick="insertQuickPrompt('Explain a complex concept')">
-                        <i class="fas fa-lightbulb"></i>
-                        <span>Explain</span>
-                    </button>
-                    <button type="button" class="quick-action-btn" onclick="insertQuickPrompt('Help me brainstorm ideas')">
-                        <i class="fas fa-brain"></i>
-                        <span>Brainstorm</span>
-                    </button>
-                    <button type="button" class="quick-action-btn" onclick="insertQuickPrompt('Review my code')">
-                        <i class="fas fa-code"></i>
-                        <span>Code Review</span>
-                    </button>
-                </div>
+                <div class="empty-title" id="vivica-welcome-message">
+		    <!-- Vivica's message will go here -->
+		  </div>
+		  <div class="empty-text">
+		    <div id="weather-widget"></div>
+		    <div id="rss-widget"></div>
+		  </div>
+		</div>
             </div>
             <span class="typing-indicator" id="typing-indicator">
                 <i class="fas fa-circle"></i>
