@@ -8,6 +8,7 @@
  */
 
 import Storage from './storage-wrapper.js';
+import { generateAIConversationTitle } from './title-generator.js';
 // Marked is loaded via CDN in index.html, available globally as 'marked'
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
 import { initVoiceMode, startListening, stopListening, toggleListening, speak, getIsListening, getIsSpeaking, updateVoiceModeConfig } from './voice-mode.js';
@@ -878,6 +879,21 @@ async function getAIResponse(userQuery) {
         if (conv) {
             conv.timestamp = Date.now();
             await Storage.ConversationStorage.updateConversation(conv);
+            
+            // After saving, check if we should generate a title (after 2 user messages)
+            const messages = await Storage.MessageStorage.getMessagesByConversationId(currentConversationId);
+            const userMessages = messages.filter(m => m.sender === 'user');
+            
+            if (userMessages.length === 2) {
+                const settings = await Storage.SettingsStorage.getSettings();
+                generateAIConversationTitle(
+                    currentConversationId,
+                    messages,
+                    settings?.apiKey1,
+                    window.currentProfile?.model,
+                    renderConversationsList
+                );
+            }
         }
         debugLog('AI response fully streamed and saved.');
         if (voiceModeActive) {
