@@ -375,6 +375,15 @@ export function speak(text) {
             debugLog('No preferred voice found, using default.');
         }
 
+        // Android-specific voice settings
+        if (isAndroidBridgeAvailable()) {
+            currentSpeechUtterance.rate = 0.9; // Slightly slower for clarity
+            currentSpeechUtterance.pitch = 1.1; // Slightly higher for better Android TTS
+        } else {
+            currentSpeechUtterance.rate = 1.0;
+            currentSpeechUtterance.pitch = 1.0;
+        }
+
         currentSpeechUtterance.onstart = () => {
             debugLog('Speech synthesis started.');
             isSpeaking = true;
