@@ -81,9 +81,16 @@ function debugLog(...args) {
 async function startAudioVisualization() {
     try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            throw new Error('getUserMedia not supported');
+            debugLog('Audio visualization not supported');
+            return;
         }
-        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioStream = await navigator.mediaDevices.getUserMedia({ 
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true
+            } 
+        });
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const source = audioCtx.createMediaStreamSource(audioStream);
         analyser = audioCtx.createAnalyser();
@@ -211,6 +218,22 @@ function initSpeechRecognition() {
 export function startListening() {
     if (recognition && !isListening) {
         try {
+            if (Notification.permission === 'denied') {
+                if (window.showToast) window.showToast('Microphone access denied', 'error');
+                return;
+            }
+            
+            if (Notification.permission !== 'granted') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        recognition.start();
+                    } else {
+                        if (window.showToast) window.showToast('Microphone access required', 'error');
+                    }
+                });
+                return;
+            }
+            
             recognition.start();
             debugLog('Listening started.');
             startAudioVisualization();
@@ -424,6 +447,10 @@ export function initVoiceMode(initialConfig = {}) {
     if (typeof window.modalOpen === 'undefined') {
         window.modalOpen = false;
     }
+}
+
+function setState(state) {
+    vivicaVoiceModeConfig.onListenStateChange(state);
 }
 
 // Helper functions for recognition restart logic
