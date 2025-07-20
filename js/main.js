@@ -268,7 +268,9 @@ async function showWelcomeScreen() {
     }
 
     chatBody.innerHTML = '';
-    emptyState.style.display = 'flex';
+    if (emptyState) {
+        emptyState.style.display = 'flex';
+    }
     currentConversationId = null;
     document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
     
@@ -282,7 +284,7 @@ async function showWelcomeScreen() {
     ];
     
     welcomeElements.forEach(el => {
-        if (el) {
+        if (el && el.style) {
             el.style.display = 'block';
             el.style.opacity = '1';  // Ensure visible
         }
