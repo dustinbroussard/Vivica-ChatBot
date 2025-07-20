@@ -620,7 +620,13 @@ async function renderConversationsList() {
         const lastMsg = lastMessages[lastMessages.length - 1];
         const snippet = lastMsg ? lastMsg.content.slice(0, 30) : '';
         const time = new Date(conv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        convItem.innerHTML = `<div class="conv-title">${conv.title || 'New Chat'}</div><div class="conv-snippet">${snippet}</div><div class="conv-time">${time}</div>`;
+        const profile = await Storage.ProfileStorage.getProfile(conv.profileId);
+        const profileName = profile ? profile.name : '';
+        convItem.innerHTML = `
+            <div class="conv-title">${conv.title || 'New Chat'}</div>
+            <span class="profile-badge" style="font-size:0.8em;color:var(--accent-primary);margin-left:6px;">${profileName}</span>
+            <div class="conv-snippet">${snippet}</div>
+            <div class="conv-time">${time}</div>`;
 
         convItem.addEventListener('click', () => loadConversation(conv.id));
 
@@ -917,9 +923,20 @@ async function renderRSSWidget() {
 async function buildSystemPrompt(basePrompt) {
     let prompt = basePrompt || '';
     const settings = await Storage.SettingsStorage.getSettings();
-    if (settings?.includeWeather && settings.weatherApiKey) {
+    if (settings?.includeWeather) {
         try {
-            const weather = await fetchWeather(settings.weatherApiKey, settings.weatherLocation || 'London');
+            const fallback = { lat: 30.2366, lon: -92.8204 };
+            let lat = fallback.lat, lon = fallback.lon;
+            if ('geolocation' in navigator) {
+                await new Promise(res => {
+                    navigator.geolocation.getCurrentPosition(
+                        p => { lat = p.coords.latitude; lon = p.coords.longitude; res(); },
+                        () => res(),
+                        { timeout: 4000 }
+                    );
+                });
+            }
+            const weather = await fetchWeatherOpenMeteo(lat, lon);
             prompt += `\nCurrent weather: ${weather}`;
         } catch (e) { console.error(e); }
     }
@@ -1327,10 +1344,7 @@ async function openSettingsModal() {
         setValueIfExists('api-key-1', settings.apiKey1);
         setValueIfExists('api-key-2', settings.apiKey2);
         setValueIfExists('api-key-3', settings.apiKey3);
-        setValueIfExists('weather-api-key', settings.weatherApiKey);
-        setValueIfExists('weather-location', settings.weatherLocation);
         setValueIfExists('rss-feeds', settings.rssFeeds);
-        setCheckedIfExists('include-weather', settings.includeWeather);
         setCheckedIfExists('include-rss', settings.includeRss);
     }
     if (themeSelect) {
@@ -1361,10 +1375,7 @@ async function saveSettings() {
         apiKey1: getValue('api-key-1'),
         apiKey2: getValue('api-key-2'),
         apiKey3: getValue('api-key-3'),
-        weatherApiKey: getValue('weather-api-key'),
-        weatherLocation: getValue('weather-location'),
         rssFeeds: getValue('rss-feeds'),
-        includeWeather: getChecked('include-weather'),
         includeRss: getChecked('include-rss')
     };
     if (themeSelect) {
@@ -1847,14 +1858,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         m.style.display = 'none';
     });
 
-    document.getElementById('sidebar-header')?.addEventListener('click', async (e) => {
-        // Only trigger if clicking directly on header, not its children
-        if (e.target === document.getElementById('sidebar-header')) {
-            await showWelcomeScreen();
-            // Close sidebar on mobile
-            if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
-                toggleSidebar();
-            }
+    const homeTrigger = document.getElementById('sidebar-home-trigger');
+    homeTrigger?.addEventListener('click', async () => {
+        await showWelcomeScreen();
+        if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
+            toggleSidebar();
         }
     });
     debugLog('DOM Content Loaded. Initializing Vivica...');
@@ -1917,18 +1925,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     populateProfileDropdown(profileSelect, profiles, activeProfile?.id);
     if (voiceAnimation.profileSelect) {
         populateProfileDropdown(voiceAnimation.profileSelect, profiles, activeProfile?.id);
-        voiceAnimation.profileSelect.addEventListener('change', async (e) => {
-            const p = await Storage.ProfileStorage.getProfile(parseInt(e.target.value));
-            setActiveProfile(p);
-            profileSelect.value = p.id;
-            showToast(`Profile switched to ${p.name}`, 'info');
+        voiceAnimation.profileSelect.addEventListener('change', async function (e) {
+            const selectedId = parseInt(e.target.value);
+            const p = await Storage.ProfileStorage.getProfile(selectedId);
+            if (p) setActiveProfile(p);
+            profileSelect.value = selectedId;
+            if (window.currentConversationId) {
+                const convo = await Storage.ConversationStorage.getConversation(window.currentConversationId);
+                if (convo) {
+                    convo.profileId = selectedId;
+                    await Storage.ConversationStorage.updateConversation(convo);
+                }
+            }
+            await renderConversationsList();
+            if (typeof renderChatHeader === 'function') renderChatHeader();
+            if (p) showToast(`Profile switched to ${p.name}`, 'info');
         });
     }
-    profileSelect.addEventListener('change', async (e) => {
-        const p = await Storage.ProfileStorage.getProfile(parseInt(e.target.value));
-        setActiveProfile(p);
-        if (voiceAnimation.profileSelect) voiceAnimation.profileSelect.value = p.id;
-        showToast(`Profile switched to ${p.name}`, 'info');
+    profileSelect.addEventListener('change', async function () {
+        const selectedId = parseInt(this.value);
+        localStorage.setItem('activeProfileId', selectedId);
+        window.currentProfileId = selectedId;
+        const p = await Storage.ProfileStorage.getProfile(selectedId);
+        if (p) setActiveProfile(p);
+        if (voiceAnimation.profileSelect) voiceAnimation.profileSelect.value = selectedId;
+
+        if (window.currentConversationId) {
+            const convo = await Storage.ConversationStorage.getConversation(window.currentConversationId);
+            if (convo) {
+                convo.profileId = selectedId;
+                await Storage.ConversationStorage.updateConversation(convo);
+            }
+        }
+
+        await renderConversationsList();
+        if (typeof renderChatHeader === 'function') renderChatHeader();
+        if (p) showToast(`Profile switched to ${p.name}`, 'info');
     });
 
     // Initial render of conversations list
