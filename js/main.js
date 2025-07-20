@@ -262,44 +262,27 @@ async function showWelcomeScreen() {
     const emptyState = document.getElementById('empty-state');
     const chatBody = document.getElementById('chat-body');
 
-    if (!chatBody) {
-        console.debug('Chat body element not found - skipping welcome screen');
+    if (!emptyState || !chatBody) {
+        console.debug('Required elements not found for welcome screen');
         return;
     }
 
+    // Reset any existing conversation state
     chatBody.innerHTML = '';
-    if (emptyState && emptyState.style) {
-        emptyState.style.display = 'flex';
-    }
+    emptyState.style.display = 'flex';
     currentConversationId = null;
-    document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
-    
-    // Make sure welcome elements stay visible
-    const welcomeElements = [
-        document.getElementById('weather-widget'),
-        document.getElementById('rss-widget'), 
-        document.getElementById('vivica-welcome-message'),
-        document.getElementById('logo-img'),
-        document.getElementById('empty-title')
-    ].filter(el => el && el.style); // Filter out null and elements without style
-    
-    welcomeElements.forEach(el => {
-        try {
-            if (el && el.style) {
-                el.style.display = 'block';
-                el.style.opacity = '1';  // Ensure visible
-            }
-        } catch (e) {
-            console.debug('Error setting style for element:', el, e);
-        }
-    });
 
-    // Render widgets
-    await Promise.all([
-        renderWeatherWidget(),
-        renderRSSWidget(),
-        generateVivicaWelcomeMessage()
-    ]);
+    // Make sure welcome elements are visible
+    const setElementVisible = (id) => {
+        const el = document.getElementById(id);
+        if (el && el.style) el.style.display = 'block';
+    };
+
+    ['weather-widget', 'rss-widget', 'vivica-welcome-message', 'logo-img', 'empty-title']
+        .forEach(setElementVisible);
+
+    // No need to re-render widgets here since they're handled on DOMContentLoaded
+    return Promise.resolve();
 }
 
 function showToast(message, type = 'info', duration = 1800) {
@@ -1908,20 +1891,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (activeProfile) setActiveProfile(activeProfile);
     populateProfileDropdown(profileSelect, profiles, activeProfile?.id);
     
-    // Always show welcome screen on startup
+    // Always show welcome screen on startup - don't load any conversation
+    debugLog('Showing welcome screen...');
+    emptyState.style.display = 'flex';
+    chatBody.innerHTML = '';
+    currentConversationId = null;
     try {
-        debugLog('Showing welcome screen...');
-        await showWelcomeScreen();
-        debugLog('Welcome screen shown successfully');
-    } catch (error) {
-        debugLog(`Error showing welcome screen: ${error.message}`, 'error');
-        // Fallback - at least show the empty state
-        emptyState.style.display = 'flex';
-        try {
-            await generateVivicaWelcomeMessage();
-        } catch (e) {
-            debugLog(`Failed to generate welcome message: ${e.message}`, 'error');
-        }
+        await generateVivicaWelcomeMessage();
+        await renderWeatherWidget();
+        await renderRSSWidget();
+    } catch (e) {
+        debugLog(`Failed to generate welcome content: ${e.message}`, 'error');
     }
     if (voiceAnimation.profileSelect) {
         populateProfileDropdown(voiceAnimation.profileSelect, profiles, activeProfile?.id);
