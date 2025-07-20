@@ -268,7 +268,7 @@ async function showWelcomeScreen() {
     }
 
     chatBody.innerHTML = '';
-    if (emptyState) {
+    if (emptyState && emptyState.style) {
         emptyState.style.display = 'flex';
     }
     currentConversationId = null;
@@ -281,14 +281,12 @@ async function showWelcomeScreen() {
         document.getElementById('vivica-welcome-message'),
         document.getElementById('logo-img'),
         document.getElementById('empty-title')
-    ].filter(Boolean); // Filter out null elements
+    ].filter(el => el && el.style); // Filter out null and elements without style
     
     welcomeElements.forEach(el => {
         try {
-            if (el.style) {
-                el.style.display = 'block';
-                el.style.opacity = '1';  // Ensure visible
-            }
+            el.style.display = 'block';
+            el.style.opacity = '1';  // Ensure visible
         } catch (e) {
             console.debug('Error setting style for element:', el, e);
         }
