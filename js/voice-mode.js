@@ -133,8 +133,8 @@ function stopAudioVisualization() {
 function initSpeechRecognition() {
     if ('webkitSpeechRecognition' in window) {
         recognition = new webkitSpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
+        recognition.continuous = false;     // Only one result per listen (like your prototype)
+        recognition.interimResults = false; // No incremental/interim results
         recognition.lang = 'en-US'; // Or dynamically set based on user preference
 
         recognition.onstart = () => {
@@ -355,7 +355,9 @@ export function speak(text) {
             vivicaVoiceModeConfig.onListenStateChange('idle');
             resolve();
 
-            if (!shouldRestartRecognition()) {
+            // Auto-restart listening after speech ends
+            if (recognition && !shouldRestartRecognition()) {
+                setTimeout(() => recognition.start(), 500);
                 return;
             }
             restartRecognition();
