@@ -176,6 +176,10 @@ function checkProfileFormValidity() {
  */
 async function generateVivicaWelcomeMessage() {
     const el = document.getElementById('vivica-welcome-message');
+    if (!el) {
+        console.warn('Vivica welcome message element not found');
+        return;
+    }
     el.innerHTML = '<span style="color:var(--text-muted);">Vivica is thinking…</span>';
     let lastSummary = '';
     let lastMsg = '';
@@ -240,8 +244,10 @@ User's name is Dustin.`;
 }
 
 async function showWelcomeScreen() {
-    document.getElementById('empty-state').style.display = 'flex';
-    document.getElementById('chat-body').innerHTML = '';
+    const emptyState = document.getElementById('empty-state');
+    const chatBody = document.getElementById('chat-body');
+    if (emptyState) emptyState.style.display = 'flex';
+    if (chatBody) chatBody.innerHTML = '';
     currentConversationId = null;
     document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
     await Promise.all([
