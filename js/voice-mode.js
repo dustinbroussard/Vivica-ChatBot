@@ -81,13 +81,26 @@ async function startAudioVisualization() {
             debugLog('Audio visualization not supported');
             return;
         }
-        audioStream = await navigator.mediaDevices.getUserMedia({ 
+        const audioConstraints = {
             audio: {
                 echoCancellation: true,
                 noiseSuppression: true,
-                autoGainControl: true
-            } 
-        });
+                autoGainControl: true,
+                channelCount: 1 // Mono is better for speech and works better on Android
+            }
+        };
+
+        // Use Android bridge if available, else fallback to browser API
+        if (isAndroidBridgeAvailable()) {
+            try {
+                audioStream = await window.Android.getAudioStream(audioConstraints);
+            } catch (e) {
+                debugLog('Using web audio fallback for visualization');
+                audioStream = await navigator.mediaDevices.getUserMedia(audioConstraints);
+            }
+        } else {
+            audioStream = await navigator.mediaDevices.getUserMedia(audioConstraints);
+        }
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const source = audioCtx.createMediaStreamSource(audioStream);
         analyser = audioCtx.createAnalyser();
@@ -134,9 +147,16 @@ function stopAudioVisualization() {
 function initSpeechRecognition() {
     if ('webkitSpeechRecognition' in window) {
         recognition = new webkitSpeechRecognition();
-        recognition.continuous = false;     // Only one result per listen (like your prototype)
-        recognition.interimResults = false; // No incremental/interim results
-        recognition.lang = 'en-US'; // Or dynamically set based on user preference
+        recognition.continuous = false;
+        recognition.interimResults = true; // Enable interim for Android to detect speech start
+        recognition.maxAlternatives = 3; // Get more alternatives on Android
+        recognition.lang = 'en-US';
+
+        // Android-specific optimized settings
+        if (isAndroidBridgeAvailable()) {
+            recognition.interimResults = false; // Disable on Android as it can cause duplication
+            recognition.continuous = false; // Single-shot mode works better on Android
+        }
 
         recognition.onstart = () => {
             debugLog('Speech recognition started.');
@@ -172,14 +192,24 @@ function initSpeechRecognition() {
         };
 
         recognition.onerror = (event) => {
-            console.error('Speech recognition error:', event.error);
+            const androidSpecificErrors = {
+                'no-speech': 'Speak now',
+                'audio-capture': 'Microphone blocked',
+                'not-allowed': 'Allow microphone access'
+            };
+            
+            const errorMessage = isAndroidBridgeAvailable() 
+                ? androidSpecificErrors[event.error] || event.error
+                : event.error;
+                
+            debugLog('Speech recognition error:', errorMessage);
             isListening = false;
-            handledSpeech = false; // Reset speech handling flag
+            handledSpeech = false;
             clearSilenceTimer();
-            vivicaVoiceModeConfig.onSpeechError(event.error);
+            vivicaVoiceModeConfig.onSpeechError(errorMessage);
             vivicaVoiceModeConfig.onListenStateChange('idle');
             
-            if (window.showToast) window.showToast('Voice error: ' + event.error, 'error');
+            if (window.showToast) window.showToast('Voice: ' + errorMessage, 'error');
 
             if (event.error === 'no-speech' || event.error === 'network' || event.error === 'audio-capture') {
                 if (!shouldRestartRecognition()) {
