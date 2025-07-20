@@ -237,18 +237,19 @@ textarea:focus {
 }
 
 .icon-btn {
-  background: transparent;
+  background: none;
   border: none;
-  color: var(--text-secondary, #aaa);
-  font-size: 1.2em;
-  padding: 8px;
+  color: var(--text-muted);
+  font-size: 1.18em;
+  padding: 4px 5px;
   border-radius: 50%;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  margin-left: 1px;
   cursor: pointer;
-  margin: 0 2px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  transition: background 0.18s, color 0.15s;
+}
+.icon-btn:hover, .icon-btn:focus {
+  background: var(--bg-hover);
+  color: var(--accent-primary);
 }
 
 .icon-btn:focus, .icon-btn:hover {
@@ -262,10 +263,9 @@ textarea:focus {
   color: var(--danger, #d9534f);
 }
 
-.delete-profile-btn:focus, .delete-profile-btn:hover {
+.delete-profile-btn:hover {
   background: var(--danger, #d9534f);
   color: #fff;
-  box-shadow: 0 0 0 2px var(--danger, #d9534f44);
 }
 
 

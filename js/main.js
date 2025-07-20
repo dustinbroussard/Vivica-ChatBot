@@ -120,6 +120,9 @@ const voiceModeToggleBtn = document.getElementById('voice-mode-toggle-btn');
 const themeSelect = document.getElementById('theme-select');
 const darkModeToggle = document.getElementById('dark-mode-toggle');
 const currentThemeLabel = document.getElementById('current-theme-label');
+const exportAllBtn = document.getElementById('export-all-btn');
+const importAllBtn = document.getElementById('import-all-btn');
+const importFileInput = document.getElementById('import-file-input');
 function updateSummarizeButtonVisibility() {
   const btn = document.getElementById('summarize-btn');
   if (!btn) return;
@@ -1514,73 +1517,34 @@ async function renderProfilesList() {
     }
 
     profiles.forEach(profile => {
-        const profileCard = document.createElement('div');
-        profileCard.classList.add('custom-model-item');
-        profileCard.innerHTML = `
-            <div class="profile-info">
-                <strong>${profile.name}</strong>
-                <span class="model-name">${profile.modelName || profile.model}</span>
-                ${profile.id === currentProfileId ? '<span class="active-profile-badge">Active</span>' : ''}
-            </div>
-		    <div class="profile-actions">
-	    <button class="icon-btn set-active-profile-btn" data-profile-id="${profile.id}" title="Set as Active">
-		<i class="fas fa-check"></i>
-	    </button>
-	    <button class="icon-btn edit-profile-btn" data-profile-id="${profile.id}" title="Edit">
-		<i class="fas fa-edit"></i>
-	    </button>
-	    <button class="icon-btn delete-profile-btn" data-profile-id="${profile.id}" title="Delete">
-		<i class="fas fa-trash"></i>
-	    </button>
-	</div>
-            </div>
-        `;
-        profilesListDiv.appendChild(profileCard);
+        profilesListDiv.innerHTML += `
+  <div class="profile-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+      <span style="font-weight:bold;">${profile.name}</span>
+      <span>
+        <button class="edit-profile-btn icon-btn" data-id="${profile.id}" title="Edit"><i class="fas fa-edit"></i></button>
+        <button class="delete-profile-btn icon-btn" data-id="${profile.id}" title="Delete"><i class="fas fa-trash"></i></button>
+      </span>
+    </div>
+    <div style="font-size:0.93em;color:var(--text-secondary);margin-bottom:1px;">
+      Model: ${profile.model}
+    </div>
+    <div style="font-size:0.92em;color:var(--text-muted);margin-bottom:2px;">
+      ${profile.systemPrompt}
+    </div>
+    <div style="font-size:0.85em;color:var(--text-muted);">
+      Temp: ${profile.temperature} &nbsp; Max Tokens: ${profile.maxTokens}
+    </div>
+  </div>
+`;
     });
 
-    // Add event listeners for edit, delete, and set-active buttons
+    // Add event listeners for edit and delete buttons
     profilesListDiv.querySelectorAll('.edit-profile-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => editProfile(parseInt(e.currentTarget.dataset.profileId)));
+        btn.addEventListener('click', (e) => editProfile(parseInt(e.currentTarget.dataset.id)));
     });
     profilesListDiv.querySelectorAll('.delete-profile-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(e.currentTarget.dataset.profileId)));
-    });
-    profilesListDiv.querySelectorAll('.set-active-profile-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            try {
-                e.stopPropagation();
-                const pid = parseInt(e.currentTarget.dataset.profileId);
-                currentProfileId = pid;
-                    
-                // Update current conversation to use this profile if exists
-                if (currentConversationId) {
-                    const conv = await Storage.ConversationStorage.getConversation(currentConversationId);
-                    if (conv) {
-                        conv.profileId = currentProfileId;
-                        await Storage.ConversationStorage.updateConversation(conv);
-                    }
-                }
-                    
-                // Get profile name from card
-                const profileName = e.currentTarget.closest('.custom-model-item').querySelector('.profile-info strong').textContent;
-                
-                // Disable all set-active buttons during update
-                profilesListDiv.querySelectorAll('.set-active-profile-btn').forEach(btn => {
-                    btn.disabled = true;
-                });
-                    
-                showToast(`Profile "${profileName}" activated!`, 'success');
-                await renderProfilesList(); // Refresh badges
-                    
-                // Re-enable buttons after UI update
-                document.querySelectorAll('.set-active-profile-btn').forEach(btn => {
-                    btn.disabled = false;
-                });
-            } catch (error) {
-                console.error('Error setting active profile:', error);
-                showToast('Failed to activate profile', 'error');
-            }
-        });
+        btn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(e.currentTarget.dataset.id)));
     });
 }
 
@@ -2148,6 +2112,102 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             document.querySelectorAll('.modal.show').forEach(m => closeModal(m));
+        }
+    });
+
+    summarizeBtn?.addEventListener('click', async () => {
+        const convoId = window.currentConversationId;
+        if (!convoId) return;
+        const messages = await Storage.MessageStorage.getMessagesByConversationId(convoId);
+        const transcript = messages.map(m => `${m.sender}: ${m.content}`).join('\n');
+
+        const summaryPrompt = `\nSummarize the following chat as a knowledge memory, with wit and brevity, in 1-2 sentences. \nUser: Dustin.\n---\n${transcript}\n---\nMemory:\n`;
+
+        const settings = await Storage.SettingsStorage.getSettings();
+        const apiKey = settings?.apiKey1;
+        const profile = window.currentProfile || { model: 'deepseek/deepseek-chat-v3-0324', temperature: 1.0, maxTokens: 64 };
+
+        let summary = '';
+        try {
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: profile.model,
+                    messages: [{ role: 'system', content: summaryPrompt }],
+                    temperature: 1.0,
+                    max_tokens: 64,
+                    stream: false
+                })
+            });
+            const data = await response.json();
+            summary = data.choices?.[0]?.message?.content?.trim() || 'Failed to summarize.';
+        } catch (e) {
+            summary = 'Failed to summarize.';
+        }
+
+        await Storage.MemoryStorage.addMemory({
+            content: summary,
+            tags: ['summary', 'auto'],
+            timestamp: Date.now()
+        });
+
+        showToast('Conversation summarized & saved!');
+    });
+
+    exportAllBtn?.addEventListener('click', async () => {
+        const profiles = await Storage.ProfileStorage.getAllProfiles();
+        const memory = await Storage.MemoryStorage.getAllMemories();
+        const conversations = await Storage.ConversationStorage.getAllConversations();
+        const messages = [];
+        for (const c of conversations) {
+            const msgs = await Storage.MessageStorage.getMessagesByConversationId(c.id);
+            messages.push(...msgs);
+        }
+        const settings = await Storage.SettingsStorage.getSettings();
+
+        const exportData = { profiles, memory, conversations, messages, settings };
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `vivica-backup-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Exported all data!');
+    });
+
+    importAllBtn?.addEventListener('click', () => {
+        importFileInput?.click();
+    });
+
+    importFileInput?.addEventListener('change', async function() {
+        const file = this.files[0];
+        if (!file) return;
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+
+            await Storage.ProfileStorage.getAllProfiles().then(list => Promise.all(list.map(x => Storage.ProfileStorage.deleteProfile(x.id))));
+            await Storage.MemoryStorage.getAllMemories().then(list => Promise.all(list.map(x => Storage.MemoryStorage.deleteMemory(x.id))));
+            await Storage.ConversationStorage.clearAllConversations();
+
+            for (const p of data.profiles || []) await Storage.ProfileStorage.addProfile(p);
+            for (const m of data.memory || []) await Storage.MemoryStorage.addMemory(m);
+            for (const c of data.conversations || []) await Storage.ConversationStorage.addConversation(c);
+            for (const msg of data.messages || []) await Storage.MessageStorage.addMessage(msg);
+            if (data.settings) await Storage.SettingsStorage.saveSettings(data.settings);
+
+            showToast('Imported all data! Reloading...');
+            setTimeout(() => location.reload(), 1200);
+        } catch (e) {
+            showToast('Failed to import!');
         }
     });
 
