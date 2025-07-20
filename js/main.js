@@ -255,14 +255,23 @@ async function showWelcomeScreen() {
     }
 
     chatBody.innerHTML = '';
-    
-    if (emptyState) {
-        emptyState.style.display = 'flex';
-    } else {
-        console.debug('Empty state element not found - continuing without it');
-    }
+    emptyState.style.display = 'flex';
     currentConversationId = null;
     document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
+    
+    // Make sure welcome elements stay visible
+    const welcomeElements = [
+        document.getElementById('weather-widget'),
+        document.getElementById('rss-widget'), 
+        document.getElementById('vivica-welcome-message'),
+        document.getElementById('logo-img')
+    ];
+    
+    welcomeElements.forEach(el => {
+        if (el) el.style.display = 'block';
+    });
+
+    // Render widgets
     await Promise.all([
         renderWeatherWidget(),
         renderRSSWidget(),
@@ -1820,11 +1829,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         m.style.display = 'none';
     });
 
-    document.getElementById('sidebar-home-trigger')?.addEventListener('click', async () => {
-        await showWelcomeScreen();
-        // Close sidebar on mobile
-        if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
-            toggleSidebar();
+    document.getElementById('sidebar-header')?.addEventListener('click', async (e) => {
+        // Only trigger if clicking directly on header, not its children
+        if (e.target === document.getElementById('sidebar-header')) {
+            await showWelcomeScreen();
+            // Close sidebar on mobile
+            if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
+                toggleSidebar();
+            }
         }
     });
     debugLog('DOM Content Loaded. Initializing Vivica...');
