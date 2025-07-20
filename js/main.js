@@ -271,18 +271,33 @@ async function showWelcomeScreen() {
     chatBody.innerHTML = '';
     emptyState.style.display = 'flex';
     currentConversationId = null;
-
+    
     // Make sure welcome elements are visible
-    const setElementVisible = (id) => {
+    const welcomeElements = [
+        'weather-widget', 
+        'rss-widget', 
+        'vivica-welcome-message', 
+        'logo-img', 
+        'empty-title'
+    ];
+    
+    welcomeElements.forEach(id => {
         const el = document.getElementById(id);
-        if (el && el.style) el.style.display = 'block';
-    };
+        if (el) {
+            el.style.display = 'block';
+            el.style.opacity = '1';
+            el.style.visibility = 'visible';
+        }
+    });
 
-    ['weather-widget', 'rss-widget', 'vivica-welcome-message', 'logo-img', 'empty-title']
-        .forEach(setElementVisible);
-
-    // No need to re-render widgets here since they're handled on DOMContentLoaded
-    return Promise.resolve();
+    // Force re-render widgets
+    try {
+        await generateVivicaWelcomeMessage();
+        await renderWeatherWidget();
+        await renderRSSWidget();
+    } catch (e) {
+        console.error('Error refreshing welcome widgets:', e);
+    }
 }
 
 function showToast(message, type = 'info', duration = 1800) {
@@ -1827,10 +1842,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const homeTrigger = document.getElementById('sidebar-home-trigger');
     homeTrigger?.addEventListener('click', async () => {
+        currentConversationId = null;
+        localStorage.removeItem('lastConversationId');
         await showWelcomeScreen();
         if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
             toggleSidebar();
         }
+        // Clear any active conversation highlights
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            item.classList.remove('active');
+        });
     });
     debugLog('DOM Content Loaded. Initializing Vivica...');
     if (window.applyColorTheme) window.applyColorTheme();
@@ -1896,6 +1917,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     emptyState.style.display = 'flex';
     chatBody.innerHTML = '';
     currentConversationId = null;
+    localStorage.removeItem('lastConversationId'); // Ensure no auto-load
     try {
         await generateVivicaWelcomeMessage();
         await renderWeatherWidget();
