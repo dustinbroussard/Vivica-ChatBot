@@ -30,6 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (logo) {
         logo.src = `images/logo-${theme}${suffix}.png`;
       }
+      const sidebarLogo = document.getElementById('sidebar-vivica-logo');
+      if (sidebarLogo) {
+        sidebarLogo.src = `images/logo-${theme}${suffix}.png`;
+      }
     } catch (e) {
       console.debug('Logo element not found or could not be updated:', e);
     }
