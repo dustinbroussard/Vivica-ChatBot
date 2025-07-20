@@ -75,14 +75,17 @@
                 <span class="status-indicator online"></span>
             </div>
             <div class="header-actions">
+             <button type="button" class="header-btn desktop-only""id="summarize-save-btn" title="Summarize &amp; Save">
+                  <i class="fas fa-bookmark"></i>
+                </button>
+                 <button type="button" class="header-btn mobile-only""id="summarize-save-btn" title="Summarize &amp; Save">
+                  <i class="fas fa-bookmark"></i>
+                </button>
                 <button type="button" class="header-btn desktop-only" id="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
                     <i class="fas fa-adjust"></i>
                 </button>
                 <button type="button" class="header-btn mobile-only" id="mobile-theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
                     <i class="fas fa-moon"></i>
-                </button>
-                <button id="summarize-save-btn" title="Summarize &amp; Save" style="margin-left:14px;">
-                  <i class="fas fa-bookmark"></i> Summarize &amp; Save
                 </button>
             </div>
         </div>
@@ -199,26 +202,27 @@
                     <div class="settings-group checkbox-group">
                         <label><input type="checkbox" id="dark-mode-toggle"> Light / Dark mode</label>
                     </div>
-                </section>
+
                 <section class="settings-section danger-zone">
-                    <h3>⚠️ Danger Zone</h3>
                     <button type="button" class="modal-btn danger-btn" id="clear-all-conversations">
                         <i class="fas fa-trash"></i>
                         Clear All Conversations
                     </button>
-                    <small class="settings-hint">This action cannot be undone.</small>
                 </section>
                 <div style="margin-top:18px;">
-                  <button id="export-all-btn" style="margin-right:10px;">
+                  
+                </div>
+                <div class="modal-footer">
+                <button id="export-all-btn" style="margin-right:10px;">
                     <i class="fas fa-download"></i> Export All Data
                   </button>
                   <button id="import-all-btn">
                     <i class="fas fa-upload"></i> Import All Data
                   </button>
                   <input type="file" id="import-file-input" accept=".json" style="display:none;">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="modal-btn cancel-btn" id="cancel-settings">Cancel</button>
+                    <button type="button" class="modal-btn cancel-btn" id="cancel-settings"><i class="fas fa-stop-circle" aria-hidden="true"></i>
+                    Cancel
+                    </button>
                     <button type="button" class="modal-btn primary-btn" id="save-settings">
                         <i class="fas fa-save"></i>
                         Save Settings
@@ -403,8 +407,8 @@
 
 	      <div class="modal-footer">
 		<button type="button" class="modal-btn" id="memory-reset-btn">Reset</button>
-		<button type="button" class="modal-btn" id="memory-export-btn">Export Memory</button>
-		<button type="button" class="modal-btn" id="memory-import-btn">Import Memory</button>
+		<button type="button" class="modal-btn" id="memory-export-btn">Export</button>
+		<button type="button" class="modal-btn" id="memory-import-btn">Import</button>
 		<button type="button" class="modal-btn cancel-btn" id="memory-cancel-btn">Cancel</button>
 		<button type="submit" class="modal-btn primary-btn" id="memory-save-btn">Save</button>
 	      </div>

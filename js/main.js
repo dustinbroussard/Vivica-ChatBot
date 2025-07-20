@@ -982,7 +982,7 @@ async function getAIResponse(userQuery) {
         const profile = window.currentProfile || (currentProfileId ? await Storage.ProfileStorage.getProfile(currentProfileId) : null);
 
         // Use default values if no profile or profile values are missing
-        const model = profile?.model || 'mistralai/mistral-7b-instruct'; // Default model
+        const model = profile?.model || 'deepseek/deepseek-chat-v3-0324:free'; // Default model
         const systemPrompt = '';
         const temperature = profile?.temperature !== undefined ? profile.temperature : 0.7;
         const maxTokens = profile?.maxTokens || 2000;
@@ -1272,7 +1272,7 @@ async function summarizeAndSaveConversation() {
             'X-Title': 'Vivica Chat App'
         },
         body: JSON.stringify({
-            model: profile.model || 'mistralai/mistral-7b-instruct',
+            model: profile.model || 'deepseek/deepseek-chat-v3-0324:free',
             messages: [{ role: 'system', content: summaryPrompt }, ...chatHistory],
             temperature: profile.temperature ?? 0.7,
             max_tokens: Math.min(profile.maxTokens || 500, 800),
