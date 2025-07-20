@@ -1851,18 +1851,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         m.style.display = 'none';
     });
 
-    const homeTrigger = document.getElementById('sidebar-home-trigger');
-    homeTrigger?.addEventListener('click', async () => {
+    const homeTrigger = document.getElementById('sidebar-home');
+    homeTrigger?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         currentConversationId = null;
         localStorage.removeItem('lastConversationId');
-        await showWelcomeScreen();
-        if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
-            toggleSidebar();
-        }
-        // Clear any active conversation highlights
+        localStorage.removeItem('cachedConversationId');
+        
+        // Hide all conversation highlights
         document.querySelectorAll('.conversation-item').forEach(item => {
             item.classList.remove('active');
         });
+
+        // Force show welcome screen 
+        chatBody.innerHTML = '';
+        await showWelcomeScreen();
+
+        // Close sidebar on mobile if open
+        if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+            toggleSidebar();
+        }
     });
     debugLog('DOM Content Loaded. Initializing Vivica...');
     if (window.applyColorTheme) window.applyColorTheme();
@@ -1936,18 +1945,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Always show welcome screen on startup - don't load any conversation
     debugLog('Showing welcome screen...');
-    // Hide elements first to prevent flash
-    emptyState.style.display = 'none';
-    chatBody.style.visibility = 'hidden';
+    // Clear any existing conversation
     chatBody.innerHTML = '';
     currentConversationId = null;
     localStorage.removeItem('lastConversationId');
     
-    // After initial render, make visible
-    setTimeout(() => {
-        emptyState.style.display = 'flex';
-        chatBody.style.visibility = 'visible';
-    }, 100);
+    // Force show welcome elements 
+    emptyState.style.display = 'flex';
+    document.querySelectorAll('#empty-state > *').forEach(el => {
+        el.style.display = 'block';
+        el.style.opacity = '1';
+        el.style.visibility = 'visible';
+    });
+
+    // Load welcome content
     try {
         await generateVivicaWelcomeMessage();
         await renderWeatherWidget();
