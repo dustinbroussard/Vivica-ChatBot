@@ -285,8 +285,10 @@ async function showWelcomeScreen() {
     
     welcomeElements.forEach(el => {
         try {
-            el.style.display = 'block';
-            el.style.opacity = '1';  // Ensure visible
+            if (el && el.style) {
+                el.style.display = 'block';
+                el.style.opacity = '1';  // Ensure visible
+            }
         } catch (e) {
             console.debug('Error setting style for element:', el, e);
         }
