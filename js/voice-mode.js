@@ -29,8 +29,6 @@ let volumeInterval = null;
 
 // --- Configuration (can be passed from main.js or managed internally) ---
 let vivicaVoiceModeConfig = {
-    apiKey: '', // API key for backend (if TTS/STT is API-driven)
-    model: 'gpt-4o', // Default model for voice interactions
     systemPrompt: 'You are Vivica, a helpful AI assistant.',
     conversationId: null, // Current conversation context from main app
     onSpeechResult: (transcript, isFinal) => {}, // Callback for speech results

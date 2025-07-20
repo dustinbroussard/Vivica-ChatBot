@@ -1706,8 +1706,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 voiceAnimation.updateVolume(vol);
             }
         },
-        useGoogleTTS: settings?.googleTtsKey ? true : false,
-        googleApiKey: settings?.googleTtsKey || ''
     });
     voiceModeToggleBtn.addEventListener('click', () => {
         voiceModeActive = !voiceModeActive;
