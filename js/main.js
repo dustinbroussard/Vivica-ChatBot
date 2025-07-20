@@ -731,6 +731,10 @@ async function getAIResponse(userQuery) {
     try {
         const settings = await Storage.SettingsStorage.getSettings();
         const apiKey = settings?.apiKey1; // Use the first API key for OpenRouter
+        
+        if (settings) {
+            updateVoiceModeConfig({ apiKey: settings.apiKey1 });
+        }
 
         if (!apiKey) {
             showToast('OpenRouter API Key is not set in settings.', 'error', 5000);
@@ -769,7 +773,7 @@ async function getAIResponse(userQuery) {
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${apiKey}}`,
+                'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
                 'Accept': 'text/event-stream',
                 'HTTP-Referer': window.location.origin, // Important for OpenRouter
@@ -1138,6 +1142,7 @@ async function saveSettings() {
     try {
         // Settings are stored in the 'memory' store with a fixed key
         await Storage.SettingsStorage.saveSettings(settings);
+        updateVoiceModeConfig({ apiKey: settings.apiKey1 });
         showToast('Settings saved!', 'success');
         closeModal(settingsModal);
     } catch (error) {
