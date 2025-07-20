@@ -1440,14 +1440,7 @@ kbd {
 }
 
 .delete-profile-btn {
-  background: none;
-  border: none;
-  color: var(--danger);
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  color: var(--danger, #d9534f);
 }
 
 #delete-profile-btn {
@@ -1455,26 +1448,31 @@ kbd {
 }
 
 .delete-profile-btn:hover {
-  background: rgba(255, 0, 0, 0.1);
-  transform: scale(1.1);
+  background: var(--danger, #d9534f);
+  color: #fff;
 }
 
 .profile-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
+  padding: 10px 14px 7px 14px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: var(--bg-primarys, var(--bg-secondary));
+  box-shadow: 0 2px 8px 0 rgb(0 0 0 / 0.06);
+  color: var(--text-primary);
+  font-size: 1em;
 }
 
 .custom-model-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 0.85rem;
+  padding: 10px 14px 7px 14px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: var(--bg-primarys, var(--bg-secondary));
+  box-shadow: 0 2px 8px 0 rgb(0 0 0 / 0.06);
+  color: var(--text-primary);
+  font-size: 1em;
 }
 
 .custom-model-remove {
@@ -1988,7 +1986,7 @@ body.light-mode .theme-purple {
   box-shadow: 0 4px 16px rgba(0,0,0,0.2);
   border: 1px solid var(--border);
   border-radius: 0 0 8px 8px;
-  max-height: 180px;
+  max-height: 240px;
   overflow-y: auto;
   z-index: 2000;
   display: none;
