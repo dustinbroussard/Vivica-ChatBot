@@ -1315,14 +1315,23 @@ async function openSettingsModal() {
     // Load existing settings
     const settings = await Storage.SettingsStorage.getSettings();
     if (settings) {
-        document.getElementById('api-key-1').value = settings.apiKey1 || '';
-        document.getElementById('api-key-2').value = settings.apiKey2 || '';
-        document.getElementById('api-key-3').value = settings.apiKey3 || '';
-        document.getElementById('weather-api-key').value = settings.weatherApiKey || '';
-        document.getElementById('weather-location').value = settings.weatherLocation || '';
-        document.getElementById('rss-feeds').value = settings.rssFeeds || '';
-        document.getElementById('include-weather').checked = settings.includeWeather || false;
-        document.getElementById('include-rss').checked = settings.includeRss || false;
+        const setValueIfExists = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.value = value || '';
+        };
+        const setCheckedIfExists = (id, checked) => {
+            const el = document.getElementById(id);
+            if (el) el.checked = !!checked;
+        };
+
+        setValueIfExists('api-key-1', settings.apiKey1);
+        setValueIfExists('api-key-2', settings.apiKey2);
+        setValueIfExists('api-key-3', settings.apiKey3);
+        setValueIfExists('weather-api-key', settings.weatherApiKey);
+        setValueIfExists('weather-location', settings.weatherLocation);
+        setValueIfExists('rss-feeds', settings.rssFeeds);
+        setCheckedIfExists('include-weather', settings.includeWeather);
+        setCheckedIfExists('include-rss', settings.includeRss);
     }
     if (themeSelect) {
         themeSelect.value = localStorage.getItem('colorTheme') || 'default';
