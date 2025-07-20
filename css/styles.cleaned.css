@@ -1756,16 +1756,12 @@ body.light-mode .theme-purple {
 
 /* Conversation Item Actions */
 .conversation-item-actions {
-  display: none;
+  display: flex !important;
   gap: 8px;
   position: absolute;
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-}
-
-.conversation-item:hover .conversation-item-actions {
-  display: flex;
 }
 
 .conversation-action-btn {
@@ -1827,7 +1823,7 @@ body.light-mode .theme-purple {
 
 /* Conversation item actions visibility on hover */
 .conversation-item-actions {
-    display: none; /* Hidden by default as per your CSS */
+    display: flex !important;
     gap: 8px;
     position: absolute; /* Already in your CSS */
     right: 8px; /* Already in your CSS */
@@ -1836,10 +1832,6 @@ body.light-mode .theme-purple {
     background: var(--bg-secondary); /* Ensure buttons are visible over other text */
     padding-left: 5px; /* To prevent text overlap */
     border-radius: 4px;
-}
-
-.conversation-item:hover .conversation-item-actions {
-    display: flex; /* Display on hover as per your CSS */
 }
 
 .conversation-action-btn {
