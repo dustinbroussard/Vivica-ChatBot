@@ -22,7 +22,7 @@
   padding: 28px 28px 20px 28px;
   border-radius: 16px;
   box-shadow: 0 8px 32px 0 rgb(0 0 0 / 0.18);
-  background: var(--modal-bg, var(--bg-primary));
+  background: var(--bg-primary);
   color: var(--text-primary);
   max-width: 480px;
   width: 96vw;
@@ -150,7 +150,7 @@ textarea:focus {
   margin-bottom: 16px;
   padding: 16px 16px 14px 16px;
   border-radius: 10px;
-  background: var(--card-bg, var(--bg-secondary));
+  background: var(--bg-primarys, var(--bg-secondary));
   box-shadow: 0 2px 8px 0 rgb(0 0 0 / 0.07);
   color: var(--text-primary);
 }

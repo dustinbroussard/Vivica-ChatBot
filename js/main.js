@@ -1272,10 +1272,17 @@ async function renderProfilesList() {
                 <span class="model-name">${profile.modelName || profile.model}</span>
                 ${profile.id === currentProfileId ? '<span class="active-profile-badge">Active</span>' : ''}
             </div>
-            <div class="profile-actions">
-                <button class="set-active-profile-btn" data-profile-id="${profile.id}" title="Set as Active"><i class="fas fa-check"></i></button>
-                <button class="edit-profile-btn" data-profile-id="${profile.id}"><i class="fas fa-edit"></i></button>
-                <button class="delete-profile-btn" data-profile-id="${profile.id}"><i class="fas fa-trash"></i></button>
+		    <div class="profile-actions">
+	    <button class="icon-btn set-active-profile-btn" data-profile-id="${profile.id}" title="Set as Active">
+		<i class="fas fa-check"></i>
+	    </button>
+	    <button class="icon-btn edit-profile-btn" data-profile-id="${profile.id}" title="Edit">
+		<i class="fas fa-edit"></i>
+	    </button>
+	    <button class="icon-btn delete-profile-btn" data-profile-id="${profile.id}" title="Delete">
+		<i class="fas fa-trash"></i>
+	    </button>
+	</div>
             </div>
         `;
         profilesListDiv.appendChild(profileCard);
