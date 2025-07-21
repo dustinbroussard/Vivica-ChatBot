@@ -62,24 +62,7 @@ class VoiceAnimation {
       touch-action: none;
     `;
     
-    this.profileSelect = document.createElement('select');
-    this.profileSelect.id = 'voice-profile-select';
-    this.profileSelect.className = 'profile-select';
-    // Force dark background theme regardless of global theme
-    this.profileSelect.classList.add('force-dark');
-    this.profileSelect.style.cssText = `
-      position: absolute;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      pointer-events: auto;
-      max-width: 220px;
-      width: 90%;
-    `;
-
-
     this.animationContainer.appendChild(this.canvas);
-    this.animationContainer.appendChild(this.profileSelect);
     this.animationContainer.appendChild(closeBtn);
     document.body.appendChild(this.animationContainer);
 

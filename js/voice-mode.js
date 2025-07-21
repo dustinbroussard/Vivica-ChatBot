@@ -8,6 +8,7 @@
  */
 
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
+import { ProfileStorage, MemoryStorage, MessageStorage, ConversationStorage } from './storage-wrapper.js';
 
 const VOICE_MODE_DEBUG_TAG = 'VoiceMode';
 
@@ -77,6 +78,40 @@ function debugLog(...args) {
     } else {
         console.log(`[${VOICE_MODE_DEBUG_TAG}]`, ...args);
     }
+}
+
+// --- Context Helpers ---
+export async function getActiveProfile() {
+    const activeId = parseInt(localStorage.getItem('activeProfileId'), 10);
+    const profiles = await ProfileStorage.getAllProfiles();
+    return profiles.find(p => p.id === activeId) || profiles.find(p => p.isActive) || profiles[0];
+}
+
+export async function getMemoryContext() {
+    const memories = await MemoryStorage.getAllMemories();
+    return memories.map(m => m.content).join('\n');
+}
+
+export async function getLastConversationHistory() {
+    const convos = await ConversationStorage.getAllConversations();
+    const latest = convos?.[0];
+    if (!latest) return [];
+    const messages = await MessageStorage.getMessagesByConversationId(latest.id);
+    return messages.map(m => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.content
+    }));
+}
+
+export async function buildVoicePrompt(userInput) {
+    const profile = await getActiveProfile();
+    const memory = await getMemoryContext();
+    const history = await getLastConversationHistory();
+    const systemMessage = {
+        role: 'system',
+        content: `You are ${profile?.name}. Speak with a ${profile?.tone || 'natural'} tone.\nYou remember the following:\n${memory}`
+    };
+    return [systemMessage, ...history, { role: 'user', content: userInput }];
 }
 
 // --- Audio visualization helpers ---
