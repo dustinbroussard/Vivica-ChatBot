@@ -11,7 +11,7 @@ import Storage from './storage-wrapper.js';
 import { generateAIConversationTitle } from './title-generator.js';
 // Marked is loaded via CDN in index.html, available globally as 'marked'
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
-import { initVoiceMode, startListening, stopListening, toggleListening, speak, getIsListening, getIsSpeaking, updateVoiceModeConfig } from './voice-mode.js';
+import { initVoiceMode, startListening, stopListening, toggleListening, speak, getIsListening, getIsSpeaking, updateVoiceModeConfig, setProcessingState } from './voice-mode.js';
 import { voiceAnimation } from './voice-animation.js';
 import { createParser } from './eventsource-parser.js';
 
@@ -529,7 +529,7 @@ function updateMessageContent(element, content) {
 }
 
 function renderMessage(message, isNew = false) {
-  if (!message || !message.content) return null;
+  if (!message) return null;
   toggleScrollButton();
   
   // Ensure message element exists before proceeding
@@ -791,11 +791,19 @@ async function sendMessage() {
         userInput.style.height = 'auto'; // Reset textarea height
 
         showTypingIndicator(true);
+        if (voiceModeActive) {
+            setProcessingState(true);
+            voiceAnimation.setState('processing');
+        }
         const fullPrompt = await buildFullPrompt(content);
         await getAIResponse(fullPrompt);
     } catch (error) {
         debugLog(`Error sending message: ${error.message}`, 'error');
         showToast('Failed to send message.', 'error');
+        if (voiceModeActive) {
+            setProcessingState(false);
+            voiceAnimation.setState('listening');
+        }
     }
 }
 
@@ -1167,7 +1175,13 @@ async function getAIResponse(userQuery) {
         }
         debugLog('AI response fully streamed and saved.');
         if (voiceModeActive) {
-            speak(currentContent).catch(err => debugLog('TTS error: ' + err, 'error'));
+            try {
+                await speak(currentContent);
+            } catch (err) {
+                debugLog('TTS error: ' + err, 'error');
+            }
+            setProcessingState(false);
+            voiceAnimation.setState('listening');
         }
 
     } catch (error) {
@@ -1202,6 +1216,10 @@ async function getAIResponse(userQuery) {
         showTypingIndicator(false);
         // Re-apply Prism.js highlighting after final content is rendered
         Prism.highlightAllUnder(chatBody);
+        if (voiceModeActive) {
+            setProcessingState(false);
+            voiceAnimation.setState('listening');
+        }
     }
 }
 
@@ -2044,6 +2062,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             voiceAnimation.hide();
             stopListening();
+            setProcessingState(false);
         }
     });
 

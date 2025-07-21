@@ -52,6 +52,11 @@ export function updateVoiceModeConfig(newConfig) {
     debugLog('Config updated:', vivicaVoiceModeConfig);
 }
 
+export function setProcessingState(state) {
+    isProcessing = state;
+    debugLog('Processing state:', state);
+}
+
 /**
  * Sets the current conversation ID for context.
  * @param {string | number | null} id - The ID of the current conversation.
@@ -233,7 +238,9 @@ function initSpeechRecognition() {
             vivicaVoiceModeConfig.onSpeechEnd();
             vivicaVoiceModeConfig.onListenStateChange('idle');
             stopAudioVisualization();
-            // No auto-restart here; retry button controls it
+            if (voiceModeActive && shouldRestartRecognition()) {
+                setTimeout(() => recognition.start(), 500);
+            }
         };
 
     } else {
@@ -252,22 +259,6 @@ export function startListening() {
     }
     if (recognition && !isListening) {
         try {
-            if (Notification.permission === 'denied') {
-                if (window.showToast) window.showToast('Microphone access denied', 'error');
-                return;
-            }
-            
-            if (Notification.permission !== 'granted') {
-                Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') {
-                        recognition.start();
-                    } else {
-                        if (window.showToast) window.showToast('Microphone access required', 'error');
-                    }
-                });
-                return;
-            }
-            
             recognition.start();
             debugLog('Listening started.');
             startAudioVisualization();
@@ -400,6 +391,7 @@ export function speak(text) {
             isSpeaking = false;
             vivicaVoiceModeConfig.onSpeakingEnd();
             vivicaVoiceModeConfig.onListenStateChange('idle');
+            setProcessingState(false);
             resolve();
 
             // Auto-restart listening after speech ends
