@@ -163,6 +163,7 @@ let currentConversationId = null;
 let currentProfileId = null; // ID of the currently active AI profile
 let availableModels = []; // To store fetched AI models
 let voiceModeActive = false;
+let lastSuccessfulModel = localStorage.getItem('lastSuccessfulModel') || 'deepseek/deepseek-chat-v3-0324:free';
 
 function checkProfileFormValidity() {
     const valid = profileNameInput.value.trim() && profileSystemPromptInput.value.trim();
@@ -1044,23 +1045,40 @@ async function getAIResponse(userQuery) {
         }
 
 
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
-                'Accept': 'text/event-stream',
-                'HTTP-Referer': window.location.origin, // Important for OpenRouter
-                'X-Title': 'Vivica Chat App' // Optional: for OpenRouter dashboard
-            },
-            body: JSON.stringify({
-                model: model,
-                messages: relevantMessages,
-                temperature: temperature,
-                max_tokens: voiceModeActive ? Math.min(maxTokens, 120) : maxTokens,
-                stream: true // Request streaming response
-            })
-        });
+        async function fetchWithModel(m) {
+            const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'text/event-stream',
+                    'HTTP-Referer': window.location.origin,
+                    'X-Title': 'Vivica Chat App'
+                },
+                body: JSON.stringify({
+                    model: m,
+                    messages: relevantMessages,
+                    temperature: temperature,
+                    max_tokens: voiceModeActive ? Math.min(maxTokens, 120) : maxTokens,
+                    stream: true
+                })
+            });
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(`OpenRouter API error: ${res.status} - ${errData.error?.message || 'Unknown error'}`);
+            }
+            return res;
+        }
+
+        let response;
+        try {
+            response = await fetchWithModel(model);
+            lastSuccessfulModel = model;
+            localStorage.setItem('lastSuccessfulModel', model);
+        } catch (err) {
+            debugLog(`Model ${model} failed: ${err.message}. Retrying with ${lastSuccessfulModel}`, 'warn');
+            response = await fetchWithModel(lastSuccessfulModel);
+        }
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -1689,9 +1707,6 @@ async function saveProfile(event) {
         const allProfiles = await Storage.ProfileStorage.getAllProfiles();
         populateProfileDropdown(profileSelect, allProfiles, profile.id);
 
-        if (voiceAnimation.profileSelect) {
-            populateProfileDropdown(voiceAnimation.profileSelect, allProfiles, profile.id);
-        }
 
         // Set this new/updated profile as the current active one if no conversation is active
         if (!currentConversationId) { // Only set if no conversation is active
@@ -1985,32 +2000,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {
         debugLog(`Failed to generate welcome content: ${e.message}`, 'error');
     }
-    if (voiceAnimation.profileSelect) {
-        populateProfileDropdown(voiceAnimation.profileSelect, profiles, activeProfile?.id);
-        voiceAnimation.profileSelect.addEventListener('change', async function (e) {
-            const selectedId = parseInt(e.target.value);
-            const p = await Storage.ProfileStorage.getProfile(selectedId);
-            if (p) setActiveProfile(p);
-            profileSelect.value = selectedId;
-            if (window.currentConversationId) {
-                const convo = await Storage.ConversationStorage.getConversation(window.currentConversationId);
-                if (convo) {
-                    convo.profileId = selectedId;
-                    await Storage.ConversationStorage.updateConversation(convo);
-                }
-            }
-            await renderConversationsList();
-            if (typeof renderChatHeader === 'function') renderChatHeader();
-            if (p) showToast(`Profile switched to ${p.name}`, 'info');
-        });
-    }
     profileSelect.addEventListener('change', async function () {
         const selectedId = parseInt(this.value);
         localStorage.setItem('activeProfileId', selectedId);
         window.currentProfileId = selectedId;
         const p = await Storage.ProfileStorage.getProfile(selectedId);
         if (p) setActiveProfile(p);
-        if (voiceAnimation.profileSelect) voiceAnimation.profileSelect.value = selectedId;
 
         if (window.currentConversationId) {
             const convo = await Storage.ConversationStorage.getConversation(window.currentConversationId);
