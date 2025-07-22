@@ -8,7 +8,8 @@
  */
 
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
-import { personaStorage, MemoryStorage, MessageStorage, ConversationStorage } from './storage-wrapper.js';
+import { personaStorage } from './persona-storage.js';
+import { MemoryStorage, MessageStorage, ConversationStorage } from './storage-wrapper.js';
 
 const VOICE_MODE_DEBUG_TAG = 'VoiceMode';
 

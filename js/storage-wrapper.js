@@ -8,6 +8,7 @@
  */
 
 import { initDB, add, get, getAll, update, remove, clearStore, STORES, getByIndex } from './db-utils.js';
+import { personaStorage } from './persona-storage.js';
 
 // Ensure DB is initialized when this module loads
 initDB().catch(error => console.error('StorageWrapper: Failed to initialize DB:', error));
