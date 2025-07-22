@@ -35,8 +35,16 @@ function appendMessage(role, text) {
 // Persona name badge sync
 async function updateActivePersonaBadge() {
   const badge = document.getElementById('activePersonaBadge');
-  const persona = await PersonaStorage.getPersona(localStorage.getItem('activePersonaId'));
-  badge.textContent = persona ? `👤 ${persona.name} ⏷` : '👤 Select Persona ⏷';
+  if (!badge) return;
+  
+  try {
+    const activePersonaId = localStorage.getItem('activePersonaId');
+    const persona = activePersonaId ? await PersonaStorage.getPersona(activePersonaId) : null;
+    badge.textContent = persona ? `👤 ${persona.name} ⏷` : '👤 Select Persona ⏷';
+  } catch (error) {
+    console.error('Error updating persona badge:', error);
+    badge.textContent = '👤 Error ⏷';
+  }
 }
 
 document.addEventListener('DOMContentLoaded', updateActivePersonaBadge);
@@ -1725,7 +1733,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    let personas = await Storage.personaStorage.getAllpersonas();
+    let personas = [];
+    try {
+        personas = await PersonaStorage.getAllPersonas();
+    } catch (error) {
+        console.error('Error loading personas:', error);
+    }
     personas = personas.sort((a, b) => a.name === 'Vivica' ? -1 : b.name === 'Vivica' ? 1 : 0);
     let activeId = parseInt(localStorage.getItem('activepersonaId'), 10);
     if (!activeId && personas.length) activeId = personas.find(p => p.name === 'Vivica')?.id || personas[0].id;

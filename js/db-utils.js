@@ -52,12 +52,17 @@ export async function initDB() {
             }
 
             if (!db.objectStoreNames.contains(STORES.PERSONAS)) {
-                const personaStore = db.createObjectStore(STORES.PERSONAS, {
-                    keyPath: 'id',
-                    autoIncrement: true
-                });
-                personaStore.createIndex('name', 'name', { unique: true });
-                console.log(`DB: Object store '${STORES.PERSONAS}' created.`);
+                try {
+                    const personaStore = db.createObjectStore(STORES.PERSONAS, {
+                        keyPath: 'id',
+                        autoIncrement: true
+                    });
+                    personaStore.createIndex('name', 'name', { unique: true });
+                    console.log(`DB: Object store '${STORES.PERSONAS}' created.`);
+                } catch (error) {
+                    console.error('Error creating personas store:', error);
+                    throw error;
+                }
             }
 
             if (!db.objectStoreNames.contains(STORES.MEMORY)) {
