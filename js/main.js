@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', updateActivePersonaBadge);
 
 // --- Vivica Default persona Seeder ---
 (async () => {
-  const personas = await Storage.personaStorage.getAllpersonas();
+  const personas = await Storage.PersonaStorage.getAllPersonas();
   const vivicaExists = personas.some(
     p => p.name.toLowerCase() === 'vivica'
   );
@@ -95,7 +95,7 @@ Speak like you built the mic.
       maxContext: 30
     });
     await renderpersonasList();
-    setActivepersona((await Storage.personaStorage.getAllpersonas()).find(p => p.name === 'Vivica'));
+    setActivePersona((await Storage.PersonaStorage.getAllPersonas()).find(p => p.name === 'Vivica'));
   }
 })();
 
@@ -1983,7 +1983,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     exportAllBtn?.addEventListener('click', async () => {
-        const personas = await Storage.personaStorage.getAllpersonas();
+        const personas = await Storage.PersonaStorage.getAllPersonas();
         const memory = await Storage.MemoryStorage.getAllMemories();
         const conversations = await Storage.ConversationStorage.getAllConversations();
         const messages = [];

@@ -1,10 +1,4 @@
 // persona-storage.js
-export async function getActivePersona() {
-  const id = localStorage.getItem('activePersonaId');
-  const all = await PersonaStorage.getAll();
-  return all.find(p => p.id === id);
-}
-
 export const PersonaStorage = {
   KEY: 'personaList',
 
