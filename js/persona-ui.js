@@ -16,7 +16,11 @@ export function initPersonaUI() {
   activePersonaId = localStorage.getItem('activePersonaId');
   loadPersonas();
 
-  createPersonaBtn?.addEventListener('click', () => openPersonaEditor());
+  createPersonaBtn?.addEventListener('click', () => {
+    openPersonaEditor();
+    personaForm.reset();
+    document.getElementById('tempVal').textContent = '0.7';
+  });
 
   // Close buttons
   document.querySelectorAll('.close-modal, .cancelBtn').forEach(btn => {
@@ -39,12 +43,32 @@ export function initPersonaUI() {
       maxTokens: parseInt(document.getElementById('maxTokens').value)
     };
 
+    if (!persona.name || !persona.model || !persona.systemPrompt) {
+      alert('Please fill out all required fields.');
+      return;
+    }
+
     await PersonaStorage.addPersona(persona);
     personaEditorModal.classList.add('hidden');
     await loadPersonas();
   });
 
   const tempSlider = document.getElementById('temperature');
+  // Populate model dropdown (static or dynamic)
+  const modelSelect = document.getElementById('modelSelect');
+  if (modelSelect && modelSelect.children.length <= 1) {
+    const defaultModels = [
+      'gpt-4o', 'deepseek-chat', 'llama-3-70b-instruct', 'qwen/qwen-2.5-72b-instruct', 'openrouter/cypher-alpha'
+    ];
+    for (const model of defaultModels) {
+      const opt = document.createElement('option');
+      opt.value = model;
+      opt.textContent = model;
+      modelSelect.appendChild(opt);
+    }
+  }
+
+  // Slider updates label live
   tempSlider?.addEventListener('input', () => {
     document.getElementById('tempVal').textContent = tempSlider.value;
   });
