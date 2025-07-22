@@ -1,12 +1,3 @@
-// js/main.js
-// Code Maniac - Core Application Logic for Vivica Chat App
-
-/**
- * @fileoverview This is the main JavaScript file for the Vivica chat application.
- * It handles all UI interactions, integrates with IndexedDB storage,
- * manages API calls (simulated here), and orchestrates the overall application flow.
- */
-
 import Storage from './storage-wrapper.js';
 import { generateAIConversationTitle } from './title-generator.js';
 // Marked is loaded via CDN in index.html, available globally as 'marked'
@@ -14,16 +5,78 @@ import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js'
 import { initVoiceMode, startListening, stopListening, toggleListening, speak, getIsListening, getIsSpeaking, updateVoiceModeConfig, setProcessingState } from './voice-mode.js';
 import { voiceAnimation } from './voice-animation.js';
 import { createParser } from './eventsource-parser.js';
+// main.js (update section only)
+import { getActivePersona } from './js/persona-ui.js';
 
-// --- Vivica Default Profile Seeder ---
+const sendBtn = document.getElementById('sendBtn');
+const userInput = document.getElementById('userInput');
+const chatWindow = document.getElementById('chatWindow');
+
+sendBtn.addEventListener('click', sendMessage);
+userInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+async function sendMessage() {
+  const input = userInput.value.trim();
+  if (!input) return;
+
+  const persona = await getActivePersona();
+  if (!persona) return alert("Please select an AI persona.");
+
+  appendMessage("user", input);
+  userInput.value = "";
+
+  const payload = {
+    model: persona.model,
+    messages: [
+      { role: "system", content: persona.prompt },
+      { role: "user", content: input }
+    ],
+    temperature: persona.temp,
+    max_tokens: persona.tokens
+  };
+
+  const res = await fetch('/your-endpoint', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+
+  appendMessage("assistant", data.choices[0].message.content);
+}
+
+function appendMessage(role, text) {
+  const msg = document.createElement('div');
+  msg.className = `message ${role}`;
+  msg.innerText = text;
+  chatWindow.appendChild(msg);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+// Persona name badge sync
+async function updateActivePersonaBadge() {
+  const badge = document.getElementById('activePersonaBadge');
+  const persona = await getActivePersona();
+  badge.textContent = persona ? `👤 ${persona.name} ⏷` : '👤 Select Persona ⏷';
+}
+
+document.addEventListener('DOMContentLoaded', updateActivePersonaBadge);
+
+
+// --- Vivica Default persona Seeder ---
 (async () => {
-  const profiles = await Storage.ProfileStorage.getAllProfiles();
-  const vivicaExists = profiles.some(
+  const personas = await Storage.personaStorage.getAllpersonas();
+  const vivicaExists = personas.some(
     p => p.name.toLowerCase() === 'vivica'
   );
   if (!vivicaExists) {
-    console.log('Seeding Vivica profile...');
-    await Storage.ProfileStorage.addProfile({
+    console.log('Seeding Vivica persona...');
+    await Storage.personaStorage.addpersona({
       name: 'Vivica',
       model: 'deepseek/deepseek-chat-v3-0324:free',
       systemPrompt: `Your name is Vivica.
@@ -72,8 +125,8 @@ Speak like you built the mic.
       maxTokens: 2000,
       maxContext: 30
     });
-    await renderProfilesList();
-    setActiveProfile((await Storage.ProfileStorage.getAllProfiles()).find(p => p.name === 'Vivica'));
+    await renderpersonasList();
+    setActivepersona((await Storage.personaStorage.getAllpersonas()).find(p => p.name === 'Vivica'));
   }
 })();
 
@@ -83,7 +136,6 @@ const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
 const newChatBtn = document.getElementById('new-chat-btn');
 const conversationsList = document.getElementById('conversations-list');
-const profileSelect = document.getElementById('profile-select');
 const emptyState = document.getElementById('empty-state');
 const typingIndicator = document.getElementById('typing-indicator');
 const charCountSpan = document.getElementById('char-count');
@@ -96,9 +148,6 @@ const closeSettingsModalBtn = settingsModal.querySelector('.close-modal');
 const saveSettingsBtn = document.getElementById('save-settings');
 const cancelSettingsBtn = document.getElementById('cancel-settings');
 const clearAllConversationsBtn = document.getElementById('clear-all-conversations');
-const profilesModal = document.getElementById('profiles-modal');
-const profilesBtn = document.getElementById('profiles-btn');
-const closeProfilesModalBtn = profilesModal.querySelector('.close-modal');
 const memoryModal = document.getElementById('memory-modal');
 const memoryBtn = document.getElementById('memory-btn');
 const closeMemoryModalBtn = document.getElementById('close-memory');
@@ -138,37 +187,6 @@ function updateSummarizeButtonVisibility() {
 // Mobile touch variables for sidebar swipe
 let touchStartX = null;
 let touchMoved = false;
-
-// Profile form elements
-const profileForm = document.getElementById('profile-form');
-const profileIdInput = document.getElementById('profile-id');
-const profileNameInput = document.getElementById('profile-name');
-const profileModelSearchInput = document.getElementById('profile-model-search');
-const profileModelDropdown = document.getElementById('profile-model-dropdown');
-const profileModelInput = document.getElementById('profile-model'); // Hidden input for selected model ID
-const profileModelSelectedSpan = document.getElementById('profile-model-selected');
-const profileSystemPromptInput = document.getElementById('profile-system-prompt');
-const profileTempInput = document.getElementById('profile-temp');
-const profileTempValueSpan = document.getElementById('profile-temp-value');
-const profileMaxTokensInput = document.getElementById('profile-max-tokens');
-const profileMaxContextInput = document.getElementById('profile-max-context');
-const saveProfileBtn = document.getElementById('save-profile-btn');
-const cancelProfileBtn = document.getElementById('cancel-profile-btn');
-const deleteProfileBtn = document.getElementById('delete-profile-btn');
-const profilesListDiv = document.getElementById('profiles-list');
-const model1Select = document.getElementById('model1-select');
-const model1FreeFilter = document.getElementById('model1-free-filter');
-
-let currentConversationId = null;
-let currentProfileId = null; // ID of the currently active AI profile
-let availableModels = []; // To store fetched AI models
-let voiceModeActive = false;
-let lastSuccessfulModel = localStorage.getItem('lastSuccessfulModel') || 'deepseek/deepseek-chat-v3-0324:free';
-
-function checkProfileFormValidity() {
-    const valid = profileNameInput.value.trim() && profileSystemPromptInput.value.trim();
-    saveProfileBtn.disabled = !valid;
-}
 
 // --- Utility Functions ---
 
@@ -233,7 +251,7 @@ User's name is Dustin.`;
         return;
     }
     try {
-        const profile = window.currentProfile || { model: 'deepseek/deepseek-chat-v3-0324', temperature: 1.0, maxTokens: 48 };
+        const persona = window.currentpersona || { model: 'deepseek/deepseek-chat-v3-0324', temperature: 1.0, maxTokens: 48 };
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -243,7 +261,7 @@ User's name is Dustin.`;
                 'X-Title': 'Vivica Chat App'
             },
             body: JSON.stringify({
-                model: profile.model,
+                model: persona.model,
                 messages: [{ role: 'system', content: systemPrompt }],
                 temperature: 1.0,
                 max_tokens: 48,
@@ -395,10 +413,21 @@ function renderMarkdown(content) {
     return window.marked.parse(withLineBreaks);
 }
 
+async function updateActivePersonaBadge() {
+  const badge = document.getElementById('activePersonaBadge');
+  const persona = await getActivePersona();
+
+  if (persona) {
+    badge.textContent = `👤 ${persona.name} ⏷`;
+  } else {
+    badge.textContent = "👤 Select Persona ⏷";
+  }
+}
+
 async function getMemoryPrompt() {
     let memories = await Storage.MemoryStorage.getAllMemories();
-    if (currentProfileId) {
-        memories = memories.filter(m => !m.profileId || m.profileId === currentProfileId);
+    if (currentpersonaId) {
+        memories = memories.filter(m => !m.personaId || m.personaId === currentpersonaId);
     }
     if (!memories.length) return '';
     const lines = memories.map(m => `- ${m.content}`);
@@ -433,35 +462,6 @@ function debugLog(message, level = 'info') {
     console.log();
 }
 
-function applyChatProfile(profile) {
-    currentProfileId = profile.id;
-}
-
-function setActiveProfile(profile) {
-    localStorage.setItem('activeProfileId', profile.id);
-    window.currentProfile = profile;
-    applyChatProfile(profile);
-    updateVoiceModeConfig({
-        model: profile.model,
-        systemPrompt: profile.systemPrompt,
-        temperature: profile.temperature,
-        memoryMode: profile.memoryMode
-    });
-}
-
-async function buildFullPrompt(userInput) {
-    const profile = window.currentProfile || {};
-    let memoryText = '';
-    if (profile.memoryMode !== 'off') {
-        const allMemory = await Storage.MemoryStorage.getAllMemories();
-        const relevant = allMemory.filter(m =>
-            (m.tags && (m.tags.includes('identity') || m.tags.includes('instruction') || m.tags.includes('personality'))) || m.pinned === true
-        );
-        memoryText = relevant.map(m => m.content).join('\n');
-    }
-    return `${profile.systemPrompt || ''}\n\n### Memory Context:\n${memoryText}\n\n### User Message:\n${userInput}`;
-}
-
 /**
  * Opens a modal.
  * @param {HTMLElement} modalElement - The modal DOM element.
@@ -482,17 +482,6 @@ function closeModal(modalElement) {
     document.body.classList.remove('modal-open');
 }
 
-function populateProfileDropdown(selectEl, profiles, activeId) {
-    if (!selectEl) return;
-    selectEl.innerHTML = '';
-    profiles.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = p.name;
-        selectEl.appendChild(opt);
-    });
-    if (activeId) selectEl.value = activeId;
-}
 
 /**
  * Toggles the sidebar open/close state.
@@ -655,11 +644,11 @@ async function renderConversationsList() {
         const lastMsg = lastMessages[lastMessages.length - 1];
         const snippet = lastMsg ? lastMsg.content.slice(0, 30) : '';
         const time = new Date(conv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const profile = await Storage.ProfileStorage.getProfile(conv.profileId);
-        const profileName = profile ? profile.name : '';
+        const persona = await Storage.personaStorage.getpersona(conv.personaId);
+        const personaName = persona ? persona.name : '';
         convItem.innerHTML = `
             <div class="conv-title">${conv.title || 'New Chat'}</div>
-            <span class="profile-badge" style="font-size:0.8em;color:var(--accent-primary);margin-left:6px;">${profileName}</span>
+            <span class="persona-badge" style="font-size:0.8em;color:var(--accent-primary);margin-left:6px;">${personaName}</span>
             <div class="conv-snippet">${snippet}</div>
             <div class="conv-time">${time}</div>`;
 
@@ -725,7 +714,7 @@ async function loadConversation(conversationId) {
     });
 
     const conversation = await Storage.ConversationStorage.getConversation(conversationId);
-    currentProfileId = conversation?.profileId || null; // Set current profile based on conversation
+    currentpersonaId = conversation?.personaId || null; // Set current persona based on conversation
 
     const messages = await Storage.MessageStorage.getMessagesByConversationId(conversationId);
     messages.forEach(msg => renderMessage(msg));
@@ -743,7 +732,7 @@ async function startNewConversation() {
     const newConversation = {
         title: 'New Chat',
         timestamp: Date.now(),
-        profileId: currentProfileId // Associate with current profile if any
+        personaId: currentpersonaId // Associate with current persona if any
     };
     const id = await Storage.ConversationStorage.addConversation(newConversation);
     showToast('New chat started!', 'success');
@@ -1020,14 +1009,14 @@ async function getAIResponse(userQuery) {
             return;
         }
 
-        const profile = window.currentProfile || (currentProfileId ? await Storage.ProfileStorage.getProfile(currentProfileId) : null);
+        const persona = window.currentpersona || (currentpersonaId ? await Storage.personaStorage.getpersona(currentpersonaId) : null);
 
-        // Use default values if no profile or profile values are missing
-        const model = profile?.model || 'deepseek/deepseek-chat-v3-0324:free'; // Default model
+        // Use default values if no persona or persona values are missing
+        const model = persona?.model || 'deepseek/deepseek-chat-v3-0324:free'; // Default model
         const systemPrompt = '';
-        const temperature = profile?.temperature !== undefined ? profile.temperature : 0.7;
-        const maxTokens = profile?.maxTokens || 2000;
-        const maxContext = profile?.maxContext || 20; // Number of previous messages to include
+        const temperature = persona?.temperature !== undefined ? persona.temperature : 0.7;
+        const maxTokens = persona?.maxTokens || 2000;
+        const maxContext = persona?.maxContext || 20; // Number of previous messages to include
 
         const chatHistory = await getChatHistory();
 
@@ -1189,7 +1178,7 @@ async function getAIResponse(userQuery) {
                     currentConversationId,
                     messages,
                     settings?.apiKey1,
-                    window.currentProfile?.model,
+                    window.currentpersona?.model,
                     renderConversationsList
                 );
             }
@@ -1323,9 +1312,9 @@ async function summarizeAndSaveConversation() {
         return;
     }
 
-    const profile = window.currentProfile || (currentProfileId ? await Storage.ProfileStorage.getProfile(currentProfileId) : null);
-    if (!profile) {
-        showToast('No active profile found.', 'error');
+    const persona = window.currentpersona || (currentpersonaId ? await Storage.personaStorage.getpersona(currentpersonaId) : null);
+    if (!persona) {
+        showToast('No active persona found.', 'error');
         return;
     }
 
@@ -1340,10 +1329,10 @@ async function summarizeAndSaveConversation() {
             'X-Title': 'Vivica Chat App'
         },
         body: JSON.stringify({
-            model: profile.model || 'deepseek/deepseek-chat-v3-0324:free',
+            model: persona.model || 'deepseek/deepseek-chat-v3-0324:free',
             messages: [{ role: 'system', content: summaryPrompt }, ...chatHistory],
-            temperature: profile.temperature ?? 0.7,
-            max_tokens: Math.min(profile.maxTokens || 500, 800),
+            temperature: persona.temperature ?? 0.7,
+            max_tokens: Math.min(persona.maxTokens || 500, 800),
             stream: false
         })
     });
@@ -1362,7 +1351,7 @@ async function summarizeAndSaveConversation() {
     await Storage.MemoryStorage.addMemory({
         content: summary,
         tags: ['summary'],
-        profileId: profile.id,
+        personaId: persona.id,
         timestamp: Date.now()
     });
 
@@ -1493,19 +1482,7 @@ function confirmClearAllConversations() {
 }
 
 /**
- * Opens the profiles modal.
- */
-async function openProfilesModal() {
-    debugLog('Opening profiles modal...');
-    openModal(profilesModal);
-    await renderProfilesList();
-    await fetchOpenRouterModels();
-    // Reset profile form when opening modal
-    resetProfileForm();
-}
-
-/**
- * Fetches available AI models from OpenRouter.
+Fetches available AI models from OpenRouter.
  */
 async function fetchOpenRouterModels() {
     debugLog('Fetching available AI models from OpenRouter...');
@@ -1514,8 +1491,8 @@ async function fetchOpenRouterModels() {
         availableModels = models;
         populateModelDropdown(availableModels);
         populateModelSelect(availableModels);
-        if (profileModelInput.value) {
-            model1Select.value = profileModelInput.value;
+        if (personaModelInput.value) {
+            model1Select.value = personaModelInput.value;
         }
     } catch (error) {
         debugLog(`Error fetching models: ${error.message}`, 'error');
@@ -1524,11 +1501,11 @@ async function fetchOpenRouterModels() {
 }
 
 /**
- * Populates the model dropdown for profile editing.
+ * Populates the model dropdown for persona editing.
  * @param {Array<object>} models - Array of model objects.
  */
 function populateModelDropdown(models) {
-    profileModelDropdown.innerHTML = '';
+    personaModelDropdown.innerHTML = '';
     models.forEach(model => {
         const item = document.createElement('div');
         item.classList.add('model-dropdown-item');
@@ -1536,18 +1513,18 @@ function populateModelDropdown(models) {
         item.textContent = model.id + (isFree ? ' (Free)' : '');
         item.dataset.modelId = model.id;
         item.addEventListener('click', () => {
-            profileModelInput.value = model.id;
-            profileModelSelectedSpan.textContent = model.id;
-            profileModelSelectedSpan.style.display = 'inline';
-            profileModelSearchInput.value = model.id; // Update search input
-            profileModelDropdown.style.display = 'none';
+            personaModelInput.value = model.id;
+            personaModelSelectedSpan.textContent = model.id;
+            personaModelSelectedSpan.style.display = 'inline';
+            personaModelSearchInput.value = model.id; // Update search input
+            personaModelDropdown.style.display = 'none';
         });
-        profileModelDropdown.appendChild(item);
+        personaModelDropdown.appendChild(item);
     });
 }
 
 /**
- * Populates the model select element for profile editing.
+ * Populates the model select element for persona editing.
  * @param {Array<object>} models - Array of model objects.
  */
 function populateModelSelect(models) {
@@ -1572,196 +1549,6 @@ function populateModelSelect(models) {
     });
 }
 
-/**
- * Renders the list of AI profiles.
- */
-async function renderProfilesList() {
-    profilesListDiv.innerHTML = '';
-    const profiles = await Storage.ProfileStorage.getAllProfiles();
-
-    if (profiles.length === 0) {
-        profilesListDiv.innerHTML = '<p style="text-align:center;color:var(--text-muted);">No AI profiles created yet.</p>';
-        return;
-    }
-
-    profiles.forEach(profile => {
-        const snippet = profile.systemPrompt.length > 120
-            ? profile.systemPrompt.slice(0, 120) + '…'
-            : profile.systemPrompt;
-        profilesListDiv.innerHTML += `
-  <div class="profile-card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
-      <span style="font-weight:bold;">${profile.name}</span>
-      <span>
-        <button class="edit-profile-btn icon-btn" data-id="${profile.id}" title="Edit"><i class="fas fa-edit"></i></button>
-        <button class="delete-profile-btn icon-btn" data-id="${profile.id}" title="Delete"><i class="fas fa-trash"></i></button>
-      </span>
-    </div>
-    <div style="font-size:0.93em;color:var(--text-secondary);margin-bottom:1px;">
-      Model: ${profile.model}
-    </div>
-    <div class="profile-snippet">${snippet}</div>
-    <div style="font-size:0.85em;color:var(--text-muted);">
-      Temp: ${profile.temperature} &nbsp; Max Tokens: ${profile.maxTokens}
-    </div>
-  </div>
-`;
-    });
-
-    // Add event listeners for edit and delete buttons
-    profilesListDiv.querySelectorAll('.edit-profile-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => editProfile(parseInt(e.currentTarget.dataset.id)));
-    });
-    profilesListDiv.querySelectorAll('.delete-profile-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(e.currentTarget.dataset.id)));
-    });
-}
-
-/**
- * Resets the profile form.
- */
-function resetProfileForm() {
-    profileIdInput.value = '';
-    profileNameInput.value = '';
-    profileModelSearchInput.value = '';
-    profileModelInput.value = '';
-    profileModelSelectedSpan.textContent = '';
-    profileModelSelectedSpan.style.display = 'none';
-    profileSystemPromptInput.value = '';
-    profileTempInput.value = '0.7';
-    profileTempValueSpan.textContent = '0.7';
-    profileMaxTokensInput.value = '2000';
-    profileMaxContextInput.value = '20';
-    saveProfileBtn.textContent = 'Save Profile';
-    saveProfileBtn.innerHTML = '<i class="fas fa-save"></i> Save Profile';
-    deleteProfileBtn.style.display = 'none';
-    profileModelDropdown.style.display = 'none'; // Hide dropdown
-    model1Select.value = ''; // Reset select
-    model1FreeFilter.checked = false; // Reset filter
-    populateModelSelect(availableModels); // Repopulate select
-    checkProfileFormValidity();
-}
-
-/**
- * Edits an existing profile.
- * @param {number} profileId - The ID of the profile to edit.
- */
-async function editProfile(profileId) {
-    debugLog(`Editing profile ID: ${profileId}`);
-    const profile = await Storage.ProfileStorage.getProfile(profileId);
-    if (profile) {
-        profileIdInput.value = profile.id;
-        profileNameInput.value = profile.name;
-        profileModelInput.value = profile.model;
-        profileModelSearchInput.value = profile.modelName || profile.model; // Show friendly name
-        profileModelSelectedSpan.textContent = profile.modelName || profile.model;
-        profileModelSelectedSpan.style.display = 'inline';
-        profileSystemPromptInput.value = profile.systemPrompt;
-        profileTempInput.value = profile.temperature;
-        profileTempValueSpan.textContent = profile.temperature;
-        profileMaxTokensInput.value = profile.maxTokens;
-        profileMaxContextInput.value = profile.maxContext;
-        saveProfileBtn.textContent = 'Update Profile';
-        saveProfileBtn.innerHTML = '<i class="fas fa-save"></i> Update Profile';
-        deleteProfileBtn.style.display = 'inline-block'; // Show delete button
-        model1Select.value = profile.model; // Set the select value too
-    }
-    checkProfileFormValidity();
-}
-
-/**
- * Saves a new or updated AI profile.
- */
-async function saveProfile(event) {
-    event.preventDefault();
-    debugLog('Saving profile...');
-    const profile = {
-        name: profileNameInput.value.trim(),
-        model: profileModelInput.value.trim(),
-        modelName: profileModelSelectedSpan.textContent.trim() || profileModelSearchInput.value.trim(),
-        systemPrompt: profileSystemPromptInput.value.trim(),
-        temperature: parseFloat(profileTempInput.value),
-        maxTokens: parseInt(profileMaxTokensInput.value),
-        maxContext: parseInt(profileMaxContextInput.value)
-    };
-    if (profileIdInput.value) {
-        profile.id = parseInt(profileIdInput.value, 10);
-    }
-
-    if (!profile.name || !profile.systemPrompt) {
-        showToast('Profile name and system prompt are required.', 'error');
-        checkProfileFormValidity();
-        return;
-    }
-
-    try {
-        if (profile.id) {
-            await Storage.ProfileStorage.updateProfile(profile);
-            showToast('Profile updated!', 'success');
-        } else {
-            const newId = await Storage.ProfileStorage.addProfile(profile);
-            profile.id = newId; // Assign the new ID
-            showToast('Profile added!', 'success');
-        }
-        await renderProfilesList();
-        resetProfileForm();
-        
-        // Update dropdowns with latest profiles
-        const allProfiles = await Storage.ProfileStorage.getAllProfiles();
-        populateProfileDropdown(profileSelect, allProfiles, profile.id);
-
-
-        // Set this new/updated profile as the current active one if no conversation is active
-        if (!currentConversationId) { // Only set if no conversation is active
-            currentProfileId = profile.id;
-            // Optionally update the current conversation to use this profile
-            // if (currentConversationId) {
-            //     const conv = await Storage.ConversationStorage.getConversation(currentConversationId);
-            //     if (conv) {
-            //         conv.profileId = currentProfileId;
-            //         await Storage.ConversationStorage.updateConversation(conv);
-            //     }
-            // }
-        }
-    } catch (error) {
-        debugLog(`Error saving profile: ${error.message}`, 'error');
-        showToast('Failed to save profile.', 'error');
-    }
-}
-
-/**
- * Confirms and deletes an AI profile.
- * @param {number} profileId - The ID of the profile to delete.
- */
-async function confirmAndDeleteProfile(profileId) {
-    const profiles = await Storage.ProfileStorage.getAllProfiles();
-    const profile = profiles.find(p => p.id === profileId);
-    
-    if (profile?.name?.toLowerCase() === 'vivica') {
-        showToast('Vivica is eternal. She cannot be deleted.', 'error');
-        return;
-    }
-    
-    if (profiles.length <= 1) {
-        showToast('Cannot delete the last remaining profile.', 'error');
-        return;
-    }
-        const isConfirmed = window.confirm('Are you sure you want to delete this AI profile?');
-        if (!isConfirmed) return;
-        Storage.ProfileStorage.deleteProfile(profileId)
-            .then(() => {
-                showToast('Profile deleted!', 'success');
-                renderProfilesList();
-                resetProfileForm();
-                if (currentProfileId === profileId) {
-                    currentProfileId = null;
-                }
-            })
-            .catch(error => {
-                debugLog(`Error deleting profile: ${error.message}`, 'error');
-                showToast('Failed to delete profile.', 'error');
-            });
-}
 
 /**
  * Opens the memory modal.
@@ -1972,35 +1759,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    let profiles = await Storage.ProfileStorage.getAllProfiles();
-    profiles = profiles.sort((a, b) => a.name === 'Vivica' ? -1 : b.name === 'Vivica' ? 1 : 0);
-    let activeId = parseInt(localStorage.getItem('activeProfileId'), 10);
-    if (!activeId && profiles.length) activeId = profiles.find(p => p.name === 'Vivica')?.id || profiles[0].id;
-    const activeProfile = activeId ? await Storage.ProfileStorage.getProfile(activeId) : profiles[0];
-    if (activeProfile) setActiveProfile(activeProfile);
-    populateProfileDropdown(profileSelect, profiles, activeProfile?.id);
+    let personas = await Storage.personaStorage.getAllpersonas();
+    personas = personas.sort((a, b) => a.name === 'Vivica' ? -1 : b.name === 'Vivica' ? 1 : 0);
+    let activeId = parseInt(localStorage.getItem('activepersonaId'), 10);
+    if (!activeId && personas.length) activeId = personas.find(p => p.name === 'Vivica')?.id || personas[0].id;
+    const activepersona = activeId ? await Storage.personaStorage.getpersona(activeId) : personas[0];
+    if (activepersona) setActivepersona(activepersona);
+    populatepersonaDropdown(personaSelect, personas, activepersona?.id);
     
     // Always show welcome screen on startup - don't load any conversation
     debugLog('Showing welcome screen...');
     await showWelcomeScreen();
-    profileSelect.addEventListener('change', async function () {
+    personaSelect.addEventListener('change', async function () {
         const selectedId = parseInt(this.value);
-        localStorage.setItem('activeProfileId', selectedId);
-        window.currentProfileId = selectedId;
-        const p = await Storage.ProfileStorage.getProfile(selectedId);
-        if (p) setActiveProfile(p);
+        localStorage.setItem('activepersonaId', selectedId);
+        window.currentpersonaId = selectedId;
+        const p = await Storage.personaStorage.getpersona(selectedId);
+        if (p) setActivepersona(p);
 
         if (window.currentConversationId) {
             const convo = await Storage.ConversationStorage.getConversation(window.currentConversationId);
             if (convo) {
-                convo.profileId = selectedId;
+                convo.personaId = selectedId;
                 await Storage.ConversationStorage.updateConversation(convo);
             }
         }
 
         await renderConversationsList();
         if (typeof renderChatHeader === 'function') renderChatHeader();
-        if (p) showToast(`Profile switched to ${p.name}`, 'info');
+        if (p) showToast(`persona switched to ${p.name}`, 'info');
     });
 
     // Initial render of conversations list
@@ -2110,14 +1897,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    if (profilesBtn) profilesBtn.addEventListener('click', openProfilesModal);
-    if (closeProfilesModalBtn) closeProfilesModalBtn.addEventListener('click', () => closeModal(profilesModal));
-    if (cancelProfileBtn) cancelProfileBtn.addEventListener('click', () => {
-        resetProfileForm();
-        closeModal(profilesModal);
+    if (personasBtn) personasBtn.addEventListener('click', openpersonasModal);
+    if (closepersonasModalBtn) closepersonasModalBtn.addEventListener('click', () => closeModal(personasModal));
+    if (cancelpersonaBtn) cancelpersonaBtn.addEventListener('click', () => {
+        resetpersonaForm();
+        closeModal(personasModal);
     });
-    if (profileForm) profileForm.addEventListener('submit', saveProfile);
-    if (deleteProfileBtn) deleteProfileBtn.addEventListener('click', (e) => confirmAndDeleteProfile(parseInt(profileIdInput.value)));
+    if (personaForm) personaForm.addEventListener('submit', savepersona);
+    if (deletepersonaBtn) deletepersonaBtn.addEventListener('click', (e) => confirmAndDeletepersona(parseInt(personaIdInput.value)));
     
     const summarizeButton = document.getElementById('summarize-btn');
     if (summarizeButton) summarizeButton.addEventListener('click', summarizeAndSaveConversation);
@@ -2131,43 +1918,43 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (cancelMemoryBtn) cancelMemoryBtn.addEventListener('click', () => closeModal(memoryModal));
 
-    profileNameInput.addEventListener('input', checkProfileFormValidity);
-    profileSystemPromptInput.addEventListener('input', checkProfileFormValidity);
+    personaNameInput.addEventListener('input', checkpersonaFormValidity);
+    personaSystemPromptInput.addEventListener('input', checkpersonaFormValidity);
 
-    profileTempInput.addEventListener('input', (e) => {
-        profileTempValueSpan.textContent = parseFloat(e.target.value).toFixed(2);
+    personaTempInput.addEventListener('input', (e) => {
+        personaTempValueSpan.textContent = parseFloat(e.target.value).toFixed(2);
     });
 
     // Model search and dropdown logic
-    profileModelSearchInput.addEventListener('focus', () => {
-        profileModelDropdown.style.display = 'block';
+    personaModelSearchInput.addEventListener('focus', () => {
+        personaModelDropdown.style.display = 'block';
         // Filter dropdown based on current search input
-        const searchTerm = profileModelSearchInput.value.toLowerCase();
-        profileModelDropdown.querySelectorAll('.model-dropdown-item').forEach(item => {
+        const searchTerm = personaModelSearchInput.value.toLowerCase();
+        personaModelDropdown.querySelectorAll('.model-dropdown-item').forEach(item => {
             item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'block' : 'none';
         });
     });
-    profileModelSearchInput.addEventListener('input', () => {
-        const searchTerm = profileModelSearchInput.value.toLowerCase();
-        profileModelDropdown.querySelectorAll('.model-dropdown-item').forEach(item => {
+    personaModelSearchInput.addEventListener('input', () => {
+        const searchTerm = personaModelSearchInput.value.toLowerCase();
+        personaModelDropdown.querySelectorAll('.model-dropdown-item').forEach(item => {
             item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'block' : 'none';
         });
     });
     // Hide dropdown when clicking outside (simple approach)
     document.addEventListener('click', (e) => {
-        if (!profileModelSearchInput.contains(e.target) && !profileModelDropdown.contains(e.target)) {
-            profileModelDropdown.style.display = 'none';
+        if (!personaModelSearchInput.contains(e.target) && !personaModelDropdown.contains(e.target)) {
+            personaModelDropdown.style.display = 'none';
         }
     });
 
     // Model select and filter logic
     model1FreeFilter.addEventListener('change', () => populateModelSelect(availableModels));
     model1Select.addEventListener('change', (e) => {
-        profileModelInput.value = e.target.value;
+        personaModelInput.value = e.target.value;
         const selectedOption = e.target.options[e.target.selectedIndex];
-        profileModelSelectedSpan.textContent = selectedOption.textContent;
-        profileModelSelectedSpan.style.display = 'inline';
-        profileModelSearchInput.value = selectedOption.textContent;
+        personaModelSelectedSpan.textContent = selectedOption.textContent;
+        personaModelSelectedSpan.style.display = 'inline';
+        personaModelSearchInput.value = selectedOption.textContent;
     });
 
     memoryBtn.addEventListener('click', openMemoryModal);
@@ -2201,7 +1988,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const settings = await Storage.SettingsStorage.getSettings();
         const apiKey = settings?.apiKey1;
-        const profile = window.currentProfile || { model: 'deepseek/deepseek-chat-v3-0324', temperature: 1.0, maxTokens: 64 };
+        const persona = window.currentpersona || { model: 'deepseek/deepseek-chat-v3-0324', temperature: 1.0, maxTokens: 64 };
 
         let summary = '';
         try {
@@ -2212,7 +1999,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: profile.model,
+                    model: persona.model,
                     messages: [{ role: 'system', content: summaryPrompt }],
                     temperature: 1.0,
                     max_tokens: 64,
@@ -2235,7 +2022,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     exportAllBtn?.addEventListener('click', async () => {
-        const profiles = await Storage.ProfileStorage.getAllProfiles();
+        const personas = await Storage.personaStorage.getAllpersonas();
         const memory = await Storage.MemoryStorage.getAllMemories();
         const conversations = await Storage.ConversationStorage.getAllConversations();
         const messages = [];
@@ -2245,7 +2032,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         const settings = await Storage.SettingsStorage.getSettings();
 
-        const exportData = { profiles, memory, conversations, messages, settings };
+        const exportData = { personas, memory, conversations, messages, settings };
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
 
@@ -2270,11 +2057,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const text = await file.text();
             const data = JSON.parse(text);
 
-            await Storage.ProfileStorage.getAllProfiles().then(list => Promise.all(list.map(x => Storage.ProfileStorage.deleteProfile(x.id))));
+            await Storage.personaStorage.getAllpersonas().then(list => Promise.all(list.map(x => Storage.personaStorage.deletepersona(x.id))));
             await Storage.MemoryStorage.getAllMemories().then(list => Promise.all(list.map(x => Storage.MemoryStorage.deleteMemory(x.id))));
             await Storage.ConversationStorage.clearAllConversations();
 
-            for (const p of data.profiles || []) await Storage.ProfileStorage.addProfile(p);
+            for (const p of data.personas || []) await Storage.personaStorage.addpersona(p);
             for (const m of data.memory || []) await Storage.MemoryStorage.addMemory(m);
             for (const c of data.conversations || []) await Storage.ConversationStorage.addConversation(c);
             for (const msg of data.messages || []) await Storage.MessageStorage.addMessage(msg);
@@ -2287,9 +2074,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Initial fetch of models for profile creation
+    // Initial fetch of models for persona creation
     await fetchOpenRouterModels();
-    checkProfileFormValidity();
+    checkpersonaFormValidity();
 
     debugLog('Vivica initialization complete.');
 });
