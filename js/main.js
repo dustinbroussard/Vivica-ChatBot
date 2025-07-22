@@ -1817,8 +1817,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!activeId && personas.length) activeId = personas.find(p => p.name === 'Vivica')?.id || personas[0].id;
     const activePersona = activeId ? await PersonaStorage.getPersona(activeId) : personas[0];
     if (activePersona) setActivePersona(activePersona);
-    populatePersonaDropdown(personaSelect, personas, activePersona?.id);
-    
+  
     // Always show welcome screen on startup - don't load any conversation
     debugLog('Showing welcome screen...');
     await showWelcomeScreen();
