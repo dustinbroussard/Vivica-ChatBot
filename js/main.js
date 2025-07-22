@@ -1739,10 +1739,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error('Error loading personas:', error);
     }
+    function populatePersonaDropdown(selectElement, personas, selectedId) {
+        selectElement.innerHTML = '';
+        personas.forEach(persona => {
+            const option = document.createElement('option');
+            option.value = persona.id;
+            option.textContent = persona.name;
+            if (persona.id === selectedId) {
+                option.selected = true;
+            }
+            selectElement.appendChild(option);
+        });
+    }
+
     personas = personas.sort((a, b) => a.name === 'Vivica' ? -1 : b.name === 'Vivica' ? 1 : 0);
-    let activeId = parseInt(localStorage.getItem('activepersonaId'), 10);
+    let activeId = parseInt(localStorage.getItem('activePersonaId'), 10);
     if (!activeId && personas.length) activeId = personas.find(p => p.name === 'Vivica')?.id || personas[0].id;
-    const activepersona = activeId ? await Storage.personaStorage.getpersona(activeId) : personas[0];
+    const activePersona = activeId ? await PersonaStorage.getPersona(activeId) : personas[0];
     if (activepersona) setActivepersona(activepersona);
     populatepersonaDropdown(personaSelect, personas, activepersona?.id);
     

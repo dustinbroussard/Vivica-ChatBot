@@ -234,15 +234,15 @@ export const PersonaStorage = {
      */
     getAllPersonas: async () => {
         try {
-            await initDB(); // Ensure DB is initialized first
+            const db = await initDB();
+            // Explicitly check if store exists
+            if (!db.objectStoreNames.contains(STORES.PERSONAS)) {
+                return [];
+            }
             return await getAll(STORES.PERSONAS);
         } catch (error) {
             console.error('personaStorage: Error getting all personas:', error);
-            if (error.name === 'NotFoundError') {
-                // If store doesn't exist yet, return empty array
-                return [];
-            }
-            throw error;
+            return []; // Always return empty array on error
         }
     },
 

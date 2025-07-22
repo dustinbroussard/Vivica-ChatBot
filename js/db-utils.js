@@ -24,9 +24,17 @@ const STORES = {
  * This function handles database creation and schema upgrades.
  * @returns {Promise<IDBDatabase>} A promise that resolves with the database instance.
  */
+// Track if initialization is in progress
+let dbInitializationPromise = null;
+
 export async function initDB() {
+    // Return existing promise if initialization is already in progress
+    if (dbInitializationPromise) {
+        return dbInitializationPromise;
+    }
+
     console.log('DB: Initializing IndexedDB...');
-    return openDB(DB_NAME, DB_VERSION, {
+    dbInitializationPromise = openDB(DB_NAME, DB_VERSION, {
         upgrade(db, oldVersion, newVersion, transaction) {
             console.log(`DB: Upgrading from version ${oldVersion} to ${newVersion}`);
 
