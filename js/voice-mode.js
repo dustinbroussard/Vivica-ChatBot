@@ -8,7 +8,7 @@
  */
 
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
-import { PersonaStorage, MemoryStorage, MessageStorage, ConversationStorage } from './storage-wrapper.js';
+import { personaStorage, MemoryStorage, MessageStorage, ConversationStorage } from './storage-wrapper.js';
 
 const VOICE_MODE_DEBUG_TAG = 'VoiceMode';
 
@@ -83,7 +83,7 @@ function debugLog(...args) {
 // --- Context Helpers ---
 export async function getActivepersona() {
     const activeId = parseInt(localStorage.getItem('activepersonaId'), 10);
-    const personas = await PersonaStorage.getAllPersonas();
+    const personas = await personaStorage.getAllPersonas();
     return personas.find(p => p.id === activeId) || personas.find(p => p.isActive) || personas[0];
 }
 
