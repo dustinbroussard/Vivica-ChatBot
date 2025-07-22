@@ -16,11 +16,39 @@ let editingPersonaId = null;
 export function initPersonaUI() {
   loadPersonas();
 
+  // Initial modal setup
+  document.querySelectorAll('.close-modal, .cancelBtn').forEach(btn => {
+    btn.addEventListener('click', () => personaEditorModal.classList.add('hidden'));
+  });
+
+  // Create button handler
   createPersonaBtn?.addEventListener('click', () => {
     openPersonaEditor();
     personaForm.reset();
+    document.getElementById('persona-id').value = '';
     document.getElementById('tempVal').textContent = '0.7';
   });
+
+  // Temperature slider update
+  const tempSlider = document.getElementById('temperature');
+  tempSlider?.addEventListener('input', () => {
+    document.getElementById('tempVal').textContent = tempSlider.value;
+  });
+
+  // Populate model dropdown
+  const modelSelect = document.getElementById('modelSelect');
+  if (modelSelect && modelSelect.children.length <= 1) {
+    const defaultModels = [
+      'gpt-4o', 'deepseek-chat', 'llama-3-70b-instruct', 
+      'qwen/qwen-2.5-72b-instruct', 'openrouter/cypher-alpha'
+    ];
+    defaultModels.forEach(model => {
+      const opt = document.createElement('option');
+      opt.value = model;
+      opt.textContent = model;
+      modelSelect.appendChild(opt);
+    });
+  }
 
   // Close buttons
   document.querySelectorAll('.close-modal, .cancelBtn').forEach(btn => {
@@ -143,7 +171,24 @@ export async function setActivePersona(id) {
 
 export function openPersonaEditor(persona = null) {
   personaEditorModal.classList.remove('hidden');
-  editingPersonaId = persona?.id || null;
+  const form = document.getElementById('personaForm');
+  
+  if (persona) {
+    // Fill form for editing
+    document.getElementById('persona-id').value = persona.id;
+    document.getElementById('personaName').value = persona.name;
+    document.getElementById('modelSelect').value = persona.model;
+    document.getElementById('systemPrompt').value = persona.systemPrompt;
+    document.getElementById('temperature').value = persona.temperature ?? 0.7;
+    document.getElementById('tempVal').textContent = persona.temperature ?? 0.7;
+    document.getElementById('maxTokens').value = persona.maxTokens ?? 2000;
+  } else {
+    // Reset form for new persona
+    form.reset();
+    document.getElementById('temperature').value = 0.7;
+    document.getElementById('tempVal').textContent = '0.7';
+    document.getElementById('maxTokens').value = 2000;
+  }
 
   // Update modal title
   document.querySelector('#personaEditorModal .modal-header h2').textContent = 
