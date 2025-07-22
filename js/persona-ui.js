@@ -74,11 +74,26 @@ export async function loadPersonas() {
   });
 }
 
-function setActivePersona(id) {
+async function setActivePersona(id) {
   activePersonaId = id;
   localStorage.setItem('activePersonaId', id);
-  loadPersonas();
-  // TODO: apply persona settings to chat here
+  await loadPersonas();
+  
+  // Update the UI badge
+  const badge = document.getElementById('activePersonaBadge');
+  if (badge) {
+    const persona = await PersonaStorage.get(id);
+    badge.textContent = persona ? `👤 ${persona.name} ⏷` : '👤 Select Persona ⏷';
+  }
+
+  // Update current conversation's persona if one is active
+  if (window.currentConversationId) {
+    const convo = await window.Storage.ConversationStorage.getConversation(window.currentConversationId);
+    if (convo) {
+      convo.personaId = id;
+      await window.Storage.ConversationStorage.updateConversation(convo);
+    }
+  }
 }
 
 function openPersonaEditor(persona = null) {
