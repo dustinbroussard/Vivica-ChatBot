@@ -173,10 +173,6 @@ const personaSystemPromptInput = document.getElementById('systemPrompt');
 const personaTempInput = document.getElementById('temperature');
 const personaTempValueSpan = document.getElementById('tempVal');
 const personaModelInput = document.getElementById('modelSelect');
-const personaSelect = document.getElementById('persona-select');
-const personaModelDropdown = document.getElementById('persona-model-dropdown');
-const personaModelSearchInput = document.getElementById('persona-model-search');
-const personaModelSelectedSpan = document.getElementById('persona-model-selected');
 const model1Select = document.getElementById('model1-select');
 const model1FreeFilter = document.getElementById('model1-free-filter');
 const deletepersonaBtn = personasModal ? personasModal.querySelector('.delete-persona-btn') : null;
@@ -386,6 +382,20 @@ async function showWelcomeScreen() {
     } catch (e) {
         console.error('Error refreshing welcome widgets:', e);
     }
+}
+
+async function updateActivePersonaBadge() {
+  const badge = document.getElementById('activePersonaBadge');
+  if (!badge) return;
+  try {
+    const activePersonaId = localStorage.getItem('activePersonaId');
+    const persona = activePersonaId ? await PersonaStorage.getPersona(activePersonaId) : null;
+    const name = persona?.name || 'Select Persona';
+    const display = name.length > 16 ? name.slice(0, 15) + '…' : name;
+    badge.innerHTML = persona ? `👤 ${display} <span style="opacity:0.7;">⏷</span>` : '👤 Select Persona <span style="opacity:0.7;">⏷</span>';
+  } catch {
+    badge.innerHTML = '👤 Error <span style="opacity:0.7;">⏷</span>';
+  }
 }
 
 function showToast(message, type = 'info', duration = 1800) {
@@ -1730,6 +1740,12 @@ function toggleScrollButton() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Persona badge setup
+  const personaBadge = document.getElementById('activePersonaBadge');
+  if (personaBadge) {
+    personaBadge.addEventListener('click', openpersonasModal);
+    await updateActivePersonaBadge();
+  }
     // Ensure ALL modals are hidden on startup
     document.querySelectorAll('.modal').forEach(m => {
         m.classList.remove('show');
