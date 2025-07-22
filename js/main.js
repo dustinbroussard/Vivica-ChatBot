@@ -6,7 +6,7 @@ import { initVoiceMode, startListening, stopListening, toggleListening, speak, g
 import { voiceAnimation } from './voice-animation.js';
 import { createParser } from './eventsource-parser.js';
 // main.js (update section only)
-import { getActivePersona } from './js/persona-storage.js';
+import { getActivePersona } from './persona-storage.js';
 
 const userInput = document.getElementById('user-input');
 const chatWindow = document.getElementById('chatWindow');
