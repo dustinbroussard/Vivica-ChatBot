@@ -437,7 +437,14 @@ async function sendMessage(userInput) {
     })
   });
 
-  ...
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error?.message || 'API request failed');
+  }
+
+  const message = data.choices[0].message.content;
+  appendMessage("assistant", message);
+  return message;
 }
 
 
