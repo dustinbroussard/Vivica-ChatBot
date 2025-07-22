@@ -859,11 +859,6 @@ async function getChatHistory() {
     }));
 }
 
-            el.style.opacity = 1;
-        }, 350);
-    }, 5000);
-}
-
 async function buildSystemPrompt(basePrompt) {
     let prompt = basePrompt || '';
     const settings = await Storage.SettingsStorage.getSettings();
