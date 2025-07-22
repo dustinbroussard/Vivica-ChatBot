@@ -195,7 +195,7 @@ export const MessageStorage = {
 /**
  * Manages AI persona data.
  */
-export const personaStorage = {
+export const PersonaStorage = {
     /**
      * Adds a new AI persona.
      * @param {object} persona - The persona object.

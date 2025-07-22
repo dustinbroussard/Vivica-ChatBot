@@ -29,7 +29,7 @@ function appendMessage(role, text) {
 // Persona name badge sync
 async function updateActivePersonaBadge() {
   const badge = document.getElementById('activePersonaBadge');
-  const persona = await personaStorage.getActivePersona();
+  const persona = await Storage.PersonaStorage.getActivePersona();
   badge.textContent = persona ? `👤 ${persona.name} ⏷` : '👤 Select Persona ⏷';
 }
 
