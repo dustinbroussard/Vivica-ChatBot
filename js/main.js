@@ -9,7 +9,7 @@ import { createParser } from './eventsource-parser.js';
 import { getActivePersona } from './js/persona-ui.js';
 
 const sendBtn = document.getElementById('sendBtn');
-const userInput = document.getElementById('userInput');
+const userInput = document.getElementById('user-input');
 const chatWindow = document.getElementById('chatWindow');
 
 sendBtn.addEventListener('click', sendMessage);
