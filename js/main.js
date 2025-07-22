@@ -376,6 +376,9 @@ function addRippleEffects() {
             setTimeout(() => ripple.remove(), 600);
         });
     });
+    } else {
+        console.error('Element #user-input not found in DOM');
+    }
 }
 
 // Auto resize all textareas on input
@@ -1884,8 +1887,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Event listeners for main UI
-    sendBtn.addEventListener('click', sendMessage);
-    userInput.addEventListener('input', () => {
+    if (sendBtn) {
+        sendBtn.addEventListener('click', sendMessage);
+    } else {
+        console.error('Element #send-btn not found in DOM');
+    }
+    if (userInput) {
+        userInput.addEventListener('input', () => {
         sendBtn.disabled = userInput.value.trim().length === 0;
         if (charCountSpan) {
             const chars = userInput.value.length;
@@ -1899,9 +1907,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             sendMessage();
         }
     });
-    newChatBtn.addEventListener('click', startNewConversation);
-    menuToggle.addEventListener('click', toggleSidebar);
-    closeSidebarBtn.addEventListener('click', toggleSidebar);
+    if (newChatBtn) {
+        newChatBtn.addEventListener('click', startNewConversation);
+    } else {
+        console.error('Element #new-chat-btn not found in DOM');
+    }
+    if (menuToggle) {
+        menuToggle.addEventListener('click', toggleSidebar);
+    } else {
+        console.error('Element #menu-toggle not found in DOM');
+    }
+    if (closeSidebarBtn) {
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
+    } else {
+        console.error('Element #close-sidebar-btn not found in DOM');
+    }
 
     // Swipe gestures for mobile sidebar
     document.addEventListener('touchstart', (e) => {
