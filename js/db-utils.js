@@ -30,7 +30,7 @@ export async function initDB() {
         upgrade(db, oldVersion, newVersion, transaction) {
             console.log(`DB: Upgrading from version ${oldVersion} to ${newVersion}`);
 
-            // Schema for conversations store
+            // Create all required object stores if they don't exist
             if (!db.objectStoreNames.contains(STORES.CONVERSATIONS)) {
                 const convStore = db.createObjectStore(STORES.CONVERSATIONS, {
                     keyPath: 'id',
@@ -41,7 +41,6 @@ export async function initDB() {
                 console.log(`DB: Object store '${STORES.CONVERSATIONS}' created.`);
             }
 
-            // Schema for messages store
             if (!db.objectStoreNames.contains(STORES.MESSAGES)) {
                 const msgStore = db.createObjectStore(STORES.MESSAGES, {
                     keyPath: 'id',
@@ -52,23 +51,21 @@ export async function initDB() {
                 console.log(`DB: Object store '${STORES.MESSAGES}' created.`);
             }
 
-            // Schema for personas store
             if (!db.objectStoreNames.contains(STORES.PERSONAS)) {
                 const personaStore = db.createObjectStore(STORES.PERSONAS, {
-                    keyPath: 'id',  
+                    keyPath: 'id',
                     autoIncrement: true
                 });
                 personaStore.createIndex('name', 'name', { unique: true });
                 console.log(`DB: Object store '${STORES.PERSONAS}' created.`);
             }
 
-            // Schema for memory store
             if (!db.objectStoreNames.contains(STORES.MEMORY)) {
                 const memoryStore = db.createObjectStore(STORES.MEMORY, {
                     keyPath: 'id',
                     autoIncrement: true
                 });
-                memoryStore.createIndex('tags', 'tags', { multiEntry: true }); // For searching by tags
+                memoryStore.createIndex('tags', 'tags', { multiEntry: true });
                 memoryStore.createIndex('timestamp', 'timestamp', { unique: false });
                 console.log(`DB: Object store '${STORES.MEMORY}' created.`);
             }
