@@ -1909,11 +1909,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 sendMessage();
             }
         });
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault(); // Prevent new line
-            sendMessage();
-        }
-    });
+    }   
     const newChatBtn = document.getElementById('new-chat-btn');
     if (newChatBtn) {
         newChatBtn.addEventListener('click', startNewConversation);
@@ -2179,7 +2175,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Initial fetch of models for persona creation
     await fetchOpenRouterModels();
     checkpersonaFormValidity();
 
