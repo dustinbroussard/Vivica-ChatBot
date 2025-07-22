@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const body = document.body;
   const toggleBtn = document.getElementById('theme-toggle-btn');
   const mobileToggleBtn = document.getElementById('mobile-theme-toggle-btn');
+  const themeSelect = document.getElementById("theme-select");
   const logo = document.getElementById('logo-img');
 
   const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -50,6 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
   toggleBtn?.addEventListener('click', toggleTheme);
   mobileToggleBtn?.addEventListener('click', toggleTheme);
 
+  themeSelect?.addEventListener("change", () => {
+    localStorage.setItem("colorTheme", themeSelect.value);
+    applyColorTheme();
+    refreshLogo();
+  });
   // Initialize
   updateToggleIcons();
   refreshLogo();

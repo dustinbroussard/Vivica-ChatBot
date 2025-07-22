@@ -103,4 +103,3 @@ export {
   ParseError,
   createParser
 };
-//# sourceMappingURL=index.js.map

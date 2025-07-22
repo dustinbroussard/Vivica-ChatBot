@@ -98,7 +98,7 @@ export async function initDB() {
         },
         blocked() {
             console.warn('DB: Database upgrade blocked. Close all other tabs with this app.');
-            alert('Database upgrade blocked. Please close all other tabs with this application.');
+            console.warn('Database upgrade blocked. Please close all other tabs with this application.');
         },
         blocking() {
             console.warn('DB: New version ready, but old version is still open. Close all other tabs.');

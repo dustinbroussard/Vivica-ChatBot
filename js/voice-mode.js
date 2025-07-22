@@ -81,8 +81,8 @@ function debugLog(...args) {
 }
 
 // --- Context Helpers ---
-export async function getActivepersona() {
-    const activeId = parseInt(localStorage.getItem('activepersonaId'), 10);
+export async function getActivePersona() {
+    const activeId = parseInt(localStorage.getItem('activePersonaId'), 10);
     const personas = await PersonaStorage.getAllPersonas();
     return personas.find(p => p.id === activeId) || personas.find(p => p.isActive) || personas[0];
 }
@@ -104,7 +104,7 @@ export async function getLastConversationHistory() {
 }
 
 export async function buildVoicePrompt(userInput) {
-    const persona = await getActivepersona();
+    const persona = await getActivePersona();
     const memory = await getMemoryContext();
     const history = await getLastConversationHistory();
     const systemMessage = {

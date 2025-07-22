@@ -22,6 +22,12 @@ export class PersonaController {
     if (!persona.name || !persona.model || !persona.systemPrompt) {
       throw new Error('Please fill out all required fields.');
     }
+    if (typeof persona.temperature !== "number" || persona.temperature < 0 || persona.temperature > 2) {
+      throw new Error("Temperature must be between 0 and 2");
+    }
+    if (typeof persona.maxTokens !== "number" || persona.maxTokens < 256) {
+      throw new Error("Max tokens must be at least 256");
+    }
     return await PersonaStorage.addPersona({
       id: crypto.randomUUID(),
       ...persona

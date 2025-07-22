@@ -1,7 +1,7 @@
 // js/persona-ui.js
 
 import { PersonaController } from './persona-controller.js';
-import Storage from './storage-wrapper.js';
+import * as Storage from "./storage-wrapper.js";
 
 const personaController = new PersonaController();
 
@@ -16,10 +16,6 @@ let editingPersonaId = null;
 export function initPersonaUI() {
   loadPersonas();
 
-  // Initial modal setup
-  document.querySelectorAll('.close-modal, .cancelBtn').forEach(btn => {
-    btn.addEventListener('click', () => personaEditorModal.classList.add('hidden'));
-  });
 
   // Create button handler
   createPersonaBtn?.addEventListener('click', () => {
@@ -92,48 +88,8 @@ export function initPersonaUI() {
     } catch (error) {
       showToast(`Error: ${error.message}`, 'error');
     }
-    if (!persona.name) {
-      showToast('Please enter a persona name', 'error');
-      return;
-    }
-    if (!persona.model) {
-      showToast('Please select a model', 'error');
-      return;
-    }
-
-    try {
-      if (editingPersonaId) {
-        persona.id = editingPersonaId;
-        await personaController.updatePersona(persona);
-        showToast('Persona updated!', 'success');
-      } else {
-        const newPersona = await personaController.createPersona(persona);
-        // Set the new persona as active by default
-        await personaController.setActivePersona(newPersona);
-        showToast('Persona created!', 'success');
-      }
-      
-      personaEditorModal.classList.add('hidden');
-      await loadPersonas();
-      await updateActivePersonaBadge();
-    } catch (error) {
-      showToast(`Error: ${error.message}`, 'error');
-    }
   });
 
-  // Populate model dropdown (static or dynamic)
-  const modelSelect = document.getElementById('modelSelect');
-  if (modelSelect && modelSelect.children.length <= 1) {
-    const defaultModels = [
-      'gpt-4o', 'deepseek-chat', 'llama-3-70b-instruct', 'qwen/qwen-2.5-72b-instruct', 'openrouter/cypher-alpha'
-    ];
-    for (const model of defaultModels) {
-      const opt = document.createElement('option');
-      opt.value = model;
-      opt.textContent = model;
-      modelSelect.appendChild(opt);
-    }
-  }
 }
 
 export async function loadPersonas() {

@@ -140,9 +140,9 @@ const exportContentTextarea = document.getElementById('export-content');
 const uploadBtn = document.getElementById('upload-btn');
 const fileUploadInput = document.getElementById('file-upload');
 const clearInputBtn = document.getElementById('clear-btn');
-const summarizeBtn = document.getElementById('summarize-save-btn');
 const voiceModeToggleBtn = document.getElementById('voice-mode-toggle-btn');
-const themeSelect = document.getElementById('theme-select');
+const summarizeDesktopBtn = document.getElementById("summarize-save-desktop");
+const summarizeMobileBtn = document.getElementById("summarize-save-mobile");
 const darkModeToggle = document.getElementById('dark-mode-toggle');
 const currentThemeLabel = document.getElementById('current-theme-label');
 const exportAllBtn = document.getElementById('export-all-btn');
@@ -1948,8 +1948,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
     
-    const summarizeButton = document.getElementById('summarize-btn');
-    if (summarizeButton) summarizeButton.addEventListener('click', summarizeAndSaveConversation);
+    if (summarizeDesktopBtn) summarizeDesktopBtn.addEventListener("click", summarizeAndSaveConversation);
+    if (summarizeMobileBtn) summarizeMobileBtn.addEventListener("click", summarizeAndSaveConversation);
     
     const memoryCloseButtons = document.querySelectorAll('#memory-modal .close-modal');
     if (memoryCloseButtons) {
@@ -2016,7 +2016,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     memoryBtn.addEventListener('click', openMemoryModal);
-    document.getElementById('summarize-btn')?.addEventListener('click', summarizeAndSaveConversation);
+    if (summarizeDesktopBtn) summarizeDesktopBtn.addEventListener("click", summarizeAndSaveConversation);
+    if (summarizeMobileBtn) summarizeMobileBtn.addEventListener("click", summarizeAndSaveConversation);
 
     closeRenameModalBtn.addEventListener('click', () => closeModal(renameModal));
     cancelRenameBtn.addEventListener('click', () => closeModal(renameModal));
