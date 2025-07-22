@@ -71,7 +71,24 @@ export function initPersonaUI() {
       timestamp: Date.now()
     };
 
-    if (!persona.name) {
+    if (!persona.name || !persona.model || !persona.systemPrompt) {
+      showToast('Please fill out all required fields', 'error');
+      return;
+    }
+
+    try {
+      if (document.getElementById('persona-id').value) {
+        persona.id = document.getElementById('persona-id').value;
+        await personaController.updatePersona(persona);
+        showToast('Persona updated successfully', 'success');
+      } else {
+        const newPersona = await personaController.createPersona(persona);
+        showToast('Persona created successfully', 'success');
+      }
+
+      personaEditorModal.classList.add('hidden');
+      await loadPersonas();
+      await updateActivePersonaBadge();
       alert('Please enter a persona name');
       return;
     }
