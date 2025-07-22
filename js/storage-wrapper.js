@@ -410,7 +410,7 @@ export const SettingsStorage = {
 export default {
     ConversationStorage,
     MessageStorage,
-    personaStorage,
+    PersonaStorage,
     MemoryStorage, 
     SettingsStorage
 };
