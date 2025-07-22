@@ -102,9 +102,8 @@ let currentConversationId = null;
 let currentPersonaId = null;
 let voiceModeActive = false;
 
-// Global element references (initialized in DOMContentLoaded)
-let chatBody, sendBtn, newChatBtn, conversationsList, emptyState, typingIndicator,
-    charCountSpan, menuToggle, sidebar, closeSidebarBtn, settingsModal, openSettingsBtn,
+// Global element references 
+let sidebar, closeSidebarBtn, settingsModal, openSettingsBtn,
     closeSettingsModalBtn, saveSettingsBtn, cancelSettingsBtn, clearAllConversationsBtn,
     memoryModal, memoryBtn, closeMemoryModalBtn, cancelMemoryBtn, renameModal,
     closeRenameModalBtn, cancelRenameBtn, saveRenameBtn, conversationNameInput,
@@ -1666,14 +1665,14 @@ function toggleScrollButton() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Initialize all DOM elements
-    chatBody = document.getElementById('chat-body');
-    sendBtn = document.getElementById('send-btn');
-    newChatBtn = document.getElementById('new-chat-btn');
-    conversationsList = document.getElementById('conversations-list');
-    emptyState = document.getElementById('empty-state');
-    typingIndicator = document.getElementById('typing-indicator');
-    charCountSpan = document.getElementById('char-count');
-    menuToggle = document.getElementById('menu-toggle');
+    const chatBody = document.getElementById('chat-body');
+    const sendBtn = document.getElementById('send-btn');
+    const newChatBtn = document.getElementById('new-chat-btn');
+    const conversationsList = document.getElementById('conversations-list');
+    const emptyState = document.getElementById('empty-state');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const charCountSpan = document.getElementById('char-count');
+    const menuToggle = document.getElementById('menu-toggle');
     sidebar = document.getElementById('sidebar');
     closeSidebarBtn = document.getElementById('close-sidebar-btn');
     settingsModal = document.getElementById('settingsModal');
