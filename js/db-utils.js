@@ -15,7 +15,7 @@ const DB_VERSION = 1; // Increment this version number when you change the schem
 const STORES = {
     CONVERSATIONS: 'conversations', // Stores chat conversation metadata (e.g., title, last message time)
     MESSAGES: 'messages',           // Stores individual chat messages
-    PROFILES: 'profiles',           // Stores AI persona profiles
+    personaS: 'personas',           // Stores AI persona personas
     MEMORY: 'memory'                // Stores long-term memory snippets
 };
 
@@ -52,14 +52,14 @@ export async function initDB() {
                 console.log(`DB: Object store '${STORES.MESSAGES}' created.`);
             }
 
-            // Schema for profiles store
-            if (!db.objectStoreNames.contains(STORES.PROFILES)) {
-                const profileStore = db.createObjectStore(STORES.PROFILES, {
+            // Schema for personas store
+            if (!db.objectStoreNames.contains(STORES.personaS)) {
+                const personaStore = db.createObjectStore(STORES.personaS, {
                     keyPath: 'id',
                     autoIncrement: true
                 });
-                profileStore.createIndex('name', 'name', { unique: true });
-                console.log(`DB: Object store '${STORES.PROFILES}' created.`);
+                personaStore.createIndex('name', 'name', { unique: true });
+                console.log(`DB: Object store '${STORES.personaS}' created.`);
             }
 
             // Schema for memory store
