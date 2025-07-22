@@ -8,7 +8,7 @@
  */
 
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
-import { ProfileStorage, MemoryStorage, MessageStorage, ConversationStorage } from './storage-wrapper.js';
+import { personaStorage, MemoryStorage, MessageStorage, ConversationStorage } from './storage-wrapper.js';
 
 const VOICE_MODE_DEBUG_TAG = 'VoiceMode';
 
@@ -81,10 +81,10 @@ function debugLog(...args) {
 }
 
 // --- Context Helpers ---
-export async function getActiveProfile() {
-    const activeId = parseInt(localStorage.getItem('activeProfileId'), 10);
-    const profiles = await ProfileStorage.getAllProfiles();
-    return profiles.find(p => p.id === activeId) || profiles.find(p => p.isActive) || profiles[0];
+export async function getActivepersona() {
+    const activeId = parseInt(localStorage.getItem('activepersonaId'), 10);
+    const personas = await personaStorage.getAllpersonas();
+    return personas.find(p => p.id === activeId) || personas.find(p => p.isActive) || personas[0];
 }
 
 export async function getMemoryContext() {
@@ -104,12 +104,12 @@ export async function getLastConversationHistory() {
 }
 
 export async function buildVoicePrompt(userInput) {
-    const profile = await getActiveProfile();
+    const persona = await getActivepersona();
     const memory = await getMemoryContext();
     const history = await getLastConversationHistory();
     const systemMessage = {
         role: 'system',
-        content: `You are ${profile?.name}. Speak with a ${profile?.tone || 'natural'} tone.\nYou remember the following:\n${memory}`
+        content: `You are ${persona?.name}. Speak with a ${persona?.tone || 'natural'} tone.\nYou remember the following:\n${memory}`
     };
     return [systemMessage, ...history, { role: 'user', content: userInput }];
 }
