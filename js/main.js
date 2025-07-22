@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', updateActivePersonaBadge);
     );
     if (!vivicaExists) {
       console.log('Seeding Vivica persona...');
-      await PersonaStorage.addPersona({
+      const vivicaId = await PersonaStorage.addPersona({
         name: 'Vivica',
         model: 'deepseek/deepseek-chat-v3-0324:free',
         systemPrompt: `Your name is Vivica.
@@ -111,7 +111,10 @@ Speak like you built the mic.
       maxContext: 30
       });
       await renderpersonasList();
-      setActivePersona((await PersonaStorage.getAllPersonas()).find(p => p.name === 'Vivica'));
+      localStorage.setItem('activePersonaId', vivicaId);
+      currentPersonaId = vivicaId;
+      window.currentPersonaId = vivicaId;
+      setActivePersona(vivicaId);
     }
   } catch (err) {
     console.error('Persona seeding failed:', err);
@@ -178,6 +181,11 @@ const model1Select = document.getElementById('model1-select');
 const model1FreeFilter = document.getElementById('model1-free-filter');
 const deletepersonaBtn = personasModal ? personasModal.querySelector('.delete-persona-btn') : null;
 const personaIdInput = document.getElementById('persona-id');
+
+// App state
+let currentConversationId = null;
+let currentPersonaId = null;
+let voiceModeActive = false;
 
 // ----- Persona Helpers -----
 async function renderpersonasList() {
@@ -312,7 +320,7 @@ User's name is Dustin.`;
         return;
     }
     try {
-        const persona = window.currentpersona || { model: 'deepseek/deepseek-chat-v3-0324', temperature: 1.0, maxTokens: 48 };
+        const persona = window.currentPersona || { model: 'deepseek/deepseek-chat-v3-0324', temperature: 1.0, maxTokens: 48 };
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -479,8 +487,8 @@ function renderMarkdown(content) {
 
 async function getMemoryPrompt() {
     let memories = await Storage.MemoryStorage.getAllMemories();
-    if (currentpersonaId) {
-        memories = memories.filter(m => !m.personaId || m.personaId === currentpersonaId);
+    if (currentPersonaId) {
+        memories = memories.filter(m => !m.personaId || m.personaId === currentPersonaId);
     }
     if (!memories.length) return '';
     const lines = memories.map(m => `- ${m.content}`);
@@ -767,7 +775,7 @@ async function loadConversation(conversationId) {
     });
 
     const conversation = await Storage.ConversationStorage.getConversation(conversationId);
-    currentpersonaId = conversation?.personaId || null; // Set current persona based on conversation
+    currentPersonaId = conversation?.personaId || null; // Set current persona based on conversation
 
     const messages = await Storage.MessageStorage.getMessagesByConversationId(conversationId);
     messages.forEach(msg => renderMessage(msg));
@@ -785,7 +793,7 @@ async function startNewConversation() {
     const newConversation = {
         title: 'New Chat',
         timestamp: Date.now(),
-        personaId: currentpersonaId // Associate with current persona if any
+        personaId: currentPersonaId // Associate with current persona if any
     };
     const id = await Storage.ConversationStorage.addConversation(newConversation);
     showToast('New chat started!', 'success');
@@ -1062,7 +1070,7 @@ async function getAIResponse(userQuery) {
             return;
         }
 
-        const persona = window.currentpersona || (currentpersonaId ? await Storage.PersonaStorage.getPersona(currentpersonaId) : null);
+        const persona = window.currentPersona || (currentPersonaId ? await Storage.PersonaStorage.getPersona(currentPersonaId) : null);
 
         // Use default values if no persona or persona values are missing
         const model = persona?.model || 'deepseek/deepseek-chat-v3-0324:free'; // Default model
@@ -1231,7 +1239,7 @@ async function getAIResponse(userQuery) {
                     currentConversationId,
                     messages,
                     settings?.apiKey1,
-                    window.currentpersona?.model,
+                    window.currentPersona?.model,
                     renderConversationsList
                 );
             }
@@ -1365,7 +1373,7 @@ async function summarizeAndSaveConversation() {
         return;
     }
 
-    const persona = window.currentpersona || (currentpersonaId ? await Storage.PersonaStorage.getPersona(currentpersonaId) : null);
+    const persona = window.currentPersona || (currentPersonaId ? await Storage.PersonaStorage.getPersona(currentPersonaId) : null);
     if (!persona) {
         showToast('No active persona found.', 'error');
         return;
@@ -1812,11 +1820,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    personas = personas.sort((a, b) => a.name === 'Vivica' ? -1 : b.name === 'Vivica' ? 1 : 0);
+    const personas = await PersonaStorage.getAllPersonas();
+    const sorted = personas.sort((a, b) => a.name === 'Vivica' ? -1 : b.name === 'Vivica' ? 1 : 0);
     let activeId = parseInt(localStorage.getItem('activePersonaId'), 10);
-    if (!activeId && personas.length) activeId = personas.find(p => p.name === 'Vivica')?.id || personas[0].id;
-    const activePersona = activeId ? await PersonaStorage.getPersona(activeId) : personas[0];
-    if (activePersona) setActivePersona(activePersona);
+    if (!activeId && sorted.length) activeId = sorted.find(p => p.name === 'Vivica')?.id || sorted[0].id;
+    const activePersona = activeId ? await PersonaStorage.getPersona(activeId) : sorted[0];
+    if (activePersona) {
+        currentPersonaId = activePersona.id;
+        window.currentPersonaId = activePersona.id;
+        setActivePersona(activePersona.id);
+    }
   
     // Always show welcome screen on startup - don't load any conversation
     debugLog('Showing welcome screen...');
@@ -1824,9 +1837,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     personaSelect.addEventListener('change', async function () {
         const selectedId = parseInt(this.value);
         localStorage.setItem('activePersonaId', selectedId);
+        currentPersonaId = selectedId;
         window.currentPersonaId = selectedId;
         const p = await PersonaStorage.getPersona(selectedId);
-        if (p) setActivePersona(p);
+        setActivePersona(selectedId);
 
         if (window.currentConversationId) {
             const convo = await Storage.ConversationStorage.getConversation(window.currentConversationId);
@@ -2051,7 +2065,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const settings = await Storage.SettingsStorage.getSettings();
         const apiKey = settings?.apiKey1;
-        const persona = window.currentpersona || { model: 'deepseek/deepseek-chat-v3-0324', temperature: 1.0, maxTokens: 64 };
+        const persona = window.currentPersona || { model: 'deepseek/deepseek-chat-v3-0324', temperature: 1.0, maxTokens: 64 };
 
         let summary = '';
         try {

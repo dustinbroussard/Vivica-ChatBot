@@ -34,9 +34,9 @@ export function initPersonaUI() {
       id: editingPersonaId || crypto.randomUUID(),
       name: document.getElementById('personaName').value,
       model: document.getElementById('modelSelect').value,
-      prompt: document.getElementById('systemPrompt').value,
-      temp: parseFloat(document.getElementById('temperature').value),
-      tokens: parseInt(document.getElementById('maxTokens').value)
+      systemPrompt: document.getElementById('systemPrompt').value,
+      temperature: parseFloat(document.getElementById('temperature').value),
+      maxTokens: parseInt(document.getElementById('maxTokens').value)
     };
 
     await PersonaStorage.addPersona(persona);
@@ -59,9 +59,9 @@ export async function loadPersonas() {
 
     template.querySelector('.persona-name').textContent = persona.name;
     template.querySelector('.persona-model').textContent = persona.model;
-    template.querySelector('.persona-prompt-preview').textContent = persona.prompt.slice(0, 80) + '...';
-    template.querySelector('.temp').textContent = persona.temp;
-    template.querySelector('.tokens').textContent = persona.tokens;
+    template.querySelector('.persona-prompt-preview').textContent = (persona.systemPrompt || '').slice(0, 80) + '...';
+    template.querySelector('.temp').textContent = persona.temperature;
+    template.querySelector('.tokens').textContent = persona.maxTokens;
 
     const radio = template.querySelector('input[type="radio"]');
     radio.checked = persona.id === activePersonaId;
@@ -104,10 +104,10 @@ export function openPersonaEditor(persona = null) {
   document.querySelector('#personaEditorModal .modal-header h2').textContent =
   persona ? 'Edit Persona' : 'Create Persona';
   document.getElementById('modelSelect').value = persona?.model || '';
-  document.getElementById('systemPrompt').value = persona?.prompt || '';
-  document.getElementById('temperature').value = persona?.temp ?? 0.7;
-  document.getElementById('tempVal').textContent = persona?.temp ?? 0.7;
-  document.getElementById('maxTokens').value = persona?.tokens ?? 2000;
+  document.getElementById('systemPrompt').value = persona?.systemPrompt || '';
+  document.getElementById('temperature').value = persona?.temperature ?? 0.7;
+  document.getElementById('tempVal').textContent = persona?.temperature ?? 0.7;
+  document.getElementById('maxTokens').value = persona?.maxTokens ?? 2000;
 }
 
 export async function deletePersona(id) {
