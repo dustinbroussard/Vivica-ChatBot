@@ -376,9 +376,6 @@ function addRippleEffects() {
             setTimeout(() => ripple.remove(), 600);
         });
     });
-    } else {
-        console.error('Element #user-input not found in DOM');
-    }
 }
 
 // Auto resize all textareas on input
