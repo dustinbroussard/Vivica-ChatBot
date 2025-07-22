@@ -617,11 +617,13 @@ function copyToClipboard(text) {
  * Shows or hides the typing indicator.
  * @param {boolean} show - True to show, false to hide.
  */
-function showTypingIndicator(show) {
-    typingIndicator.style.display = show ? 'flex' : 'none';
-    if (show) {
-        scrollChatToBottom();
-    }
+function showTypingIndicator() {
+    typingIndicator.style.display = 'flex';
+    scrollChatToBottom();
+}
+
+function removeTypingIndicator() {
+    typingIndicator.style.display = 'none';
 }
 
 /**
@@ -791,7 +793,8 @@ async function sendMessage() {
         userInput.value = ''; // Clear input after sending
         userInput.style.height = 'auto'; // Reset textarea height
 
-        showTypingIndicator(true);
+        showTypingIndicator();
+        await new Promise(res => setTimeout(res, 500));
         if (voiceModeActive) {
             setProcessingState(true);
             voiceAnimation.setState('processing');
@@ -1231,7 +1234,7 @@ async function getAIResponse(userQuery) {
              }
         }
     } finally {
-        showTypingIndicator(false);
+        removeTypingIndicator();
         // Re-apply Prism.js highlighting after final content is rendered
         Prism.highlightAllUnder(chatBody);
         if (voiceModeActive) {
@@ -1979,27 +1982,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Always show welcome screen on startup - don't load any conversation
     debugLog('Showing welcome screen...');
-    // Clear any existing conversation
-    chatBody.innerHTML = '';
-    currentConversationId = null;
-    localStorage.removeItem('lastConversationId');
-    
-    // Force show welcome elements 
-    emptyState.style.display = 'flex';
-    document.querySelectorAll('#empty-state > *').forEach(el => {
-        el.style.display = 'block';
-        el.style.opacity = '1';
-        el.style.visibility = 'visible';
-    });
-
-    // Load welcome content
-    try {
-        await generateVivicaWelcomeMessage();
-        await renderWeatherWidget();
-        await renderRSSWidget();
-    } catch (e) {
-        debugLog(`Failed to generate welcome content: ${e.message}`, 'error');
-    }
+    await showWelcomeScreen();
     profileSelect.addEventListener('change', async function () {
         const selectedId = parseInt(this.value);
         localStorage.setItem('activeProfileId', selectedId);
