@@ -422,21 +422,4 @@ if (typeof window !== 'undefined') {
     window.Storage = Storage;
 }
 
-/**
- * Retrieves items from an object store using an index.
- * @param {string} storeName - The name of the object store.
- * @param {string} indexName - The name of the index to use.
- * @param {IDBValidKey | IDBKeyRange} query - The key or key range to query.
- * @returns {Promise<object[]>} An array of matching items.
- */
-export async function getByIndex(storeName, indexName, query) {
-  const db = await initDB();
-  const tx = db.transaction(storeName, 'readonly');
-  const store = tx.objectStore(storeName);
-  const index = store.index(indexName);
-  const items = await index.getAll(query);
-  await tx.done;
-  return items;
-}
-
 export { STORES };
