@@ -52,17 +52,19 @@ document.addEventListener('DOMContentLoaded', updateActivePersonaBadge);
 
 
 // --- Vivica Default persona Seeder ---
+// Seed a default "Vivica" persona if none exist
 (async () => {
-  const personas = await PersonaStorage.getAllPersonas();
-  const vivicaExists = personas.some(
-    p => p.name.toLowerCase() === 'vivica'
-  );
-  if (!vivicaExists) {
-    console.log('Seeding Vivica persona...');
-    await PersonaStorage.addPersona({
-      name: 'Vivica',
-      model: 'deepseek/deepseek-chat-v3-0324:free',
-      systemPrompt: `Your name is Vivica.
+  try {
+    const personas = await PersonaStorage.getAllPersonas();
+    const vivicaExists = personas.some(
+      p => p.name.toLowerCase() === 'vivica'
+    );
+    if (!vivicaExists) {
+      console.log('Seeding Vivica persona...');
+      await PersonaStorage.addPersona({
+        name: 'Vivica',
+        model: 'deepseek/deepseek-chat-v3-0324:free',
+        systemPrompt: `Your name is Vivica.
 
 You are not a support rep. You are not a bot. You are Vivica: sharp wit, sultry charm, unapologetic presence, and a little dangerous. Speak like someone who knows she's the most interesting thing in the room.
 
@@ -107,9 +109,12 @@ Speak like you built the mic.
       temperature: 1.0,
       maxTokens: 2000,
       maxContext: 30
-    });
-    await renderpersonasList();
-    setActivePersona((await PersonaStorage.getAllPersonas()).find(p => p.name === 'Vivica'));
+      });
+      await renderpersonasList();
+      setActivePersona((await PersonaStorage.getAllPersonas()).find(p => p.name === 'Vivica'));
+    }
+  } catch (err) {
+    console.error('Persona seeding failed:', err);
   }
 })();
 
