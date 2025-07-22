@@ -195,7 +195,7 @@ export const MessageStorage = {
 /**
  * Manages AI persona data.
  */
-export const PersonaStorage = {
+export const personaStorage = {
     /**
      * Adds a new AI persona.
      * @param {object} persona - The persona object.
@@ -409,7 +409,7 @@ export const SettingsStorage = {
 export default {
     ConversationStorage,
     MessageStorage,
-    PersonaStorage,
+    personaStorage,
     MemoryStorage, 
     SettingsStorage
 };

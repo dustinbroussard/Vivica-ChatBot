@@ -29,7 +29,7 @@ function appendMessage(role, text) {
 // Persona name badge sync
 async function updateActivePersonaBadge() {
   const badge = document.getElementById('activePersonaBadge');
-  const persona = await PersonaStorage.getActivePersona();
+  const persona = await personaStorage.getActivePersona();
   badge.textContent = persona ? `👤 ${persona.name} ⏷` : '👤 Select Persona ⏷';
 }
 
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', updateActivePersonaBadge);
 
 // --- Vivica Default persona Seeder ---
 (async () => {
-  const personas = await Storage.PersonaStorage.getAllPersonas();
+  const personas = await Storage.personaStorage.getAllPersonas();
   const vivicaExists = personas.some(
     p => p.name.toLowerCase() === 'vivica'
   );
@@ -94,7 +94,7 @@ Speak like you built the mic.
       maxContext: 30
     });
     await renderpersonasList();
-    setActivePersona((await Storage.PersonaStorage.getAllPersonas()).find(p => p.name === 'Vivica'));
+    setActivePersona((await Storage.personaStorage.getAllPersonas()).find(p => p.name === 'Vivica'));
   }
 })();
 
@@ -1982,7 +1982,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     exportAllBtn?.addEventListener('click', async () => {
-        const personas = await Storage.PersonaStorage.getAllPersonas();
+        const personas = await Storage.personaStorage.getAllPersonas();
         const memory = await Storage.MemoryStorage.getAllMemories();
         const conversations = await Storage.ConversationStorage.getAllConversations();
         const messages = [];
