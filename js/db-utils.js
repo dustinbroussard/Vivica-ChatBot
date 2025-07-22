@@ -129,11 +129,10 @@ export async function add(storeName, item) {
  * @returns {Promise<object | undefined>} A promise that resolves with the retrieved item, or undefined if not found.
  */
 export async function get(storeName, key) {
-    try {
-        if (key === undefined || key === null) {
-            console.warn(`DB: get called on ${storeName} with invalid key`, key);
-            return undefined;
-        }
+    if (key === undefined || key === null) {
+        console.warn(`DB: get called on ${storeName} with invalid key`, key);
+        return undefined;
+    }
     const db = await initDB();
     const tx = db.transaction(storeName, 'readonly');
     const store = tx.objectStore(storeName);
