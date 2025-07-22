@@ -1,4 +1,10 @@
-import Storage from './storage-wrapper.js';
+import { 
+  ConversationStorage,
+  MessageStorage, 
+  PersonaStorage,
+  MemoryStorage,
+  SettingsStorage
+} from './storage-wrapper.js';
 import { generateAIConversationTitle } from './title-generator.js';
 // Marked is loaded via CDN in index.html, available globally as 'marked'
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
@@ -29,7 +35,7 @@ function appendMessage(role, text) {
 // Persona name badge sync
 async function updateActivePersonaBadge() {
   const badge = document.getElementById('activePersonaBadge');
-  const persona = await Storage.PersonaStorage.getActivePersona();
+  const persona = await PersonaStorage.getPersona(localStorage.getItem('activePersonaId'));
   badge.textContent = persona ? `👤 ${persona.name} ⏷` : '👤 Select Persona ⏷';
 }
 
@@ -38,13 +44,13 @@ document.addEventListener('DOMContentLoaded', updateActivePersonaBadge);
 
 // --- Vivica Default persona Seeder ---
 (async () => {
-  const personas = await Storage.personaStorage.getAllPersonas();
+  const personas = await PersonaStorage.getAllPersonas();
   const vivicaExists = personas.some(
     p => p.name.toLowerCase() === 'vivica'
   );
   if (!vivicaExists) {
     console.log('Seeding Vivica persona...');
-    await Storage.personaStorage.addpersona({
+    await PersonaStorage.addPersona({
       name: 'Vivica',
       model: 'deepseek/deepseek-chat-v3-0324:free',
       systemPrompt: `Your name is Vivica.
@@ -94,7 +100,7 @@ Speak like you built the mic.
       maxContext: 30
     });
     await renderpersonasList();
-    setActivePersona((await Storage.personaStorage.getAllPersonas()).find(p => p.name === 'Vivica'));
+    setActivePersona((await PersonaStorage.getAllPersonas()).find(p => p.name === 'Vivica'));
   }
 })();
 
