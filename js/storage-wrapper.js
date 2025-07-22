@@ -4,7 +4,7 @@
 /**
  * @fileoverview This file provides a higher-level abstraction for interacting with IndexedDB.
  * It uses the db-utils.js functions to manage different types of application data,
- * making it easier to store and retrieve conversations, messages, profiles, and memory.
+ * making it easier to store and retrieve conversations, messages, personas, and memory.
  */
 
 import { initDB, add, get, getAll, update, remove, clearStore, STORES, getByIndex } from './db-utils.js';
@@ -193,78 +193,78 @@ export const MessageStorage = {
 };
 
 /**
- * Manages AI profile data.
+ * Manages AI persona data.
  */
-export const ProfileStorage = {
+export const personaStorage = {
     /**
-     * Adds a new AI profile.
-     * @param {object} profile - The profile object.
-     * @returns {Promise<number>} The ID of the new profile.
+     * Adds a new AI persona.
+     * @param {object} persona - The persona object.
+     * @returns {Promise<number>} The ID of the new persona.
      */
-    addProfile: async (profile) => {
+    addpersona: async (persona) => {
         try {
-            return await add(STORES.PROFILES, profile);
+            return await add(STORES.personaS, persona);
         } catch (error) {
-            console.error('ProfileStorage: Error adding profile:', error);
+            console.error('personaStorage: Error adding persona:', error);
             throw error;
         }
     },
 
     /**
-     * Retrieves a profile by its ID.
-     * @param {number} id - The ID of the profile.
-     * @returns {Promise<object | undefined>} The profile object.
+     * Retrieves a persona by its ID.
+     * @param {number} id - The ID of the persona.
+     * @returns {Promise<object | undefined>} The persona object.
      */
-    getProfile: async (id) => {
+    getpersona: async (id) => {
         try {
             if (id === undefined || id === null) {
                 return undefined;
             }
-            return await get(STORES.PROFILES, id);
+            return await get(STORES.personaS, id);
         } catch (error) {
-            console.error('ProfileStorage: Error getting profile:', error);
+            console.error('personaStorage: Error getting persona:', error);
             throw error;
         }
     },
 
     /**
-     * Retrieves all profiles.
-     * @returns {Promise<object[]>} An array of profile objects.
+     * Retrieves all personas.
+     * @returns {Promise<object[]>} An array of persona objects.
      */
-    getAllProfiles: async () => {
+    getAllpersonas: async () => {
         try {
-            return await getAll(STORES.PROFILES);
+            return await getAll(STORES.personaS);
         } catch (error) {
-            console.error('ProfileStorage: Error getting all profiles:', error);
+            console.error('personaStorage: Error getting all personas:', error);
             throw error;
         }
     },
 
     /**
-     * Updates an existing profile.
-     * @param {object} profile - The profile object with updated data (must include ID).
+     * Updates an existing persona.
+     * @param {object} persona - The persona object with updated data (must include ID).
      * @returns {Promise<void>}
      */
-    updateProfile: async (profile) => {
+    updatepersona: async (persona) => {
         try {
-            await update(STORES.PROFILES, profile);
+            await update(STORES.personaS, persona);
         }
         catch (error) {
-            console.error('ProfileStorage: Error updating profile:', error);
+            console.error('personaStorage: Error updating persona:', error);
             throw error;
         }
     },
 
     /**
-     * Deletes a profile by its ID.
-     * @param {number} id - The ID of the profile to delete.
+     * Deletes a persona by its ID.
+     * @param {number} id - The ID of the persona to delete.
      * @returns {Promise<void>}
      */
-    deleteProfile: async (id) => {
+    deletepersona: async (id) => {
         try {
-            await remove(STORES.PROFILES, id);
+            await remove(STORES.personaS, id);
         } catch (error) {
-            console.error('ProfileStorage: Error deleting profile:', error);
+            console.error('personaStorage: Error deleting persona:', error);
             throw error;
         }
     }
@@ -409,7 +409,7 @@ export const SettingsStorage = {
 export default {
     ConversationStorage,
     MessageStorage,
-    ProfileStorage,
+    personaStorage,
     MemoryStorage,
     SettingsStorage
 };
