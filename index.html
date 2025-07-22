@@ -91,9 +91,10 @@
             </div>
         </div>
 
-        <!-- Chat Body -->
-        <div class="chat-body" id="chat-body">
-            <div class="empty-state" id="empty-state">
+        <!-- Chat UI (hidden by default) -->
+        <div id="chat-wrapper" class="hidden">
+            <!-- Chat Body -->
+            <div class="chat-body" id="chat-body">
                 <div class="empty-icon">
                     <img id="logo-img" src="images/logo-defaultdark.png" alt="ChatBot Logo" />
                 </div>
@@ -147,6 +148,23 @@
                     <span id="char-count" class="char-count"></span>
                 </div>
             </div>
+        </div>
+
+        <!-- Welcome Screen (visible by default) -->
+        <div id="welcome-screen" class="welcome-screen">
+            <div class="empty-icon">
+                <img id="logo-img" src="images/logo-defaultdark.png" alt="ChatBot Logo" />
+            </div>
+            <h2 class="empty-title">Welcome to Vivica</h2>
+            <div id="vivica-welcome-message">
+                <!-- Vivica's message will go here -->
+            </div>
+            <div class="empty-text">
+                <div id="weather-widget"></div>
+                <div id="rss-widget"></div>
+            </div>
+            <button id="new-chat-btn" class="new-chat-btn accent-button">Start New Conversation</button>
+        </div>
         </div>
     </div>
     <!-- Settings Modal -->

@@ -341,46 +341,19 @@ User's name is Dustin.`;
     }
 }
 
-async function showWelcomeScreen() {
-    const emptyState = document.getElementById('empty-state');
-    const chatBody = document.getElementById('chat-body');
-
-    if (!emptyState || !chatBody) {
-        console.debug('Required elements not found for welcome screen');
-        return;
-    }
-
-    // Reset any existing conversation state
-    chatBody.innerHTML = '';
-    emptyState.style.display = 'flex';
+function showWelcomeScreen() {
+    document.getElementById('welcome-screen')?.classList.remove('hidden'); 
+    document.getElementById('chat-wrapper')?.classList.add('hidden');
     currentConversationId = null;
-    
-    // Make sure welcome elements are visible
-    const welcomeElements = [
-        'weather-widget', 
-        'rss-widget', 
-        'vivica-welcome-message', 
-        'logo-img', 
-        'empty-title'
-    ];
-    
-    welcomeElements.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.style.display = 'block';
-            el.style.opacity = '1';
-            el.style.visibility = 'visible';
-        }
-    });
-
     // Force re-render widgets
-    try {
-        await generateVivicaWelcomeMessage();
-        await renderWeatherWidget();
-        await renderRSSWidget();
-    } catch (e) {
-        console.error('Error refreshing welcome widgets:', e);
-    }
+    generateVivicaWelcomeMessage();
+    renderWeatherWidget();
+    renderRSSWidget();
+}
+
+function showChatScreen() {
+    document.getElementById('welcome-screen')?.classList.add('hidden');
+    document.getElementById('chat-wrapper')?.classList.remove('hidden');
 }
 
 async function updateActivePersonaBadge() {
@@ -769,6 +742,7 @@ async function renderConversationsList() {
  * @param {number} conversationId - The ID of the conversation to load.
  */
 async function loadConversation(conversationId) {
+    showChatScreen();
     debugLog(`Loading conversation ID: ${conversationId}`);
     currentConversationId = conversationId;
     localStorage.setItem('lastConversationId', conversationId);
@@ -798,6 +772,7 @@ async function loadConversation(conversationId) {
  * Starts a new conversation.
  */
 async function startNewConversation() {
+    showChatScreen();
     debugLog('Starting new conversation...');
     const newConversation = {
         title: 'New Chat',
@@ -1761,16 +1736,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.stopPropagation();
         currentConversationId = null;
         localStorage.removeItem('lastConversationId');
-        localStorage.removeItem('cachedConversationId');
         
         // Hide all conversation highlights
         document.querySelectorAll('.conversation-item').forEach(item => {
             item.classList.remove('active');
         });
 
-        // Force show welcome screen 
-        chatBody.innerHTML = '';
-        await showWelcomeScreen();
+        showWelcomeScreen();
 
         // Close sidebar on mobile if open
         if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
