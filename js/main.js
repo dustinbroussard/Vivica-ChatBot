@@ -176,9 +176,23 @@ async function renderpersonasList() {
 }
 
 function openpersonasModal() {
-    if (personasModal) {
+    if (!personasModal) return;
+    
+    try {
         renderpersonasList();
         openModal(personasModal);
+        
+        // Ensure active persona is still valid
+        const activeId = localStorage.getItem('activePersonaId');
+        if (activeId) {
+            const activePersona = PersonaStorage.getPersona(activeId);
+            if (!activePersona) {
+                localStorage.removeItem('activePersonaId');
+            }
+        }
+    } catch (error) {
+        console.error('Error opening persona modal:', error);
+        showToast('Failed to load personas', 'error');
     }
 }
 
@@ -1664,6 +1678,10 @@ async function saveConversationName() {
 function confirmAndDeleteConversation(convId) {
     const isConfirmed = window.confirm('Are you sure you want to delete this conversation? This action cannot be undone.');
     if (isConfirmed) {
+        // Clear persona association if this was the active conversation
+        if (currentConversationId === convId) {
+            currentPersonaId = null;
+        }
         Storage.ConversationStorage.deleteConversation(convId)
             .then(() => {
                 showToast('Conversation deleted!', 'success');
