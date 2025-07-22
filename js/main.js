@@ -6,7 +6,7 @@ import { initVoiceMode, startListening, stopListening, toggleListening, speak, g
 import { voiceAnimation } from './voice-animation.js';
 import { createParser } from './eventsource-parser.js';
 // main.js (update section only)
-import { getActivePersona } from './js/persona-ui.js';
+import { getActivePersona } from './js/persona-storage.js';
 
 const sendBtn = document.getElementById('sendBtn');
 const userInput = document.getElementById('user-input');
@@ -132,7 +132,7 @@ Speak like you built the mic.
 
 // --- Global Variables and Constants ---
 const chatBody = document.getElementById('chat-body');
-const userInput = document.getElementById('user-input');
+
 const sendBtn = document.getElementById('send-btn');
 const newChatBtn = document.getElementById('new-chat-btn');
 const conversationsList = document.getElementById('conversations-list');
@@ -423,6 +423,35 @@ async function updateActivePersonaBadge() {
     badge.textContent = "👤 Select Persona ⏷";
   }
 }
+
+async function sendMessage(userInput) {
+  const persona = await getActivePersona();
+  const model = persona?.model || 'gpt-4o';
+  const temp = persona?.temp ?? 0.8;
+  const tokens = persona?.tokens ?? 2048;
+  const systemPrompt = persona?.prompt || 'You are a helpful assistant.';
+
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...chatHistory,
+        { role: 'user', content: userInput }
+      ],
+      temperature: temp,
+      max_tokens: tokens
+    })
+  });
+
+  ...
+}
+
 
 async function getMemoryPrompt() {
     let memories = await Storage.MemoryStorage.getAllMemories();
