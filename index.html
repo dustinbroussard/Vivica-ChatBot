@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/persona-modal.css">
 
 
 
@@ -48,9 +49,9 @@
         </div>
         
         <div class="sidebar-footer">
-            <button type="button" class="sidebar-btn" id="profiles-btn" aria-label="Profiles">
+            <button type="button" class="sidebar-btn" id="personas-btn" aria-label="personas">
                 <i class="fas fa-user-circle"></i>
-                <span>Profiles</span>
+                <span>Personas</span>
             </button>
             <button type="button" class="sidebar-btn" id="memory-btn" aria-label="Memory">
                 <i class="fas fa-brain"></i>
@@ -71,7 +72,7 @@
                 <i class="fas fa-bars"></i>
             </button>
             <div class="header-title">
-                <select id="profile-select" class="profile-select"></select>
+	        <span>Vivica</span>
                 <span class="status-indicator online"></span>
             </div>
             <div class="header-actions">
@@ -214,10 +215,10 @@
                 </div>
                 <div class="modal-footer">
                 <button id="export-all-btn" style="margin-right:10px;">
-                    <i class="fas fa-download"></i> Export All Data
+                    <i class="fas fa-download"></i> Export
                   </button>
                   <button id="import-all-btn">
-                    <i class="fas fa-upload"></i> Import All Data
+                    <i class="fas fa-upload"></i> Import
                   </button>
                   <input type="file" id="import-file-input" accept=".json" style="display:none;">
                     <button type="button" class="modal-btn cancel-btn" id="cancel-settings"><i class="fas fa-stop-circle" aria-hidden="true"></i>
@@ -232,67 +233,77 @@
         </div>
     </div>
 
-    <!-- Profiles Modal -->
-    <div class="modal" id="profiles-modal">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <i class="fas fa-user-circle"></i>
-                    AI Profiles
-                </div>
-                <button type="button" class="close-modal" aria-label="Close profiles">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="profiles-list" class="custom-models-list"></div>
-                <hr>
-                <form id="profile-form" class="settings-group" autocomplete="off">
-                    <input type="hidden" id="profile-id">
-                    <label class="settings-label" for="profile-name">Profile Name</label>
-                    <input type="text" id="profile-name" class="settings-input" required placeholder="Enter profile name...">
-                    
-                    <label class="settings-label" for="profile-model-search">AI Model</label>
-                    <input type="text" id="profile-model-search" class="settings-input" placeholder="Search models..." autocomplete="off">
-                    
-                    <label for="model1-select">Select Model for AI 1:</label>
-                    <select id="model1-select" class="input-field">
-                        <option value="">Loading models...</option>
-                    </select>
-                    <div class="checkbox-container">
-                        <input type="checkbox" id="model1-free-filter">
-                        <label for="model1-free-filter">Show only free models</label>
-                    </div>
-                    <div id="profile-model-dropdown" class="model-dropdown-list"></div>
-                    <input type="hidden" id="profile-model" value="">
-                    <span id="profile-model-selected"></span>
-                    
-                    <label class="settings-label" for="profile-system-prompt">System Prompt</label>
-                    <textarea id="profile-system-prompt" class="settings-input" rows="3" placeholder="Describe this AI's persona/role..."></textarea>
-                    
-                    <label class="settings-label" for="profile-temp">Temperature <span id="profile-temp-value">0.7</span></label>
-                    <input type="range" id="profile-temp" min="0" max="1" step="0.01" value="0.7" class="settings-input">
-                    
-                    <label class="settings-label" for="profile-max-tokens">Max Tokens</label>
-                    <input type="number" id="profile-max-tokens" min="100" max="4096" step="1" value="2000" class="settings-input">
-                    
-                    <label class="settings-label" for="profile-max-context">Max Context Length</label>
-                    <input type="number" id="profile-max-context" class="settings-input" value="20" min="1" max="50">
-                    <small class="settings-hint">How many previous messages this persona will use for context (history/memory window)</small>
-                    
-                    <div class="modal-footer">
-                        <button type="submit" class="modal-btn primary-btn" id="save-profile-btn">
-                            <i class="fas fa-save"></i>
-                            Save Profile
-                        </button>
-                        <button type="button" class="modal-btn cancel-btn" id="cancel-profile-btn">Cancel</button>
-                        <button type="button" class="modal-btn danger-btn" id="delete-profile-btn">
-                            <i class="fas fa-trash"></i>Delete
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+	    <!-- Persona Modal -->
+	<div id="personaModal" class="modal hidden">
+	  <div class="modal-content">
+	    <div class="modal-header">
+	      <h2><span class="icon">👤</span> AI Personas</h2>
+	      <div class="modal-actions">
+		<button id="createPersonaBtn" class="accent-button">+ Create New Persona</button>
+		<button class="close-modal">&times;</button>
+	      </div>
+	    </div>
+
+	    <div id="personaList" class="persona-list">
+	      <!-- Persona Cards will be dynamically inserted here -->
+	    </div>
+	  </div>
+	</div>
+
+	<!-- Persona Card Template -->
+	<template id="personaCardTemplate">
+	  <div class="persona-card">
+	    <div class="persona-header">
+	      <strong class="persona-name">Vivica</strong>
+	      <div class="persona-controls">
+		<input type="radio" name="activePersona" title="Set Active Persona">
+		<button class="editPersonaBtn icon-btn" title="Edit"><i class="fas fa-edit"></i></button>
+		<button class="deletePersonaBtn icon-btn delete-persona-btn" title="Delete"><i class="fas fa-trash"></i></button>
+
+	      </div>
+	    </div>
+	    <div class="persona-meta">
+	      <div><span class="label">Model:</span> <span class="persona-model">model/name</span></div>
+	      <div class="persona-prompt-preview">You are a poetic AI that whispers truths...</div>
+	      <div class="persona-config">Temp: <span class="temp">1.0</span>  |  Max Tokens: <span class="tokens">2000</span></div>
+	    </div>
+	  </div>
+	</template>
+
+	<!-- Persona Editor Modal -->
+	<div id="personaEditorModal" class="modal hidden">
+	  <div class="modal-content">
+	    <div class="modal-header">
+	      <h2>Edit Persona</h2>
+	      <button class="close-modal">&times;</button>
+	    </div>
+	    <form id="personaForm">
+	      <label>persona Name</label>
+	      <input type="text" id="personaName" required>
+
+	      <label>AI Model</label>
+	      <select id="modelSelect" required>
+		  <option value="" disabled selected>Select a model...</option>
+		</select>
+
+	      <label>System Prompt</label>
+	      <textarea id="systemPrompt" rows="4" placeholder="Describe this AI's persona and role..."></textarea>
+
+	      <div class="config-row">
+		<label>Temperature: <span id="tempVal">0.7</span></label>
+		<input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
+		<label>Max Tokens</label>
+		<input type="number" id="maxTokens" value="2000">
+	      </div>
+
+	      <div class="modal-actions">
+		<button type="button" class="cancelBtn">Cancel</button>
+		<button type="submit" class="accent-button">Save Persona</button>
+	      </div>
+	    </form>
+	  </div>
+	</div>
+
 
     <!-- Rename Modal -->
     <div class="modal" id="rename-modal">
@@ -410,7 +421,8 @@
 		<button type="button" class="modal-btn" id="memory-export-btn">Export</button>
 		<button type="button" class="modal-btn" id="memory-import-btn">Import</button>
 		<button type="button" class="modal-btn cancel-btn" id="memory-cancel-btn">Cancel</button>
-		<button type="submit" class="modal-btn primary-btn" id="memory-save-btn">Save</button>
+		<button type="submit" class="modal-btn primary-btn" id="memory-save-btn"><i class="fas fa-save"></i>
+		Save</button>
 	      </div>
 	    </form>
 	  </div>
@@ -432,6 +444,7 @@
     <script type="module" src="js/theme-toggle.js"></script>
     <script type="module" src="js/main.js"></script>
     <script type="module" src="js/memory-manager.js"></script>
+    <script type="module" src="js/persona-ui.js"></script>
     <script type="module">
         import { initMemoryManager } from './js/memory-manager.js';
         document.addEventListener('DOMContentLoaded', () => {

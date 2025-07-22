@@ -1,6 +1,6 @@
 // js/persona-ui.js
 
-import { PersonaStorage } from './persona-storage.js';
+import { personaStorage } from './persona-storage.js';
 
 let activePersonaId = null;
 
@@ -39,7 +39,7 @@ export function initPersonaUI() {
       tokens: parseInt(document.getElementById('maxTokens').value)
     };
 
-    await PersonaStorage.save(persona);
+    await personaStorage.save(persona);
     personaEditorModal.classList.add('hidden');
     await loadPersonas();
   });
@@ -51,7 +51,7 @@ export function initPersonaUI() {
 }
 
 export async function loadPersonas() {
-  const personas = await PersonaStorage.getAll();
+  const personas = await personaStorage.getAll();
   personaListContainer.innerHTML = '';
 
   personas.forEach(persona => {
@@ -82,7 +82,7 @@ async function setActivePersona(id) {
   // Update the UI badge
   const badge = document.getElementById('activePersonaBadge');
   if (badge) {
-    const persona = await PersonaStorage.get(id);
+    const persona = await personaStorage.get(id);
     badge.textContent = persona ? `👤 ${persona.name} ⏷` : '👤 Select Persona ⏷';
   }
 
@@ -112,7 +112,7 @@ function openPersonaEditor(persona = null) {
 
 async function deletePersona(id) {
   if (confirm('Delete this persona?')) {
-    await PersonaStorage.delete(id);
+    await personaStorage.delete(id);
     await loadPersonas();
   }
 }

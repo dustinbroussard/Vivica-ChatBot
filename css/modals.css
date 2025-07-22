@@ -101,7 +101,7 @@
 .close-modal,
 #memory-close-btn,
 #settings-close-btn,
-#profile-close-btn {
+#persona-close-btn {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -140,8 +140,8 @@ textarea:focus {
   outline: 2px solid var(--accent-primary);
 }
 
-/* === Profile Cards === */
-.profile-card {
+/* === persona Cards === */
+.persona-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -155,7 +155,7 @@ textarea:focus {
   color: var(--text-primary);
 }
 
-.profile-actions {
+.persona-actions {
   display: flex;
   gap: 6px;
   justify-content: flex-end;
@@ -201,7 +201,7 @@ textarea:focus {
     align-items: stretch;
   }
 
-  .profile-card {
+  .persona-card {
     padding: 10px 7px 9px 7px;
     margin-bottom: 10px;
   }
@@ -211,15 +211,15 @@ textarea:focus {
   }
 }
 
-/* === Profile Card Actions === */
-.profile-actions {
+/* === persona Card Actions === */
+.persona-actions {
   display: flex;
   gap: 8px;
   justify-content: center;
   align-items: center;
 }
 
-.profile-info {
+.persona-info {
   flex-grow: 1;
   min-width: 0;
   overflow: hidden;
@@ -259,17 +259,17 @@ textarea:focus {
   box-shadow: 0 0 0 2px var(--accent, #6c63ff22);
 }
 
-.delete-profile-btn {
+.delete-persona-btn {
   color: var(--danger, #d9534f);
 }
 
-.delete-profile-btn:hover {
+.delete-persona-btn:hover {
   background: var(--danger, #d9534f);
   color: #fff;
 }
 
-/* Profile snippet truncation */
-.profile-snippet {
+/* persona snippet truncation */
+.persona-snippet {
   font-size: 0.92em;
   color: var(--text-muted);
   margin-bottom: 2px;
@@ -290,7 +290,7 @@ textarea:focus {
 }
 .modal-btn.primary-btn {
   background: var(--accent-primary);
-  color: #fff;
+  color: var(--bg-primary);
 }
 .modal-btn.cancel-btn {
   background: var(--bg-tertiary);
@@ -301,4 +301,265 @@ textarea:focus {
 }
 
 
+
+/* Memory Editor Styles */
+.memory-item {
+  padding: 16px;
+  margin-bottom: 12px;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  border-left: 4px solid var(--border);
+}
+
+
+.memory-item:hover {
+  background: var(--bg-hover);
+}
+
+.memory-item-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.memory-type {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+  background: var(--border);
+}
+
+.memory-type.identity {
+  background: var(--info);
+  color: black;
+}
+
+.memory-type.core {
+  background: var(--accent-primary);
+  color: black;
+}
+
+.memory-type.project {
+  background: var(--success);
+  color: black;
+}
+
+.memory-tags {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0;
+  flex-wrap: wrap;
+}
+
+.memory-tag {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+}
+
+.memory-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.memory-search {
+  margin-bottom: 16px;
+}
+
+/* Dialog styles for memory editor */
+.memory-editor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+
+
+.settings-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+
+
+.settings-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.settings-input::placeholder {
+  color: var(--text-muted);
+}
+
+.settings-hint {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+
+
+.primary-btn {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+}
+
+.primary-btn:hover {
+  background: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+}
+
+.cancel-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.save-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+
+.cancel-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.danger-btn {
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+
+.danger-btn:hover {
+  background: #cc0000;
+  border-color: #cc0000;
+}
+
+
+
+
+.confirmation-content {
+  background: var(--bg-secondary);
+  padding: 24px;
+  border-radius: 12px;
+  max-width: 400px;
+  text-align: center;
+}
+
+.confirmation-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.input-with-button {
+  display: flex;
+  gap: 8px;
+}
+
+.input-with-button .settings-input {
+  flex: 1;
+}
+
+.custom-models-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+
+.delete-persona-btn {
+  color: var(--danger, #d9534f);
+}
+
+#delete-persona-btn {
+  display: none;
+}
+
+.delete-persona-btn:hover {
+  background: var(--danger, #d9534f);
+  color: #fff;
+}
+
+.persona-card {
+  padding: 10px 14px 7px 14px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: var(--bg-primarys, var(--bg-secondary));
+  box-shadow: 0 2px 8px 0 rgb(0 0 0 / 0.06);
+  color: var(--text-primary);
+  font-size: 1em;
+}
+
+.custom-model-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px 7px 14px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: var(--bg-primarys, var(--bg-secondary));
+  box-shadow: 0 2px 8px 0 rgb(0 0 0 / 0.06);
+  color: var(--text-primary);
+  font-size: 1em;
+}
+
+.custom-model-remove {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.custom-model-remove:hover {
+  background: rgba(255, 0, 0, 0.1);
+}
 

@@ -1,5 +1,5 @@
 // persona-storage.js
-export const PersonaStorage = {
+export const personaStorage = {
   KEY: 'personaList',
 
   async getActivePersona() {

@@ -1,0 +1,146 @@
+/* persona-modal.css */
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+  font-size: 1.4rem;
+  color: var(--text-primary);
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.persona-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.persona-card {
+  background: var(--color-card);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.persona-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.persona-name {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.persona-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.persona-meta {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.persona-config {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Editor form styling */
+#personaForm label {
+  font-weight: 600;
+  display: block;
+  margin: 0.8rem 0 0.3rem;
+}
+
+#personaForm input[type="text"],
+#personaForm input[type="number"],
+#personaForm select,
+#personaForm textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: var(--color-input);
+  color: var(--text-primary);
+}
+
+#personaForm .config-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.accent-button {
+  background: var(--color-accent);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.accent-button:hover {
+  background: var(--color-accent-hover);
+}
+
+button.close-modal,
+button.cancelBtn {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
