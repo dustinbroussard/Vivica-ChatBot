@@ -34,21 +34,6 @@ function appendMessage(role, text) {
 }
 
 // Persona name badge sync
-async function updateActivePersonaBadge() {
-  const badge = document.getElementById('activePersonaBadge');
-  if (!badge) return;
-  
-  try {
-    const activePersonaId = localStorage.getItem('activePersonaId');
-    const persona = activePersonaId ? await PersonaStorage.getPersona(activePersonaId) : null;
-    badge.textContent = persona ? `👤 ${persona.name} ⏷` : '👤 Select Persona ⏷';
-  } catch (error) {
-    console.error('Error updating persona badge:', error);
-    badge.textContent = '👤 Error ⏷';
-  }
-}
-
-document.addEventListener('DOMContentLoaded', updateActivePersonaBadge);
 
 
 // --- Vivica Default persona Seeder ---
