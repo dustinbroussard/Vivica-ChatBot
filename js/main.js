@@ -6,7 +6,6 @@ import { initVoiceMode, startListening, stopListening, toggleListening, speak, g
 import { voiceAnimation } from './voice-animation.js';
 import { createParser } from './eventsource-parser.js';
 // main.js (update section only)
-import { getActivePersona } from './persona-storage.js';
 
 const userInput = document.getElementById('user-input');
 const chatWindow = document.getElementById('chatWindow');
@@ -30,7 +29,7 @@ function appendMessage(role, text) {
 // Persona name badge sync
 async function updateActivePersonaBadge() {
   const badge = document.getElementById('activePersonaBadge');
-  const persona = await getActivePersona();
+  const persona = await PersonaStorage.getActivePersona();
   badge.textContent = persona ? `👤 ${persona.name} ⏷` : '👤 Select Persona ⏷';
 }
 

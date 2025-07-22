@@ -2,6 +2,13 @@
 export const PersonaStorage = {
   KEY: 'personaList',
 
+  async getActivePersona() {
+    const id = localStorage.getItem('activePersonaId');
+    if (!id) return null;
+    const list = await this.getAll();
+    return list.find(p => p.id === id) || null;
+  },
+
   async getAll() {
     const raw = localStorage.getItem(this.KEY);
     try {
