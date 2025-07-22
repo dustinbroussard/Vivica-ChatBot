@@ -91,9 +91,9 @@ export async function loadPersonas() {
     template.querySelector('.tokens').textContent = persona.maxTokens;
 
     const radio = template.querySelector('input[type="radio"]');
-    radio.checked = persona.id === this.activePersonaId;
+    radio.checked = persona.id === personaController.activePersonaId;
     radio.addEventListener('click', () => {
-      this.activePersonaId = persona.id;
+      personaController.activePersonaId = persona.id;
       localStorage.setItem('activePersonaId', persona.id);
     });
     radio.onclick = () => setActivePersona(persona.id);
