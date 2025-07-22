@@ -16,7 +16,7 @@ import { ConversationStorage } from './storage-wrapper.js';
 export async function generateAIConversationTitle(conversationId, messages, apiKey, model, renderConversationsList) {
   try {
     // Step 1: Show temporary spinner title
-    await Storage.ConversationStorage.updateConversation({ id: conversationId, title: 'Naming...' });
+    await ConversationStorage.updateConversation({ id: conversationId, title: 'Naming...' });
     renderConversationsList();
 
     // Step 2: Build prompt from first few messages
@@ -43,7 +43,7 @@ export async function generateAIConversationTitle(conversationId, messages, apiK
     const title = json.choices?.[0]?.message?.content?.trim();
 
     if (title) {
-      await Storage.ConversationStorage.updateConversation({ id: conversationId, title });
+      await ConversationStorage.updateConversation({ id: conversationId, title });
       renderConversationsList();
     } else {
       throw new Error('No title returned');

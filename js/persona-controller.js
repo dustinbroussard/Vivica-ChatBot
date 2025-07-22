@@ -38,7 +38,7 @@ export class PersonaController {
     if (typeof persona.maxTokens !== 'number' || persona.maxTokens < 256) {
       throw new Error('Max tokens must be at least 256');
     }
-    return await PersonaStorage.addPersona(persona);
+    return await PersonaStorage.updatePersona(persona);
   }
 
   async deletePersona(id) {
