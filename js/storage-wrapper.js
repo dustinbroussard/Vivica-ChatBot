@@ -380,36 +380,22 @@ export const MemoryStorage = {
  * Manages application settings (e.g., API keys).
  */
 export const SettingsStorage = {
-    // Settings will be stored as a single object with a fixed key
     SETTINGS_KEY: 'appSettings',
 
-    /**
-     * Saves application settings.
-     * @param {object} settings - The settings object.
-     * @returns {Promise<void>}
-     */
-    saveSettings: async (settings) => {
-        try {
-            // Use 'put' to either add or update the single settings object
-            await update(STORES.MEMORY, { id: SettingsStorage.SETTINGS_KEY, ...settings });
-            console.log('SettingsStorage: Settings saved.');
-        } catch (error) {
-            console.error('SettingsStorage: Error saving settings:', error);
-            throw error;
-        }
+    async saveSettings(settings) {
+        return await add(STORES.MEMORY, { 
+            id: this.SETTINGS_KEY, 
+            ...settings 
+        });
     },
 
-    /**
-     * Retrieves application settings.
-     * @returns {Promise<object | undefined>} The settings object.
-     */
-    getSettings: async () => {
+    async getSettings() {
         try {
-            const settings = await get(STORES.MEMORY, SettingsStorage.SETTINGS_KEY);
-            return settings;
+            const settings = await get(STORES.MEMORY, this.SETTINGS_KEY);
+            return settings || {};
         } catch (error) {
             console.error('SettingsStorage: Error getting settings:', error);
-            throw error;
+            return {};
         }
     }
 };

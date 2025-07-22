@@ -56,6 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
   body.classList.toggle('light-mode', !isDark());
   applyColorTheme();
 
+  // Theme selector listener
+  const themeSelect = document.getElementById('theme-select');
+  if (themeSelect) {
+    themeSelect.addEventListener('change', () => {
+      localStorage.setItem('colorTheme', themeSelect.value);
+      applyColorTheme();
+      refreshLogo();
+    });
+  }
+
   // Expose to global for other modules
   window.applyColorTheme = applyColorTheme;
 });

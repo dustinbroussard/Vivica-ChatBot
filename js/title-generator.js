@@ -1,7 +1,7 @@
 // js/title-generator.js
 // Vivica - AI-Powered Conversation Title Generator
 
-import Storage from './storage-wrapper.js';
+import { ConversationStorage } from './storage-wrapper.js';
 
 /**
  * Generates a clever conversation title using the active AI model.

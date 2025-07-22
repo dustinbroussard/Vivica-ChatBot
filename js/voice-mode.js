@@ -82,7 +82,7 @@ function debugLog(...args) {
 
 // --- Context Helpers ---
 export async function getActivepersona() {
-    const activeId = parseInt(localStorage.getItem('activepersonaId'), 10);
+    const activeId = parseInt(localStorage.getItem('activePersonaId'), 10);
     const personas = await PersonaStorage.getAllPersonas();
     return personas.find(p => p.id === activeId) || personas.find(p => p.isActive) || personas[0];
 }

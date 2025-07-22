@@ -50,13 +50,6 @@ export function initPersonaUI() {
     });
   }
 
-  // Close buttons
-  document.querySelectorAll('.close-modal, .cancelBtn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      personaModal.classList.add('hidden');
-      personaEditorModal.classList.add('hidden');
-    });
-  });
 
   // Save form
   personaForm?.addEventListener('submit', async (e) => {
@@ -92,8 +85,8 @@ export function initPersonaUI() {
     } catch (error) {
       showToast(`Error: ${error.message}`, 'error');
     }
-    if (!persona.name) {
-      showToast('Please enter a persona name', 'error');
+    if (!persona.name || !persona.model || !persona.systemPrompt) {
+      showToast('Please fill out all required fields', 'error');
       return;
     }
     if (!persona.model) {
