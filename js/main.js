@@ -1980,22 +1980,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Model search and dropdown logic
+    const personaModelSearchInput = document.getElementById('persona-model-search');
+    const personaModelDropdown = document.getElementById('persona-model-dropdown');
     if (personaModelSearchInput && personaModelDropdown) {
         personaModelSearchInput.addEventListener('focus', () => {
             personaModelDropdown.style.display = 'block';
             const searchTerm = personaModelSearchInput.value.toLowerCase();
-            personaModelDropdown.querySelectorAll('.model-dropdown-item').forEach(item => {
-                item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'block' : 'none';
-            });
+            const items = personaModelDropdown.querySelectorAll('.model-dropdown-item');
+            if (items) {
+                items.forEach(item => {
+                    item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'block' : 'none';
+                });
+            }
         });
         personaModelSearchInput.addEventListener('input', () => {
             const searchTerm = personaModelSearchInput.value.toLowerCase();
-            personaModelDropdown.querySelectorAll('.model-dropdown-item').forEach(item => {
-                item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'block' : 'none';
-            });
+            const items = personaModelDropdown.querySelectorAll('.model-dropdown-item');
+            if (items) {
+                items.forEach(item => {
+                    item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'block' : 'none';
+                });
+            }
         });
         document.addEventListener('click', (e) => {
-            if (!personaModelSearchInput.contains(e.target) && !personaModelDropdown.contains(e.target)) {
+            const target = e.target;
+            if (target && !personaModelSearchInput.contains(target) && !personaModelDropdown.contains(target)) {
                 personaModelDropdown.style.display = 'none';
             }
         });
