@@ -14,15 +14,6 @@ import { voiceAnimation } from './voice-animation.js';
 import { createParser } from './eventsource-parser.js';
 // main.js (update section only)
 
-const userInput = document.getElementById('user-input');
-const chatWindow = document.getElementById('chatWindow');
-
-userInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-});
 
 
 function appendMessage(role, text) {
@@ -106,67 +97,23 @@ Speak like you built the mic.
   }
 })();
 
-// --- Global Variables and Constants ---
-const chatBody = document.getElementById('chat-body');
-
-const sendBtn = document.getElementById('send-btn');
-const newChatBtn = document.getElementById('new-chat-btn');
-const conversationsList = document.getElementById('conversations-list');
-const emptyState = document.getElementById('empty-state');
-const typingIndicator = document.getElementById('typing-indicator');
-const charCountSpan = document.getElementById('char-count');
-const menuToggle = document.getElementById('menu-toggle');
-const sidebar = document.getElementById('sidebar');
-const closeSidebarBtn = document.getElementById('close-sidebar-btn');
-const settingsModal = document.getElementById('settingsModal');
-const openSettingsBtn = document.getElementById('open-settings');
-const closeSettingsModalBtn = settingsModal.querySelector('.close-modal');
-const saveSettingsBtn = document.getElementById('save-settings');
-const cancelSettingsBtn = document.getElementById('cancel-settings');
-const clearAllConversationsBtn = document.getElementById('clear-all-conversations');
-const memoryModal = document.getElementById('memory-modal');
-const memoryBtn = document.getElementById('memory-btn');
-const closeMemoryModalBtn = document.getElementById('close-memory');
-const cancelMemoryBtn = document.getElementById('cancel-memory');
-const renameModal = document.getElementById('rename-modal');
-const closeRenameModalBtn = document.getElementById('close-rename');
-const cancelRenameBtn = document.getElementById('cancel-rename');
-const saveRenameBtn = document.getElementById('save-rename');
-const conversationNameInput = document.getElementById('conversation-name');
-const exportModal = document.getElementById('export-modal');
-const closeExportModalBtn = document.getElementById('close-export');
-const copyExportBtn = document.getElementById('copy-export');
-const exportContentTextarea = document.getElementById('export-content');
-const uploadBtn = document.getElementById('upload-btn');
-const fileUploadInput = document.getElementById('file-upload');
-const clearInputBtn = document.getElementById('clear-btn');
-const summarizeBtn = document.getElementById('summarize-save-btn');
-const voiceModeToggleBtn = document.getElementById('voice-mode-toggle-btn');
-const themeSelect = document.getElementById('theme-select');
-const darkModeToggle = document.getElementById('dark-mode-toggle');
-const currentThemeLabel = document.getElementById('current-theme-label');
-const exportAllBtn = document.getElementById('export-all-btn');
-const importAllBtn = document.getElementById('import-all-btn');
-const importFileInput = document.getElementById('import-file-input');
-const personasModal = document.getElementById('personaModal');
-const personasBtn = document.getElementById('personas-btn');
-const closepersonasModalBtn = personasModal ? personasModal.querySelector('.close-modal') : null;
-const cancelpersonaBtn = personasModal ? personasModal.querySelector('.cancelBtn') : null;
-const personaForm = document.getElementById('personaForm');
-const personaNameInput = document.getElementById('personaName');
-const personaSystemPromptInput = document.getElementById('systemPrompt');
-const personaTempInput = document.getElementById('temperature');
-const personaTempValueSpan = document.getElementById('tempVal');
-const personaModelInput = document.getElementById('modelSelect');
-const model1Select = document.getElementById('model1-select');
-const model1FreeFilter = document.getElementById('model1-free-filter');
-const deletepersonaBtn = personasModal ? personasModal.querySelector('.delete-persona-btn') : null;
-const personaIdInput = document.getElementById('persona-id');
-
 // App state
 let currentConversationId = null;
 let currentPersonaId = null;
 let voiceModeActive = false;
+
+// Global element references (initialized in DOMContentLoaded)
+let chatBody, sendBtn, newChatBtn, conversationsList, emptyState, typingIndicator,
+    charCountSpan, menuToggle, sidebar, closeSidebarBtn, settingsModal, openSettingsBtn,
+    closeSettingsModalBtn, saveSettingsBtn, cancelSettingsBtn, clearAllConversationsBtn,
+    memoryModal, memoryBtn, closeMemoryModalBtn, cancelMemoryBtn, renameModal,
+    closeRenameModalBtn, cancelRenameBtn, saveRenameBtn, conversationNameInput,
+    exportModal, closeExportModalBtn, copyExportBtn, exportContentTextarea, uploadBtn,
+    fileUploadInput, clearInputBtn, summarizeBtn, voiceModeToggleBtn, themeSelect,
+    darkModeToggle, currentThemeLabel, exportAllBtn, importAllBtn, importFileInput,
+    personasModal, personasBtn, closepersonasModalBtn, cancelpersonaBtn, personaForm,
+    personaNameInput, personaSystemPromptInput, personaTempInput, personaTempValueSpan,
+    personaModelInput, model1Select, model1FreeFilter, deletepersonaBtn, personaIdInput;
 
 // ----- Persona Helpers -----
 async function renderpersonasList() {
@@ -1718,7 +1665,75 @@ function toggleScrollButton() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Persona badge setup
+    // Initialize all DOM elements
+    chatBody = document.getElementById('chat-body');
+    sendBtn = document.getElementById('send-btn');
+    newChatBtn = document.getElementById('new-chat-btn');
+    conversationsList = document.getElementById('conversations-list');
+    emptyState = document.getElementById('empty-state');
+    typingIndicator = document.getElementById('typing-indicator');
+    charCountSpan = document.getElementById('char-count');
+    menuToggle = document.getElementById('menu-toggle');
+    sidebar = document.getElementById('sidebar');
+    closeSidebarBtn = document.getElementById('close-sidebar-btn');
+    settingsModal = document.getElementById('settingsModal');
+    openSettingsBtn = document.getElementById('open-settings');
+    closeSettingsModalBtn = settingsModal.querySelector('.close-modal');
+    saveSettingsBtn = document.getElementById('save-settings');
+    cancelSettingsBtn = document.getElementById('cancel-settings');
+    clearAllConversationsBtn = document.getElementById('clear-all-conversations');
+    memoryModal = document.getElementById('memory-modal');
+    memoryBtn = document.getElementById('memory-btn');
+    closeMemoryModalBtn = document.getElementById('close-memory');
+    cancelMemoryBtn = document.getElementById('cancel-memory');
+    renameModal = document.getElementById('rename-modal');
+    closeRenameModalBtn = document.getElementById('close-rename');
+    cancelRenameBtn = document.getElementById('cancel-rename');
+    saveRenameBtn = document.getElementById('save-rename');
+    conversationNameInput = document.getElementById('conversation-name');
+    exportModal = document.getElementById('export-modal');
+    closeExportModalBtn = document.getElementById('close-export');
+    copyExportBtn = document.getElementById('copy-export');
+    exportContentTextarea = document.getElementById('export-content');
+    uploadBtn = document.getElementById('upload-btn');
+    fileUploadInput = document.getElementById('file-upload');
+    clearInputBtn = document.getElementById('clear-btn');
+    summarizeBtn = document.getElementById('summarize-save-btn');
+    voiceModeToggleBtn = document.getElementById('voice-mode-toggle-btn');
+    themeSelect = document.getElementById('theme-select');
+    darkModeToggle = document.getElementById('dark-mode-toggle');
+    currentThemeLabel = document.getElementById('current-theme-label');
+    exportAllBtn = document.getElementById('export-all-btn');
+    importAllBtn = document.getElementById('import-all-btn');
+    importFileInput = document.getElementById('import-file-input');
+    personasModal = document.getElementById('personaModal');
+    personasBtn = document.getElementById('personas-btn');
+    closepersonasModalBtn = personasModal ? personasModal.querySelector('.close-modal') : null;
+    cancelpersonaBtn = personasModal ? personasModal.querySelector('.cancelBtn') : null;
+    personaForm = document.getElementById('personaForm');
+    personaNameInput = document.getElementById('personaName');
+    personaSystemPromptInput = document.getElementById('systemPrompt');
+    personaTempInput = document.getElementById('temperature');
+    personaTempValueSpan = document.getElementById('tempVal');
+    personaModelInput = document.getElementById('modelSelect');
+    model1Select = document.getElementById('model1-select');
+    model1FreeFilter = document.getElementById('model1-free-filter');
+    deletepersonaBtn = personasModal ? personasModal.querySelector('.delete-persona-btn') : null;
+    personaIdInput = document.getElementById('persona-id');
+
+    const userInput = document.getElementById('user-input');
+    const chatWindow = document.getElementById('chatWindow');
+
+    if (userInput) {
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+
+    // Persona badge setup
   const personaBadge = document.getElementById('activePersonaBadge');
   if (personaBadge) {
     personaBadge.addEventListener('click', openpersonasModal);
