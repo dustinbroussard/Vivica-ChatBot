@@ -1,6 +1,6 @@
 // js/persona-ui.js
 
-import { personaStorage } from './persona-storage.js';
+import Storage, { PersonaStorage } from './storage-wrapper.js';
 
 let activePersonaId = null;
 
@@ -39,7 +39,7 @@ export function initPersonaUI() {
       tokens: parseInt(document.getElementById('maxTokens').value)
     };
 
-    await personaStorage.save(persona);
+    await PersonaStorage.addPersona(persona);
     personaEditorModal.classList.add('hidden');
     await loadPersonas();
   });
@@ -51,7 +51,7 @@ export function initPersonaUI() {
 }
 
 export async function loadPersonas() {
-  const personas = await personaStorage.getAll();
+  const personas = await PersonaStorage.getAllPersonas();
   personaListContainer.innerHTML = '';
 
   personas.forEach(persona => {
@@ -74,7 +74,7 @@ export async function loadPersonas() {
   });
 }
 
-async function setActivePersona(id) {
+export async function setActivePersona(id) {
   activePersonaId = id;
   localStorage.setItem('activePersonaId', id);
   await loadPersonas();
@@ -82,21 +82,21 @@ async function setActivePersona(id) {
   // Update the UI badge
   const badge = document.getElementById('activePersonaBadge');
   if (badge) {
-    const persona = await personaStorage.get(id);
+    const persona = await PersonaStorage.getPersona(id);
     badge.textContent = persona ? `👤 ${persona.name} ⏷` : '👤 Select Persona ⏷';
   }
 
   // Update current conversation's persona if one is active
   if (window.currentConversationId) {
-    const convo = await window.Storage.ConversationStorage.getConversation(window.currentConversationId);
+    const convo = await Storage.ConversationStorage.getConversation(window.currentConversationId);
     if (convo) {
       convo.personaId = id;
-      await window.Storage.ConversationStorage.updateConversation(convo);
+      await Storage.ConversationStorage.updateConversation(convo);
     }
   }
 }
 
-function openPersonaEditor(persona = null) {
+export function openPersonaEditor(persona = null) {
   personaEditorModal.classList.remove('hidden');
   editingPersonaId = persona?.id || null;
 
@@ -110,9 +110,9 @@ function openPersonaEditor(persona = null) {
   document.getElementById('maxTokens').value = persona?.tokens ?? 2000;
 }
 
-async function deletePersona(id) {
+export async function deletePersona(id) {
   if (confirm('Delete this persona?')) {
-    await personaStorage.delete(id);
+    await PersonaStorage.deletePersona(id);
     await loadPersonas();
   }
 }

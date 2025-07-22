@@ -1,10 +1,11 @@
-import { 
+import Storage, {
   ConversationStorage,
-  MessageStorage, 
+  MessageStorage,
   PersonaStorage,
   MemoryStorage,
   SettingsStorage
 } from './storage-wrapper.js';
+import { loadPersonas, setActivePersona } from './persona-ui.js';
 import { generateAIConversationTitle } from './title-generator.js';
 // Marked is loaded via CDN in index.html, available globally as 'marked'
 import { sendToAndroidLog, isAndroidBridgeAvailable } from './android-bridge.js';
@@ -154,6 +155,79 @@ const currentThemeLabel = document.getElementById('current-theme-label');
 const exportAllBtn = document.getElementById('export-all-btn');
 const importAllBtn = document.getElementById('import-all-btn');
 const importFileInput = document.getElementById('import-file-input');
+const personasModal = document.getElementById('personaModal');
+const personasBtn = document.getElementById('personas-btn');
+const closepersonasModalBtn = personasModal ? personasModal.querySelector('.close-modal') : null;
+const cancelpersonaBtn = personasModal ? personasModal.querySelector('.cancelBtn') : null;
+const personaForm = document.getElementById('personaForm');
+const personaNameInput = document.getElementById('personaName');
+const personaSystemPromptInput = document.getElementById('systemPrompt');
+const personaTempInput = document.getElementById('temperature');
+const personaTempValueSpan = document.getElementById('tempVal');
+const personaModelInput = document.getElementById('modelSelect');
+const personaSelect = document.getElementById('persona-select');
+const personaModelDropdown = document.getElementById('persona-model-dropdown');
+const personaModelSearchInput = document.getElementById('persona-model-search');
+const personaModelSelectedSpan = document.getElementById('persona-model-selected');
+const model1Select = document.getElementById('model1-select');
+const model1FreeFilter = document.getElementById('model1-free-filter');
+const deletepersonaBtn = personasModal ? personasModal.querySelector('.delete-persona-btn') : null;
+const personaIdInput = document.getElementById('persona-id');
+
+// ----- Persona Helpers -----
+async function renderpersonasList() {
+    if (typeof loadPersonas === 'function') {
+        await loadPersonas();
+    }
+}
+
+function openpersonasModal() {
+    if (personasModal) {
+        renderpersonasList();
+        openModal(personasModal);
+    }
+}
+
+function resetpersonaForm() {
+    if (personaForm) {
+        personaForm.reset();
+        if (personaTempValueSpan) {
+            personaTempValueSpan.textContent = personaTempInput.value;
+        }
+    }
+}
+
+async function savepersona(e) {
+    if (e) e.preventDefault();
+    if (!personaForm) return;
+    const persona = {
+        name: personaNameInput.value.trim(),
+        model: personaModelInput.value.trim(),
+        systemPrompt: personaSystemPromptInput.value.trim(),
+        temperature: parseFloat(personaTempInput.value) || 0.7,
+        maxTokens: parseInt(document.getElementById('maxTokens')?.value) || 2000
+    };
+    await PersonaStorage.addPersona(persona);
+    await renderpersonasList();
+    closeModal(personasModal);
+}
+
+async function confirmAndDeletepersona(id) {
+    if (!id) return;
+    if (confirm('Delete this persona?')) {
+        await PersonaStorage.deletePersona(id);
+        await renderpersonasList();
+    }
+}
+
+function checkpersonaFormValidity() {
+    if (!personaForm) return;
+    const submit = personaForm.querySelector('button[type="submit"]');
+    if (submit) {
+        const valid = personaNameInput.value.trim() && personaModelInput.value.trim();
+        submit.disabled = !valid;
+    }
+}
 function updateSummarizeButtonVisibility() {
   const btn = document.getElementById('summarize-btn');
   if (!btn) return;
@@ -618,7 +692,7 @@ async function renderConversationsList() {
         const lastMsg = lastMessages[lastMessages.length - 1];
         const snippet = lastMsg ? lastMsg.content.slice(0, 30) : '';
         const time = new Date(conv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const persona = await Storage.personaStorage.getpersona(conv.personaId);
+        const persona = await Storage.PersonaStorage.getPersona(conv.personaId);
         const personaName = persona ? persona.name : '';
         convItem.innerHTML = `
             <div class="conv-title">${conv.title || 'New Chat'}</div>
@@ -983,7 +1057,7 @@ async function getAIResponse(userQuery) {
             return;
         }
 
-        const persona = window.currentpersona || (currentpersonaId ? await Storage.personaStorage.getpersona(currentpersonaId) : null);
+        const persona = window.currentpersona || (currentpersonaId ? await Storage.PersonaStorage.getPersona(currentpersonaId) : null);
 
         // Use default values if no persona or persona values are missing
         const model = persona?.model || 'deepseek/deepseek-chat-v3-0324:free'; // Default model
@@ -1286,7 +1360,7 @@ async function summarizeAndSaveConversation() {
         return;
     }
 
-    const persona = window.currentpersona || (currentpersonaId ? await Storage.personaStorage.getpersona(currentpersonaId) : null);
+    const persona = window.currentpersona || (currentpersonaId ? await Storage.PersonaStorage.getPersona(currentpersonaId) : null);
     if (!persona) {
         showToast('No active persona found.', 'error');
         return;
@@ -1896,7 +1970,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeModal(personasModal);
     });
     if (personaForm) personaForm.addEventListener('submit', savepersona);
-    if (deletepersonaBtn) deletepersonaBtn.addEventListener('click', (e) => confirmAndDeletepersona(parseInt(personaIdInput.value)));
+    if (deletepersonaBtn) {
+        deletepersonaBtn.addEventListener('click', () => {
+            const id = parseInt(personaIdInput?.value || '', 10);
+            confirmAndDeletepersona(id);
+        });
+    }
     
     const summarizeButton = document.getElementById('summarize-btn');
     if (summarizeButton) summarizeButton.addEventListener('click', summarizeAndSaveConversation);
@@ -1910,44 +1989,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (cancelMemoryBtn) cancelMemoryBtn.addEventListener('click', () => closeModal(memoryModal));
 
-    personaNameInput.addEventListener('input', checkpersonaFormValidity);
-    personaSystemPromptInput.addEventListener('input', checkpersonaFormValidity);
+    personaNameInput?.addEventListener('input', checkpersonaFormValidity);
+    personaSystemPromptInput?.addEventListener('input', checkpersonaFormValidity);
 
-    personaTempInput.addEventListener('input', (e) => {
-        personaTempValueSpan.textContent = parseFloat(e.target.value).toFixed(2);
-    });
-
-    // Model search and dropdown logic
-    personaModelSearchInput.addEventListener('focus', () => {
-        personaModelDropdown.style.display = 'block';
-        // Filter dropdown based on current search input
-        const searchTerm = personaModelSearchInput.value.toLowerCase();
-        personaModelDropdown.querySelectorAll('.model-dropdown-item').forEach(item => {
-            item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'block' : 'none';
-        });
-    });
-    personaModelSearchInput.addEventListener('input', () => {
-        const searchTerm = personaModelSearchInput.value.toLowerCase();
-        personaModelDropdown.querySelectorAll('.model-dropdown-item').forEach(item => {
-            item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'block' : 'none';
-        });
-    });
-    // Hide dropdown when clicking outside (simple approach)
-    document.addEventListener('click', (e) => {
-        if (!personaModelSearchInput.contains(e.target) && !personaModelDropdown.contains(e.target)) {
-            personaModelDropdown.style.display = 'none';
+    personaTempInput?.addEventListener('input', (e) => {
+        if (personaTempValueSpan) {
+            personaTempValueSpan.textContent = parseFloat(e.target.value).toFixed(2);
         }
     });
 
-    // Model select and filter logic
-    model1FreeFilter.addEventListener('change', () => populateModelSelect(availableModels));
-    model1Select.addEventListener('change', (e) => {
-        personaModelInput.value = e.target.value;
-        const selectedOption = e.target.options[e.target.selectedIndex];
-        personaModelSelectedSpan.textContent = selectedOption.textContent;
-        personaModelSelectedSpan.style.display = 'inline';
-        personaModelSearchInput.value = selectedOption.textContent;
-    });
+    // Model search and dropdown logic
+    if (personaModelSearchInput && personaModelDropdown) {
+        personaModelSearchInput.addEventListener('focus', () => {
+            personaModelDropdown.style.display = 'block';
+            const searchTerm = personaModelSearchInput.value.toLowerCase();
+            personaModelDropdown.querySelectorAll('.model-dropdown-item').forEach(item => {
+                item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'block' : 'none';
+            });
+        });
+        personaModelSearchInput.addEventListener('input', () => {
+            const searchTerm = personaModelSearchInput.value.toLowerCase();
+            personaModelDropdown.querySelectorAll('.model-dropdown-item').forEach(item => {
+                item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'block' : 'none';
+            });
+        });
+        document.addEventListener('click', (e) => {
+            if (!personaModelSearchInput.contains(e.target) && !personaModelDropdown.contains(e.target)) {
+                personaModelDropdown.style.display = 'none';
+            }
+        });
+    }
+
+    if (model1FreeFilter && model1Select) {
+        model1FreeFilter.addEventListener('change', () => populateModelSelect(availableModels));
+        model1Select.addEventListener('change', (e) => {
+            personaModelInput.value = e.target.value;
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            if (personaModelSelectedSpan) {
+                personaModelSelectedSpan.textContent = selectedOption.textContent;
+                personaModelSelectedSpan.style.display = 'inline';
+            }
+            if (personaModelSearchInput) {
+                personaModelSearchInput.value = selectedOption.textContent;
+            }
+        });
+    }
 
     memoryBtn.addEventListener('click', openMemoryModal);
     document.getElementById('summarize-btn')?.addEventListener('click', summarizeAndSaveConversation);
@@ -2014,7 +2100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     exportAllBtn?.addEventListener('click', async () => {
-        const personas = await Storage.personaStorage.getAllPersonas();
+        const personas = await Storage.PersonaStorage.getAllPersonas();
         const memory = await Storage.MemoryStorage.getAllMemories();
         const conversations = await Storage.ConversationStorage.getAllConversations();
         const messages = [];
@@ -2049,11 +2135,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const text = await file.text();
             const data = JSON.parse(text);
 
-            await Storage.personaStorage.getAllpersonas().then(list => Promise.all(list.map(x => Storage.personaStorage.deletepersona(x.id))));
+            await Storage.PersonaStorage.getAllPersonas().then(list => Promise.all(list.map(x => Storage.PersonaStorage.deletePersona(x.id))));
             await Storage.MemoryStorage.getAllMemories().then(list => Promise.all(list.map(x => Storage.MemoryStorage.deleteMemory(x.id))));
             await Storage.ConversationStorage.clearAllConversations();
 
-            for (const p of data.personas || []) await Storage.personaStorage.addpersona(p);
+            for (const p of data.personas || []) await Storage.PersonaStorage.addPersona(p);
             for (const m of data.memory || []) await Storage.MemoryStorage.addMemory(m);
             for (const c of data.conversations || []) await Storage.ConversationStorage.addConversation(c);
             for (const msg of data.messages || []) await Storage.MessageStorage.addMessage(msg);
