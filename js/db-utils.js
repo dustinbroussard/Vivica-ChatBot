@@ -11,7 +11,7 @@ import { openDB } from 'https://cdn.jsdelivr.net/npm/idb@8.0.3/+esm';
 
 // Database configuration
 const DB_NAME = 'VivicaChatDB';
-const DB_VERSION = 1; // Increment this version number when you change the schema
+const DB_VERSION = 2; // Increment this version number when you change the schema
 const STORES = {
     CONVERSATIONS: 'conversations', // Stores chat conversation metadata
     MESSAGES: 'messages',           // Stores individual chat messages  
