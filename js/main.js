@@ -1722,6 +1722,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     personaIdInput = document.getElementById('persona-id');
 
     const userInput = document.getElementById('user-input');
+    if (!userInput) {
+        console.error('Could not find user input element');
+        return;
+    }
     const chatWindow = document.getElementById('chatWindow');
 
     if (userInput) {
