@@ -1896,14 +1896,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (userInput) {
         userInput.addEventListener('input', () => {
-        sendBtn.disabled = userInput.value.trim().length === 0;
-        if (charCountSpan) {
-            const chars = userInput.value.length;
-            const words = userInput.value.trim().split(/\s+/).filter(Boolean).length;
-            charCountSpan.textContent = `${words}w / ${chars}c`;
-        }
-    });
-    userInput.addEventListener('keypress', (e) => {
+            sendBtn.disabled = userInput.value.trim().length === 0;
+            if (charCountSpan) {
+                const chars = userInput.value.length;
+                const words = userInput.value.trim().split(/\s+/).filter(Boolean).length;
+                charCountSpan.textContent = `${words}w / ${chars}c`;
+            }
+        });
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault(); // Prevent new line
             sendMessage();
