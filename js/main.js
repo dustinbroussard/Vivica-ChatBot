@@ -1977,11 +1977,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             personaModelDropdown.style.display = 'block';
             const searchTerm = personaModelSearchInput.value.toLowerCase();
             const items = personaModelDropdown.querySelectorAll('.model-dropdown-item');
-            if (items) {
-                items.forEach(item => {
-                    item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'block' : 'none';
-                });
-            }
+            items.forEach(item => {
+                item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'block' : 'none';
+            });
         });
         personaModelSearchInput.addEventListener('input', () => {
             const searchTerm = personaModelSearchInput.value.toLowerCase();
