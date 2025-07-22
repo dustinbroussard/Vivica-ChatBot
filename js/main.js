@@ -18,35 +18,6 @@ userInput.addEventListener('keydown', (e) => {
   }
 });
 
-async function sendMessage() {
-  const input = userInput.value.trim();
-  if (!input) return;
-
-  const persona = await getActivePersona();
-  if (!persona) return alert("Please select an AI persona.");
-
-  appendMessage("user", input);
-  userInput.value = "";
-
-  const payload = {
-    model: persona.model,
-    messages: [
-      { role: "system", content: persona.prompt },
-      { role: "user", content: input }
-    ],
-    temperature: persona.temp,
-    max_tokens: persona.tokens
-  };
-
-  const res = await fetch('/your-endpoint', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  const data = await res.json();
-
-  appendMessage("assistant", data.choices[0].message.content);
-}
 
 function appendMessage(role, text) {
   const msg = document.createElement('div');
