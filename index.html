@@ -466,24 +466,27 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script type="module" src="js/db-utils.js"></script>
-    <script type="module" src="js/storage-wrapper.js"></script>
-    <script type="module" src="js/android-bridge.js"></script>
+    <!-- Core Scripts -->
+    <script type="module" src="js/db-utils.js" defer></script>
+    <script type="module" src="js/storage-wrapper.js" defer></script>
+    <script type="module" src="js/android-bridge.js" defer></script>
 
-    <script type="module" src="js/theme-toggle.js"></script>
-    <script type="module" src="js/main.js"></script>
-    <script type="module" src="js/memory-manager.js"></script>
-    <script type="module" src="js/persona-ui.js"></script>
-    <script type="module">
+    <!-- UI Scripts --> 
+    <script type="module" src="js/theme-toggle.js" defer></script>
+    <script type="module" src="js/memory-manager.js" defer></script>
+    <script type="module" src="js/persona-ui.js" defer></script>
+    
+    <!-- Main App -->
+    <script type="module" src="js/main.js" defer></script>
+
+    <!-- Inline Initialization -->
+    <script type="module" defer>
         import { initMemoryManager } from './js/memory-manager.js';
         document.addEventListener('DOMContentLoaded', () => {
-            // Ensure all required DOM elements exist before initialization
             if (document.getElementById('memory-modal')) {
                 initMemoryManager();
             }
         });
     </script>
-
 </body>
 </html>
