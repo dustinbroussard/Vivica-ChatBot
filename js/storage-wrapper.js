@@ -220,7 +220,7 @@ export const PersonaStorage = {
             if (id === undefined || id === null) {
                 return undefined;
             }
-            return await get(STORES.personaS, id);
+            return await get(STORES.PERSONAS, id);
         } catch (error) {
             console.error('personaStorage: Error getting persona:', error);
             throw error;
@@ -409,8 +409,8 @@ export const SettingsStorage = {
 export default {
     ConversationStorage,
     MessageStorage,
-    personaStorage,
-    MemoryStorage,
+    PersonaStorage,
+    MemoryStorage, 
     SettingsStorage
 };
 

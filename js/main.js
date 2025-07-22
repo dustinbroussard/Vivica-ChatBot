@@ -411,16 +411,6 @@ function renderMarkdown(content) {
     return window.marked.parse(withLineBreaks);
 }
 
-async function updateActivePersonaBadge() {
-  const badge = document.getElementById('activePersonaBadge');
-  const persona = await getActivePersona();
-
-  if (persona) {
-    badge.textContent = `👤 ${persona.name} ⏷`;
-  } else {
-    badge.textContent = "👤 Select Persona ⏷";
-  }
-}
 
 async function sendMessage(userInput) {
   const persona = await getActivePersona();
