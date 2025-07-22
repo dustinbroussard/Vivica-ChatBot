@@ -383,40 +383,6 @@ function renderMarkdown(content) {
 }
 
 
-async function sendMessage(userInput) {
-  const persona = await getActivePersona();
-  const model = persona?.model || 'gpt-4o';
-  const temp = persona?.temp ?? 0.8;
-  const tokens = persona?.tokens ?? 2048;
-  const systemPrompt = persona?.prompt || 'You are a helpful assistant.';
-
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...chatHistory,
-        { role: 'user', content: userInput }
-      ],
-      temperature: temp,
-      max_tokens: tokens
-    })
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error?.message || 'API request failed');
-  }
-
-  const message = data.choices[0].message.content;
-  appendMessage("assistant", message);
-  return message;
-}
 
 
 async function getMemoryPrompt() {
