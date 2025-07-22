@@ -35,24 +35,40 @@ export function initPersonaUI() {
     e.preventDefault();
 
     const persona = {
-      name: document.getElementById('personaName').value,
+      name: document.getElementById('personaName').value.trim(),
       model: document.getElementById('modelSelect').value,
-      systemPrompt: document.getElementById('systemPrompt').value,
+      systemPrompt: document.getElementById('systemPrompt').value.trim(),
       temperature: parseFloat(document.getElementById('temperature').value),
-      maxTokens: parseInt(document.getElementById('maxTokens').value)
+      maxTokens: parseInt(document.getElementById('maxTokens').value),
+      timestamp: Date.now()
     };
+
+    if (!persona.name) {
+      alert('Please enter a persona name');
+      return;
+    }
+    if (!persona.model) {
+      alert('Please select a model');
+      return;
+    }
 
     try {
       if (editingPersonaId) {
         persona.id = editingPersonaId;
         await personaController.updatePersona(persona);
+        showToast('Persona updated!', 'success');
       } else {
-        await personaController.createPersona(persona);
+        const newPersona = await personaController.createPersona(persona);
+        // Set the new persona as active by default
+        await personaController.setActivePersona(newPersona);
+        showToast('Persona created!', 'success');
       }
+      
       personaEditorModal.classList.add('hidden');
       await loadPersonas();
+      await updateActivePersonaBadge();
     } catch (error) {
-      alert(error.message);
+      showToast(`Error: ${error.message}`, 'error');
     }
   });
 
@@ -129,14 +145,25 @@ export function openPersonaEditor(persona = null) {
   personaEditorModal.classList.remove('hidden');
   editingPersonaId = persona?.id || null;
 
+  // Update modal title
+  document.querySelector('#personaEditorModal .modal-header h2').textContent = 
+    persona ? `Edit ${persona.name}` : 'Create Persona';
+
+  // Populate form fields
   document.getElementById('personaName').value = persona?.name || '';
-  document.querySelector('#personaEditorModal .modal-header h2').textContent =
-  persona ? 'Edit Persona' : 'Create Persona';
   document.getElementById('modelSelect').value = persona?.model || '';
   document.getElementById('systemPrompt').value = persona?.systemPrompt || '';
-  document.getElementById('temperature').value = persona?.temperature ?? 0.7;
-  document.getElementById('tempVal').textContent = persona?.temperature ?? 0.7;
+  
+  const temp = persona?.temperature ?? 0.7;
+  document.getElementById('temperature').value = temp;
+  document.getElementById('tempVal').textContent = temp;
+  
   document.getElementById('maxTokens').value = persona?.maxTokens ?? 2000;
+
+  // Focus on name field when opening 
+  if (!persona) {
+    document.getElementById('personaName').focus();
+  }
 }
 
 export async function deletePersona(id) {
