@@ -114,19 +114,6 @@ export function initPersonaUI() {
     }
   });
 
-  // Populate model dropdown (static or dynamic)
-  const modelSelect = document.getElementById('modelSelect');
-  if (modelSelect && modelSelect.children.length <= 1) {
-    const defaultModels = [
-      'gpt-4o', 'deepseek-chat', 'llama-3-70b-instruct', 'qwen/qwen-2.5-72b-instruct', 'openrouter/cypher-alpha'
-    ];
-    for (const model of defaultModels) {
-      const opt = document.createElement('option');
-      opt.value = model;
-      opt.textContent = model;
-      modelSelect.appendChild(opt);
-    }
-  }
 }
 
 export async function loadPersonas() {
