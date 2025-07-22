@@ -117,7 +117,6 @@ export function initPersonaUI() {
     }
   });
 
-  const tempSlider = document.getElementById('temperature');
   // Populate model dropdown (static or dynamic)
   const modelSelect = document.getElementById('modelSelect');
   if (modelSelect && modelSelect.children.length <= 1) {
@@ -131,11 +130,6 @@ export function initPersonaUI() {
       modelSelect.appendChild(opt);
     }
   }
-
-  // Slider updates label live
-  tempSlider?.addEventListener('input', () => {
-    document.getElementById('tempVal').textContent = tempSlider.value;
-  });
 }
 
 export async function loadPersonas() {
