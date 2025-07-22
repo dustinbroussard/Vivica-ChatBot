@@ -1834,27 +1834,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   
     // Always show welcome screen on startup - don't load any conversation
     debugLog('Showing welcome screen...');
-    await showWelcomeScreen();
-    personaSelect.addEventListener('change', async function () {
-        const selectedId = parseInt(this.value);
-        localStorage.setItem('activePersonaId', selectedId);
-        currentPersonaId = selectedId;
-        window.currentPersonaId = selectedId;
-        const p = await PersonaStorage.getPersona(selectedId);
-        setActivePersona(selectedId);
+	await showWelcomeScreen();
 
-        if (window.currentConversationId) {
-            const convo = await Storage.ConversationStorage.getConversation(window.currentConversationId);
-            if (convo) {
-                convo.personaId = selectedId;
-                await Storage.ConversationStorage.updateConversation(convo);
-            }
-        }
-
-        await renderConversationsList();
-        if (typeof renderChatHeader === 'function') renderChatHeader();
-        if (p) showToast(`persona switched to ${p.name}`, 'info');
-    });
 
     // Initial render of conversations list
     await renderConversationsList();
