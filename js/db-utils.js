@@ -59,18 +59,19 @@ export async function initDB() {
                 console.log(`DB: Object store '${STORES.MESSAGES}' created.`);
             }
 
-            if (!db.objectStoreNames.contains(STORES.PERSONAS)) {
-                try {
+            // Ensure PERSONAS store exists (even if we need to abort and retry)
+            try {
+                if (!db.objectStoreNames.contains(STORES.PERSONAS)) {
                     const personaStore = db.createObjectStore(STORES.PERSONAS, {
                         keyPath: 'id',
                         autoIncrement: true
                     });
                     personaStore.createIndex('name', 'name', { unique: true });
                     console.log(`DB: Object store '${STORES.PERSONAS}' created.`);
-                } catch (error) {
-                    console.error('Error creating personas store:', error);
-                    throw error;
                 }
+            } catch (error) {
+                console.error('DB: Error setting up personas store - retry needed:', error);
+                throw error;
             }
 
             if (!db.objectStoreNames.contains(STORES.MEMORY)) {

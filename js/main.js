@@ -1764,10 +1764,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     await showWelcomeScreen();
     personaSelect.addEventListener('change', async function () {
         const selectedId = parseInt(this.value);
-        localStorage.setItem('activepersonaId', selectedId);
-        window.currentpersonaId = selectedId;
-        const p = await Storage.personaStorage.getpersona(selectedId);
-        if (p) setActivepersona(p);
+        localStorage.setItem('activePersonaId', selectedId);
+        window.currentPersonaId = selectedId;
+        const p = await PersonaStorage.getPersona(selectedId);
+        if (p) setActivePersona(p);
 
         if (window.currentConversationId) {
             const convo = await Storage.ConversationStorage.getConversation(window.currentConversationId);

@@ -204,6 +204,10 @@ export const PersonaStorage = {
      */
     addPersona: async (persona) => {
         try {
+            const db = await initDB();
+            if (!db.objectStoreNames.contains(STORES.PERSONAS)) {
+                throw new Error('PERSONAS store not found');
+            }
             return await add(STORES.PERSONAS, persona);
         } catch (error) {
             console.error('personaStorage: Error adding persona:', error);
