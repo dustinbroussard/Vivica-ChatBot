@@ -89,11 +89,15 @@ export function initPersonaUI() {
       personaEditorModal.classList.add('hidden');
       await loadPersonas();
       await updateActivePersonaBadge();
-      alert('Please enter a persona name');
+    } catch (error) {
+      showToast(`Error: ${error.message}`, 'error');
+    }
+    if (!persona.name) {
+      showToast('Please enter a persona name', 'error');
       return;
     }
     if (!persona.model) {
-      alert('Please select a model');
+      showToast('Please select a model', 'error');
       return;
     }
 
