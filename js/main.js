@@ -8,11 +8,9 @@ import { createParser } from './eventsource-parser.js';
 // main.js (update section only)
 import { getActivePersona } from './js/persona-storage.js';
 
-const sendBtn = document.getElementById('sendBtn');
 const userInput = document.getElementById('user-input');
 const chatWindow = document.getElementById('chatWindow');
 
-sendBtn.addEventListener('click', sendMessage);
 userInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
