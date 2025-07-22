@@ -201,9 +201,9 @@ export const PersonaStorage = {
      * @param {object} persona - The persona object.
      * @returns {Promise<number>} The ID of the new persona.
      */
-    addpersona: async (persona) => {
+    addPersona: async (persona) => {
         try {
-            return await add(STORES.personaS, persona);
+            return await add(STORES.PERSONAS, persona);
         } catch (error) {
             console.error('personaStorage: Error adding persona:', error);
             throw error;
@@ -215,7 +215,7 @@ export const PersonaStorage = {
      * @param {number} id - The ID of the persona.
      * @returns {Promise<object | undefined>} The persona object.
      */
-    getpersona: async (id) => {
+    getPersona: async (id) => {
         try {
             if (id === undefined || id === null) {
                 return undefined;
@@ -231,9 +231,9 @@ export const PersonaStorage = {
      * Retrieves all personas.
      * @returns {Promise<object[]>} An array of persona objects.
      */
-    getAllpersonas: async () => {
+    getAllPersonas: async () => {
         try {
-            return await getAll(STORES.personaS);
+            return await getAll(STORES.PERSONAS);
         } catch (error) {
             console.error('personaStorage: Error getting all personas:', error);
             throw error;
@@ -245,9 +245,9 @@ export const PersonaStorage = {
      * @param {object} persona - The persona object with updated data (must include ID).
      * @returns {Promise<void>}
      */
-    updatepersona: async (persona) => {
+    updatePersona: async (persona) => {
         try {
-            await update(STORES.personaS, persona);
+            await update(STORES.PERSONAS, persona);
         }
         catch (error) {
             console.error('personaStorage: Error updating persona:', error);
@@ -260,9 +260,9 @@ export const PersonaStorage = {
      * @param {number} id - The ID of the persona to delete.
      * @returns {Promise<void>}
      */
-    deletepersona: async (id) => {
+    deletePersona: async (id) => {
         try {
-            await remove(STORES.personaS, id);
+            await remove(STORES.PERSONAS, id);
         } catch (error) {
             console.error('personaStorage: Error deleting persona:', error);
             throw error;
