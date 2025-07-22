@@ -1,8 +1,9 @@
 // js/persona-ui.js
 
-import Storage, { PersonaStorage } from './storage-wrapper.js';
+import { PersonaController } from './persona-controller.js';
+import Storage from './storage-wrapper.js';
 
-let activePersonaId = null;
+const personaController = new PersonaController();
 
 // DOM elements
 const personaModal = document.getElementById('personaModal');
@@ -13,7 +14,6 @@ const personaEditorModal = document.getElementById('personaEditorModal');
 let editingPersonaId = null;
 
 export function initPersonaUI() {
-  activePersonaId = localStorage.getItem('activePersonaId');
   loadPersonas();
 
   createPersonaBtn?.addEventListener('click', () => {
@@ -35,7 +35,6 @@ export function initPersonaUI() {
     e.preventDefault();
 
     const persona = {
-      id: editingPersonaId || crypto.randomUUID(),
       name: document.getElementById('personaName').value,
       model: document.getElementById('modelSelect').value,
       systemPrompt: document.getElementById('systemPrompt').value,
@@ -43,14 +42,18 @@ export function initPersonaUI() {
       maxTokens: parseInt(document.getElementById('maxTokens').value)
     };
 
-    if (!persona.name || !persona.model || !persona.systemPrompt) {
-      alert('Please fill out all required fields.');
-      return;
+    try {
+      if (editingPersonaId) {
+        persona.id = editingPersonaId;
+        await personaController.updatePersona(persona);
+      } else {
+        await personaController.createPersona(persona);
+      }
+      personaEditorModal.classList.add('hidden');
+      await loadPersonas();
+    } catch (error) {
+      alert(error.message);
     }
-
-    await PersonaStorage.addPersona(persona);
-    personaEditorModal.classList.add('hidden');
-    await loadPersonas();
   });
 
   const tempSlider = document.getElementById('temperature');
@@ -75,7 +78,7 @@ export function initPersonaUI() {
 }
 
 export async function loadPersonas() {
-  const personas = await PersonaStorage.getAllPersonas();
+  const personas = await personaController.getAllPersonas();
   personaListContainer.innerHTML = '';
 
   personas.forEach(persona => {
@@ -99,14 +102,12 @@ export async function loadPersonas() {
 }
 
 export async function setActivePersona(id) {
-  activePersonaId = id;
-  localStorage.setItem('activePersonaId', id);
+  const persona = await personaController.setActivePersona(id);
   await loadPersonas();
   
   // Update the UI badge
   const badge = document.getElementById('activePersonaBadge');
   if (badge) {
-    const persona = await PersonaStorage.getPersona(id);
     badge.textContent = persona ? `👤 ${persona.name} ⏷` : '👤 Select Persona ⏷';
   }
 
@@ -136,7 +137,7 @@ export function openPersonaEditor(persona = null) {
 
 export async function deletePersona(id) {
   if (confirm('Delete this persona?')) {
-    await PersonaStorage.deletePersona(id);
+    await personaController.deletePersona(id);
     await loadPersonas();
   }
 }
