@@ -1884,6 +1884,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Event listeners for main UI
+    const sendBtn = document.getElementById('send-btn');
     if (sendBtn) {
         sendBtn.addEventListener('click', sendMessage);
     } else {
@@ -1904,6 +1905,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             sendMessage();
         }
     });
+    const newChatBtn = document.getElementById('new-chat-btn');
     if (newChatBtn) {
         newChatBtn.addEventListener('click', startNewConversation);
     } else {
