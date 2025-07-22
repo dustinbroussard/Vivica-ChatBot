@@ -8,7 +8,6 @@
  */
 
 import { initDB, add, get, getAll, update, remove, clearStore, STORES, getByIndex } from './db-utils.js';
-import { personaStorage } from './persona-storage.js';
 
 // Ensure DB is initialized when this module loads
 initDB().catch(error => console.error('StorageWrapper: Failed to initialize DB:', error));
@@ -416,12 +415,19 @@ export const SettingsStorage = {
 };
 
 // Export all storage managers for easy access
-export default {
+const Storage = {
     ConversationStorage,
     MessageStorage,
     PersonaStorage,
-    MemoryStorage, 
+    MemoryStorage,
     SettingsStorage
 };
+
+export default Storage;
+
+// Expose globally for convenience since many modules expect window.Storage
+if (typeof window !== 'undefined') {
+    window.Storage = Storage;
+}
 
 export { STORES } from './db-utils.js';
