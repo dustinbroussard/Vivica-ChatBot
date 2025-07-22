@@ -2104,9 +2104,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         showToast('Exported all data!');
     });
 
-    importAllBtn?.addEventListener('click', () => {
-        importFileInput?.click();
-    });
+    if (importAllBtn && importFileInput) {
+        importAllBtn.addEventListener('click', () => {
+            importFileInput.click();
+        });
+    } else {
+        console.warn('Import UI elements not found - skipping event listener setup');
+    }
 
     importFileInput?.addEventListener('change', async function() {
         const file = this.files[0];
